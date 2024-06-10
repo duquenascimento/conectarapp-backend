@@ -1,0 +1,63 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id String @id @db.Uuid
+  email String @unique @db.VarChar(256)
+  password String? @db.VarChar(60)
+  active Boolean
+  restaurant String[] @db.Uuid
+  role String[] @db.VarChar(500)
+  createdAt DateTime @db.Date
+  updatedAt DateTime? @db.Date
+}
+
+model restaurant {
+  id String @id @db.Uuid
+  name String @db.VarChar(200)
+  active Boolean
+  user String[] @db.Uuid
+  address String[] @db.Uuid
+  favorite String[] @db.Uuid
+  companyRegistrationNumber String @db.VarChar(14)
+  companyRegistrationNumberForBilling String @db.VarChar(14)
+  stateRegistrationNumber String? @db.VarChar()
+  createdAt DateTime @db.Date
+  updatedAt DateTime? @db.Date
+}
+
+model address {
+  id String @id @db.Uuid
+  restaurant String[] @db.Uuid
+  active Boolean
+  address String @db.VarChar(200)
+  neighborhood String @db.VarChar(200)
+  initialDeliveryTime DateTime @db.Time(6)
+  finalDeliveryTime DateTime @db.Time(6)
+  deliveryInformation String @db.VarChar(500)
+  closedDoorDelivery Boolean
+  responsibleReceivingName String @db.VarChar(200)
+  responsibleReceivingPhoneNumber String @db.VarChar(50)
+  zipCode String @db.VarChar(10)
+  deliveryReference String @db.VarChar(500)
+  createdAt DateTime @db.Date
+  updatedAt DateTime? @db.Date
+}
+
+model favorite {
+  id String @id @db.Uuid
+  productId String @db.Uuid
+  restaurantId String @db.Uuid
+}
