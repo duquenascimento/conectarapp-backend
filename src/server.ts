@@ -7,7 +7,7 @@ const server: FastifyInstance = Fastify({})
 async function startServer (): Promise<void> {
   try {
     await registerRoutes(server)
-    await server.listen({ port: 9841, host: '192.168.201.96' })
+    await server.listen({ port: 9841, host: '192.168.0.182' })
     console.info(`Server started in ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
   } catch (err) {
     server.log.error(err)

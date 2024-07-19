@@ -8,7 +8,7 @@ export const authRoute = async (server: FastifyInstance): Promise<void> => {
       if (result == null) throw Error('first step of signUp failed')
       return await res.status(201).send({
         status: 201,
-        token: result
+        data: result
       })
     } catch (err) {
       const message = (err as Error).message
@@ -32,7 +32,7 @@ export const authRoute = async (server: FastifyInstance): Promise<void> => {
       if (result == null) throw Error('not logged')
       return await res.status(200).send({
         status: 200,
-        token: result
+        data: result
       })
     } catch (err) {
       const message = (err as Error).message

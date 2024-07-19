@@ -27,15 +27,26 @@ model user {
 model restaurant {
   id String @id @db.Uuid
   name String @db.VarChar(200)
+  legalName String @db.VarChar()
   active Boolean
+  phone String
+  alternativePhone String
+  email String
+  alternativeEmail String
   user String[] @db.Uuid
   address String[] @db.Uuid
+  closeDoor Boolean @db.Boolean
   favorite String[] @db.Uuid
+  weeklyOrderAmount Int @db.SmallInt
+  orderValue Decimal @db.Decimal(10, 2)
   companyRegistrationNumber String @db.VarChar(14)
   companyRegistrationNumberForBilling String @db.VarChar(14)
   stateRegistrationNumber String? @db.VarChar()
+  cityRegistrationNumber String? @db.VarChar()
   createdAt DateTime @db.Date
   updatedAt DateTime? @db.Date
+  tax Decimal @db.Decimal(10, 6) @default(4.1666)
+  paymentWay String @db.VarChar(200)
 }
 
 model address {
@@ -54,10 +65,62 @@ model address {
   deliveryReference String @db.VarChar(500)
   createdAt DateTime @db.Date
   updatedAt DateTime? @db.Date
+  localType String? @db.VarChar(200)
+  localNumber String? @db.VarChar(25)
+  city String? @db.VarChar(200)
+  complement String? @db.VarChar(200)
 }
 
 model favorite {
   id String @id @db.Uuid
+  obs String? @db.VarChar(200)
   productId String @db.Uuid
   restaurantId String @db.Uuid
+}
+
+model cart {
+  id String @id @db.Uuid
+  productId String @db.Uuid
+  obs String? @db.VarChar(200)
+  amount Decimal @db.Decimal(10, 3)
+  restaurantId String @db.Uuid
+  version Int @default(0)
+}
+
+model order {
+  id String @id @db.VarChar(50)
+  restaurantId String @db.VarChar(20)
+  addressId String @db.Uuid
+  orderDate DateTime @db.Date
+  deliveryDate DateTime @db.Date
+  orderHour DateTime @db.Time(6)
+  paymentWay String @db.VarChar(50)
+  referencePoint String @db.VarChar(200)
+  initialDeliveryTime DateTime @db.Time(6)
+  finalDeliveryTime DateTime @db.Time(6)
+  totalSupplier Decimal @db.Decimal(10, 2)
+  totalConectar Decimal @db.Decimal(10, 2)
+  status String @db.VarChar(100)
+  detailing String[] @db.VarChar(50)
+  tax Decimal @db.Decimal(10, 5)
+  supplierId String @db.VarChar(50)
+  calcOrderAgain Json @db.Json
+  orderDocument String? @db.VarChar(1000)
+}
+
+model detailing {
+  id String @id @db.VarChar(50)
+  orderId String @db.VarChar(50)
+  restaurantId String @db.Uuid
+  productId String @db.VarChar(50)
+  orderAmount Decimal @db.Decimal(10, 3)
+  restaurantFinalAmount Decimal @db.Decimal(10, 3)
+  supplierFinalAmount Decimal @db.Decimal(10, 3)
+  obs String @db.VarChar(250)
+  supplierPricePerUnid Decimal @db.Decimal(10, 2)
+  conectarPricePerUnid Decimal @db.Decimal(10, 2)
+  status String @db.VarChar(100)
+  supplierFinalPrice Decimal @db.Decimal(10, 2)
+  conectarFinalPrice Decimal @db.Decimal(10, 2)
+  suppliersDetailing Json @db.Json
 }

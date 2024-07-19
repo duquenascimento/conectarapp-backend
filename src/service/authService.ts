@@ -24,7 +24,12 @@ export interface ICheckLogin {
   token: string | undefined | null
 }
 
-export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<string | undefined> => {
+interface firstStepSignUpResponse {
+  token: string
+  role: string[]
+}
+
+export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<firstStepSignUpResponse | undefined> => {
   try {
     if (req.email == null) throw Error('missing email', { cause: 'visibleError' })
     if (process.env.JWT_SECRET == null) throw Error('missing jwt secret', { cause: 'visibleError' })
@@ -55,7 +60,7 @@ export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<str
       createdAt: request.createdAt
     }, process.env.JWT_SECRET)
 
-    return jwt
+    return { token: jwt, role: request.role ?? [] }
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
