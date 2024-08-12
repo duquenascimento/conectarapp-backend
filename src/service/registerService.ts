@@ -75,6 +75,7 @@ export interface addressFormData {
   createdAt: Date
   localType: string
   city: string
+  closedDoorDelivery: boolean
 }
 
 export const fullRegister = async (req: RestaurantFormData & { token: string }): Promise<void> => {
@@ -107,9 +108,10 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
     zipcode: req.zipcode,
     restaurantId: [restaurantId],
     responsibleReceivingName: '',
-    responsibleReceivingPhoneNumber: '',
+    responsibleReceivingPhoneNumber: req.phone,
     localType: req.localType,
-    city: req.city
+    city: req.city,
+    closedDoorDelivery: req.closeDoor
   })
 
   await createRestaurant({

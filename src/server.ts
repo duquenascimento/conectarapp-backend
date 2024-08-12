@@ -1,4 +1,5 @@
 import Fastify, { type FastifyInstance } from 'fastify'
+import cors from '@fastify/cors'
 import { registerRoutes } from './route/route'
 import { DateTime } from 'luxon'
 
@@ -6,8 +7,14 @@ const server: FastifyInstance = Fastify({})
 
 async function startServer (): Promise<void> {
   try {
-    await registerRoutes(server)
-    await server.listen({ port: 9841, host: '192.168.0.182' })
+    await Promise.all([
+      server.register(cors, {
+        origin: ['http://localhost:8081', 'http://localhost:3000'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+      }),
+      registerRoutes(server)
+    ])
+    await server.listen({ port: 9841 })
     console.info(`Server started in ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
   } catch (err) {
     server.log.error(err)

@@ -50,6 +50,10 @@ interface Product {
   favorite?: boolean
   obs: string | null
   amount: Decimal
+  mediumWeight: number
+  firstUnit: number
+  secondUnit: number
+  thirdUnit: number
 };
 
 const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
@@ -137,6 +141,10 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
         class: item.class,
         active: item.active,
         changedBy: item.changedBy,
+        mediumWeight: item.mediumWeight,
+        firstUnit: item.firstUnit,
+        secondUnit: item.secondUnit,
+        thirdUnit: item.thirdUnit,
         convertedWeight: item.convertedWeight,
         createdAt: item.createdAt,
         createdBy: item.createdBy,

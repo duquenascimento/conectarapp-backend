@@ -34,9 +34,13 @@ export const registerAddress = async (req: addressFormData): Promise<any> => {
         finalDeliveryTime: req.maxHour,
         deliveryInformation: req.deliveryObs,
         responsibleReceivingName: '',
-        responsibleReceivingPhoneNumber: '',
+        responsibleReceivingPhoneNumber: req.responsibleReceivingPhoneNumber,
         deliveryReference: '',
-        closedDoorDelivery: false
+        closedDoorDelivery: req.closedDoorDelivery,
+        localType: req.localType,
+        city: req.city,
+        complement: req.complement,
+        localNumber: req.localNumber
       }
     })
   } catch (err: any) {
@@ -124,6 +128,24 @@ export const findAddressByRestaurantId = async (restaurantId: string): Promise<a
       where: {
         restaurant: { has: restaurantId }
       }
+    })
+    return result
+  } catch (err: any) {
+    await prisma.$disconnect()
+    await logRegister(err)
+    return null
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateAddress = async (addressId: string, data: any): Promise<any> => {
+  try {
+    const result = await prisma.address.update({
+      where: {
+        id: addressId
+      },
+      data
     })
     return result
   } catch (err: any) {

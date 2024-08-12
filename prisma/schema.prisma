@@ -47,6 +47,7 @@ model restaurant {
   updatedAt DateTime? @db.Date
   tax Decimal @db.Decimal(10, 6) @default(4.1666)
   paymentWay String @db.VarChar(200)
+  verduraKg Boolean? @db.Boolean
 }
 
 model address {
@@ -123,4 +124,11 @@ model detailing {
   supplierFinalPrice Decimal @db.Decimal(10, 2)
   conectarFinalPrice Decimal @db.Decimal(10, 2)
   suppliersDetailing Json @db.Json
+}
+
+model confirmCode {
+  id String @id @db.Uuid
+  createdAt DateTime @db.Date
+  identifier String
+  code String
 }
