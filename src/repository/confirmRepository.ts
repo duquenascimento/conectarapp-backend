@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { type premiumOrder, PrismaClient } from '@prisma/client'
 import 'dotenv/config'
 import { logRegister } from '../utils/logUtils'
 
@@ -41,6 +41,7 @@ export interface Detailing {
   conectarFinalPrice: number
   suppliersDetailing: any
   orderUnit?: string
+  quotationUnit?: string
   name?: string
 }
 
@@ -77,6 +78,27 @@ export const checkOrder = async (orderId: string): Promise<any> => {
     const result = await prisma.order.count({
       where: {
         id: { contains: orderId }
+      }
+    })
+    await prisma.$disconnect()
+    return result
+  } catch (err: any) {
+    await prisma.$disconnect()
+    console.log(err)
+    await logRegister(err)
+    return null
+  }
+}
+
+export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }: premiumOrder): Promise<any> => {
+  try {
+    const result = await prisma.premiumOrder.create({
+      data: {
+        orderText,
+        id,
+        restaurantId,
+        Date,
+        cart: JSON.stringify(JSON.parse((cart) as string))
       }
     })
     await prisma.$disconnect()

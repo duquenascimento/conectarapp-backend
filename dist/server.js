@@ -12,7 +12,7 @@ async function startServer() {
     try {
         await Promise.all([
             server.register(cors_1.default, {
-                origin: ['http://localhost:8081', 'http://localhost:3000'],
+                origin: ['http://localhost:8081', 'http://localhost:3000', 'https://beta.conectarapp.com.br', 'https://pedido.conectarapp.com.br'],
                 methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
             }),
             (0, route_1.registerRoutes)(server)

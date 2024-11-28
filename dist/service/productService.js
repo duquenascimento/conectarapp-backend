@@ -16,10 +16,6 @@ const listProduct = async () => {
         };
         const result = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listProductToApp', requestOptions);
         const json = await result.json();
-        const temp = json.data.filter((item) => {
-            return item.sku === '2';
-        });
-        console.log(temp);
         return json;
     }
     catch (err) {

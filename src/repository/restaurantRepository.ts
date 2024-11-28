@@ -3,6 +3,7 @@ import 'dotenv/config'
 import { logRegister } from '../utils/logUtils'
 import { type IRestaurant } from '../service/restaurantService'
 import { type addressFormData } from '../service/registerService'
+import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
 
@@ -10,6 +11,51 @@ export const registerRestaurant = async (req: IRestaurant): Promise<any> => {
   try {
     await prisma.restaurant.create({
       data: req
+    })
+  } catch (err: any) {
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const checkClientCount = async (): Promise<{ externalId: number } | undefined | null> => {
+  try {
+    return await prisma.clientCount.findFirst({
+      select: {
+        externalId: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      },
+      take: 1
+    })
+  } catch (err: any) {
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const addClientCount = async (n: number): Promise<void> => {
+  try {
+    await prisma.clientCount.create({
+      data: {
+        externalId: n,
+        id: uuidv4()
+      }
+    })
+  } catch (err: any) {
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const removeClientCount = async (): Promise<void> => {
+  try {
+    await prisma.clientCount.deleteMany({
+      where: {}
     })
   } catch (err: any) {
     await logRegister(err)
@@ -152,6 +198,42 @@ export const updateAddress = async (addressId: string, data: any): Promise<any> 
     await prisma.$disconnect()
     await logRegister(err)
     return null
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateComercialBlockRepository = async (restId: string, value: boolean): Promise<void> => {
+  try {
+    await prisma.restaurant.updateMany({
+      where: {
+        externalId: restId
+      },
+      data: {
+        comercialBlock: value
+      }
+    })
+  } catch (err: any) {
+    await prisma.$disconnect()
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateFinanceBlockRepository = async (restId: string, value: boolean): Promise<void> => {
+  try {
+    await prisma.restaurant.updateMany({
+      where: {
+        externalId: restId
+      },
+      data: {
+        financeBlock: value
+      }
+    })
+  } catch (err: any) {
+    await prisma.$disconnect()
+    await logRegister(err)
   } finally {
     await prisma.$disconnect()
   }

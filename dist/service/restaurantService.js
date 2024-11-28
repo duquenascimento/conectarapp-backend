@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateAddressService = exports.listRestaurantsByUserId = exports.createRestaurant = void 0;
+exports.AddClientCount = exports.updateFinanceBlock = exports.updateComercialBlock = exports.updateAddressService = exports.listRestaurantsByUserId = exports.createRestaurant = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const restaurantRepository_1 = require("../repository/restaurantRepository");
 const logUtils_1 = require("../utils/logUtils");
@@ -47,3 +47,35 @@ const updateAddressService = async (rest) => {
     }
 };
 exports.updateAddressService = updateAddressService;
+const updateComercialBlock = async (req) => {
+    try {
+        await (0, restaurantRepository_1.updateComercialBlockRepository)(req.restId, req.value);
+    }
+    catch (err) {
+        if (err.cause !== 'visibleError')
+            await (0, logUtils_1.logRegister)(err);
+        throw Error(err.message);
+    }
+};
+exports.updateComercialBlock = updateComercialBlock;
+const updateFinanceBlock = async (req) => {
+    try {
+        await (0, restaurantRepository_1.updateFinanceBlockRepository)(req.restId, req.value);
+    }
+    catch (err) {
+        if (err.cause !== 'visibleError')
+            await (0, logUtils_1.logRegister)(err);
+        throw Error(err.message);
+    }
+};
+exports.updateFinanceBlock = updateFinanceBlock;
+const AddClientCount = async (req) => {
+    try {
+        await (0, restaurantRepository_1.removeClientCount)();
+        await (0, restaurantRepository_1.addClientCount)(req.count);
+    }
+    catch (err) {
+        console.error(err);
+    }
+};
+exports.AddClientCount = AddClientCount;

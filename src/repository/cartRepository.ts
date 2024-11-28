@@ -25,7 +25,8 @@ export const addRepository = async (req: ICartAdd): Promise<void> => {
         amount: req.amount,
         productId: req.productId,
         id: req.id,
-        restaurantId: req.restaurantId
+        restaurantId: req.restaurantId,
+        obs: req.obs ?? ''
       },
       update: {
         amount: req.amount,

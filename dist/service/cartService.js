@@ -5,6 +5,7 @@ const jsonwebtoken_1 = require("jsonwebtoken");
 const cartRepository_1 = require("../repository/cartRepository");
 const logUtils_1 = require("../utils/logUtils");
 const uuid_1 = require("uuid");
+const library_1 = require("@prisma/client/runtime/library");
 ;
 const addToCart = async (req, id) => {
     const request = {
@@ -88,7 +89,7 @@ const listCartComplete = async (req) => {
         const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listFavoriteProductToApp', requestOptions);
         let data = await res.json();
         data = (data.data).map((item) => {
-            const produto = result.filter(x => x.productId === item.id)[0];
+            const produto = result.find(x => x.productId === item.id);
             return {
                 id: item.id,
                 image: item.image,
@@ -107,8 +108,8 @@ const listCartComplete = async (req) => {
                 quotationUnit: item.quotationUnit,
                 sku: item.sku,
                 updatedAt: item.updatedAt,
-                amount: produto.amount,
-                obs: produto.obs
+                amount: produto?.amount ?? new library_1.Decimal(0),
+                obs: produto?.obs ?? ''
             };
         });
         return data;

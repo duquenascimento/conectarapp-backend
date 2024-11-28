@@ -3,17 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.suppliersCompletePrices = exports.suppliersPrices = void 0;
 const luxon_1 = require("luxon");
 const cartService_1 = require("./cartService");
+const library_1 = require("@prisma/client/runtime/library");
 const suppliersPrices = async (req) => {
     try {
         const products = await (0, cartService_1.listCartComplete)(req);
-        const skus = [];
-        const qtds = [];
-        const obs = [];
-        products?.forEach(item => {
-            skus.push(item.sku ?? '');
-            qtds.push(Number(item.amount) ?? 0);
-            obs.push(item.obs ?? '');
-        });
+        const Product = products?.map(item => { return { Qtd: item.amount ?? new library_1.Decimal(0), Obs: item.obs ?? '', Sku: item.sku ?? '' }; });
         const request = {
             neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
             minimumTime: `0001-01-01T${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)}:00.00000+00:00`,
@@ -21,9 +15,7 @@ const suppliersPrices = async (req) => {
             externalId: 'F0',
             createdBy: 'system',
             DiaEntrega: '',
-            skus,
-            quant: qtds,
-            Obs: obs,
+            Product,
             tax: req.selectedRestaurant.tax / 100 + 1,
             SupplierToExclude: [],
             ActualDayWeek: '',
@@ -42,7 +34,7 @@ const suppliersPrices = async (req) => {
             headers: myHeaders,
             body: raw
         };
-        const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/list-available-supplier', requestOptions);
+        const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/list-available-supplier-new', requestOptions);
         const data = await res.json();
         return data;
     }
@@ -54,14 +46,7 @@ exports.suppliersPrices = suppliersPrices;
 const suppliersCompletePrices = async (req) => {
     try {
         const products = await (0, cartService_1.listCartComplete)(req);
-        const skus = [];
-        const qtds = [];
-        const obs = [];
-        products?.forEach(item => {
-            skus.push(item.sku ?? '');
-            qtds.push(Number(item.amount) ?? 0);
-            obs.push(item.obs ?? '');
-        });
+        const Product = products?.map(item => { return { Qtd: item.amount ?? new library_1.Decimal(0), Obs: item.obs ?? '', Sku: item.sku ?? '' }; });
         const request = {
             neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
             minimumTime: `0001-01-01T${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)}:00.00000+00:00`,
@@ -69,9 +54,7 @@ const suppliersCompletePrices = async (req) => {
             externalId: 'F0',
             createdBy: 'system',
             DiaEntrega: '',
-            skus,
-            quant: qtds,
-            Obs: obs,
+            Product,
             tax: req.selectedRestaurant.tax / 100 + 1,
             SupplierToExclude: [],
             ActualDayWeek: '',

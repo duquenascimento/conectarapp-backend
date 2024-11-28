@@ -131,3 +131,15 @@ const PwChange = async (req) => {
     }
 };
 exports.PwChange = PwChange;
+// const _temp = async (): Promise<void> => {
+//   const jwt = sign({
+//     role: ['registered'],
+//     id: '19aa9a74-2584-41d2-905c-3b182094c3fa',
+//     email: 'm.cristinasampaioo@gmail.com',
+//     restaurant: ['54920725-cf20-40c1-a8a7-b27d28b96628'],
+//     active: true,
+//     createdAt: '2024-09-20T00:00:00.000Z'
+//   }, process.env.JWT_SECRET ?? '')
+//   console.log(jwt)
+// }
+// void _temp()

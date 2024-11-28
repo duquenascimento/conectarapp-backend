@@ -1,17 +1,17 @@
 import { DateTime } from 'luxon'
 import { type ICartList, listCartComplete } from './cartService'
+import { Decimal } from '@prisma/client/runtime/library'
+
+interface Product {
+  Qtd: Decimal
+  Obs: string
+  Sku: string
+}
 
 export const suppliersPrices = async (req: ICartList): Promise<any> => {
   try {
     const products = await listCartComplete(req)
-    const skus: string[] = []
-    const qtds: number[] = []
-    const obs: string[] = []
-    products?.forEach(item => {
-      skus.push(item.sku ?? '')
-      qtds.push(Number(item.amount) ?? 0)
-      obs.push(item.obs ?? '')
-    })
+    const Product: Product[] | undefined = products?.map(item => { return { Qtd: item.amount ?? new Decimal(0), Obs: item.obs ?? '', Sku: item.sku ?? '' } })
     const request = {
       neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
       minimumTime: `0001-01-01T${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)}:00.00000+00:00`,
@@ -19,9 +19,7 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       externalId: 'F0',
       createdBy: 'system',
       DiaEntrega: '',
-      skus,
-      quant: qtds,
-      Obs: obs,
+      Product,
       tax: req.selectedRestaurant.tax / 100 + 1,
       SupplierToExclude: [],
       ActualDayWeek: '',
@@ -44,7 +42,7 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       body: raw
     }
 
-    const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/list-available-supplier', requestOptions)
+    const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/list-available-supplier-new', requestOptions)
     const data = await res.json()
     return data
   } catch (err) {
@@ -55,14 +53,7 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
 export const suppliersCompletePrices = async (req: ICartList): Promise<any> => {
   try {
     const products = await listCartComplete(req)
-    const skus: string[] = []
-    const qtds: number[] = []
-    const obs: string[] = []
-    products?.forEach(item => {
-      skus.push(item.sku ?? '')
-      qtds.push(Number(item.amount) ?? 0)
-      obs.push(item.obs ?? '')
-    })
+    const Product: Product[] | undefined = products?.map(item => { return { Qtd: item.amount ?? new Decimal(0), Obs: item.obs ?? '', Sku: item.sku ?? '' } })
     const request = {
       neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
       minimumTime: `0001-01-01T${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)}:00.00000+00:00`,
@@ -70,9 +61,7 @@ export const suppliersCompletePrices = async (req: ICartList): Promise<any> => {
       externalId: 'F0',
       createdBy: 'system',
       DiaEntrega: '',
-      skus,
-      quant: qtds,
-      Obs: obs,
+      Product,
       tax: req.selectedRestaurant.tax / 100 + 1,
       SupplierToExclude: [],
       ActualDayWeek: '',

@@ -2,7 +2,7 @@ import { decode } from 'jsonwebtoken'
 import { addRepository, deleteByUserId, deleteByUserIdAndProductId, findByProductAndUser, type ICartAdd, listByUser } from '../repository/cartRepository'
 import { logRegister } from '../utils/logUtils'
 import { v4 as uuidv4 } from 'uuid'
-import { type Decimal } from '@prisma/client/runtime/library'
+import { Decimal } from '@prisma/client/runtime/library'
 
 export interface ICartAddRequest {
   amount: number
@@ -134,7 +134,7 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
     const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listFavoriteProductToApp', requestOptions)
     let data = await res.json()
     data = (data.data).map((item: Product) => {
-      const produto = result.filter(x => x.productId === item.id)[0]
+      const produto = result.find(x => x.productId === item.id)
       return {
         id: item.id,
         image: item.image,
@@ -153,8 +153,8 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
         quotationUnit: item.quotationUnit,
         sku: item.sku,
         updatedAt: item.updatedAt,
-        amount: produto.amount,
-        obs: produto.obs
+        amount: produto?.amount ?? new Decimal(0),
+        obs: produto?.obs ?? ''
       } satisfies Product
     })
 

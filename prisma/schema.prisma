@@ -26,6 +26,7 @@ model user {
 
 model restaurant {
   id String @id @db.Uuid
+  externalId String @db.VarChar(10)
   name String @db.VarChar(200)
   legalName String @db.VarChar()
   active Boolean
@@ -48,6 +49,15 @@ model restaurant {
   tax Decimal @db.Decimal(10, 6) @default(4.1666)
   paymentWay String @db.VarChar(200)
   verduraKg Boolean? @db.Boolean
+  premium Boolean @db.Boolean @default(false)
+  comercialBlock Boolean @db.Boolean @default(false)
+  financeBlock Boolean @db.Boolean @default(false)
+}
+
+model clientCount {
+  id String @id @db.Uuid
+  externalId Int @db.SmallInt
+  createdAt DateTime @db.Date @default(now())
 }
 
 model address {
@@ -131,4 +141,12 @@ model confirmCode {
   createdAt DateTime @db.Date
   identifier String
   code String
+}
+
+model premiumOrder {
+  id String @id @db.Uuid
+  Date DateTime @db.Date
+  orderText String
+  cart Json @db.Json
+  restaurantId String @db.Uuid
 }

@@ -16,10 +16,6 @@ export const listProduct = async (): Promise<any> => {
 
     const result = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listProductToApp', requestOptions)
     const json = await result.json()
-    const temp = json.data.filter((item: any) => {
-      return item.sku === '2'
-    })
-    console.log(temp)
     return json
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)

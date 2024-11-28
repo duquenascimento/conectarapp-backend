@@ -29,5 +29,28 @@ const confirmRoute = async (server) => {
             }
         }
     });
+    server.post('/confirm/premium', async (req, res) => {
+        try {
+            await (0, confirmService_1.confirmOrderPremium)(req.body);
+            return await res.status(201).send({
+                status: 200
+            });
+        }
+        catch (err) {
+            const message = err.message;
+            if (message === process.env.INTERNAL_ERROR_MSG) {
+                await res.status(500).send({
+                    status: 500,
+                    msg: message
+                });
+            }
+            else {
+                await res.status(409).send({
+                    status: 200,
+                    msg: message
+                });
+            }
+        }
+    });
 };
 exports.confirmRoute = confirmRoute;

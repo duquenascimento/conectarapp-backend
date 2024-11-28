@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateAddress = exports.findAddressByRestaurantId = exports.listByUserId = exports.updateUserWithRestaurant = exports.findRestaurantByCompanyRegistrationNumberForBilling = exports.findRestaurantByCompanyRegistrationNumber = exports.registerAddress = exports.registerRestaurant = void 0;
+exports.updateFinanceBlockRepository = exports.updateComercialBlockRepository = exports.updateAddress = exports.findAddressByRestaurantId = exports.listByUserId = exports.updateUserWithRestaurant = exports.findRestaurantByCompanyRegistrationNumberForBilling = exports.findRestaurantByCompanyRegistrationNumber = exports.registerAddress = exports.removeClientCount = exports.addClientCount = exports.checkClientCount = exports.registerRestaurant = void 0;
 const client_1 = require("@prisma/client");
 require("dotenv/config");
 const logUtils_1 = require("../utils/logUtils");
+const uuid_1 = require("uuid");
 const prisma = new client_1.PrismaClient();
 const registerRestaurant = async (req) => {
     try {
@@ -19,6 +20,57 @@ const registerRestaurant = async (req) => {
     }
 };
 exports.registerRestaurant = registerRestaurant;
+const checkClientCount = async () => {
+    try {
+        return await prisma.clientCount.findFirst({
+            select: {
+                externalId: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            },
+            take: 1
+        });
+    }
+    catch (err) {
+        await (0, logUtils_1.logRegister)(err);
+    }
+    finally {
+        await prisma.$disconnect();
+    }
+};
+exports.checkClientCount = checkClientCount;
+const addClientCount = async (n) => {
+    try {
+        await prisma.clientCount.create({
+            data: {
+                externalId: n,
+                id: (0, uuid_1.v4)()
+            }
+        });
+    }
+    catch (err) {
+        await (0, logUtils_1.logRegister)(err);
+    }
+    finally {
+        await prisma.$disconnect();
+    }
+};
+exports.addClientCount = addClientCount;
+const removeClientCount = async () => {
+    try {
+        await prisma.clientCount.deleteMany({
+            where: {}
+        });
+    }
+    catch (err) {
+        await (0, logUtils_1.logRegister)(err);
+    }
+    finally {
+        await prisma.$disconnect();
+    }
+};
+exports.removeClientCount = removeClientCount;
 const registerAddress = async (req) => {
     try {
         await prisma.address.create({
@@ -172,3 +224,43 @@ const updateAddress = async (addressId, data) => {
     }
 };
 exports.updateAddress = updateAddress;
+const updateComercialBlockRepository = async (restId, value) => {
+    try {
+        await prisma.restaurant.updateMany({
+            where: {
+                externalId: restId
+            },
+            data: {
+                comercialBlock: value
+            }
+        });
+    }
+    catch (err) {
+        await prisma.$disconnect();
+        await (0, logUtils_1.logRegister)(err);
+    }
+    finally {
+        await prisma.$disconnect();
+    }
+};
+exports.updateComercialBlockRepository = updateComercialBlockRepository;
+const updateFinanceBlockRepository = async (restId, value) => {
+    try {
+        await prisma.restaurant.updateMany({
+            where: {
+                externalId: restId
+            },
+            data: {
+                financeBlock: value
+            }
+        });
+    }
+    catch (err) {
+        await prisma.$disconnect();
+        await (0, logUtils_1.logRegister)(err);
+    }
+    finally {
+        await prisma.$disconnect();
+    }
+};
+exports.updateFinanceBlockRepository = updateFinanceBlockRepository;

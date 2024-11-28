@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { findAddressByRestaurantId, listByUserId, registerRestaurant, updateAddress } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateComercialBlockRepository, updateFinanceBlockRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 
@@ -13,6 +13,7 @@ export interface ICreateRestaurantRequest {
 
 export interface IRestaurant {
   id: string
+  externalId: string
   name: string
   legalName: string
   active: boolean
@@ -33,6 +34,7 @@ export interface IRestaurant {
   cityRegistrationNumber?: string
   createdAt: Date
   updatedAt?: Date
+  premium: boolean
 }
 
 export const createRestaurant = async (req: IRestaurant): Promise<any> => {
@@ -71,5 +73,32 @@ export const updateAddressService = async (rest: any): Promise<void> => {
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
+  }
+}
+
+export const updateComercialBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+  try {
+    await updateComercialBlockRepository(req.restId, req.value)
+  } catch (err) {
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
+
+export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+  try {
+    await updateFinanceBlockRepository(req.restId, req.value)
+  } catch (err) {
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
+
+export const AddClientCount = async (req: { count: number }): Promise<void> => {
+  try {
+    await removeClientCount()
+    await addClientCount(req.count)
+  } catch (err) {
+    console.error(err)
   }
 }

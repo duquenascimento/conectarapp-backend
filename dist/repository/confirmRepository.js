@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkOrder = exports.addDetailing = exports.addOrder = void 0;
+exports.confirmPremium = exports.checkOrder = exports.addDetailing = exports.addOrder = void 0;
 const client_1 = require("@prisma/client");
 require("dotenv/config");
 const logUtils_1 = require("../utils/logUtils");
@@ -53,3 +53,25 @@ const checkOrder = async (orderId) => {
     }
 };
 exports.checkOrder = checkOrder;
+const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }) => {
+    try {
+        const result = await prisma.premiumOrder.create({
+            data: {
+                orderText,
+                id,
+                restaurantId,
+                Date,
+                cart: JSON.stringify(JSON.parse((cart)))
+            }
+        });
+        await prisma.$disconnect();
+        return result;
+    }
+    catch (err) {
+        await prisma.$disconnect();
+        console.log(err);
+        await (0, logUtils_1.logRegister)(err);
+        return null;
+    }
+};
+exports.confirmPremium = confirmPremium;
