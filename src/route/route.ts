@@ -9,7 +9,8 @@ import { registerRoute } from './registerRoute'
 import { restaurantRoute } from './restaurantRoute'
 
 export const registerRoutes = async (server: FastifyInstance): Promise<void> => {
-  await Promise.all([server.register(authRoute),
+  await Promise.all([
+    server.register(authRoute),
     server.register(productRoute),
     server.register(favoriteRoute),
     server.register(cartRoute),

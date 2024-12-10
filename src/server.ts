@@ -9,13 +9,14 @@ async function startServer (): Promise<void> {
   try {
     await Promise.all([
       server.register(cors, {
-        origin: ['http://localhost:8081', 'http://localhost:3000', 'https://beta.conectarapp.com.br', 'https://pedido.conectarapp.com.br'],
+        origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost:3333', 'https://beta.conectarapp.com.br', 'https://pedido.conectarapp.com.br'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
       }),
       registerRoutes(server)
     ])
-    await server.listen({ port: 9841 })
-    console.info(`Server started in ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
+    const address = await server.listen({ port: 3333, host: '0.0.0.0' })
+
+    console.info(`Server started at ${address} on ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
   } catch (err) {
     server.log.error(err)
     process.exit(1)
