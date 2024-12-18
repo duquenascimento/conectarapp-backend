@@ -52,6 +52,7 @@ model restaurant {
   premium Boolean @db.Boolean @default(false)
   comercialBlock Boolean @db.Boolean @default(false)
   financeBlock Boolean @db.Boolean @default(false)
+  transactions transactions[]
 }
 
 model clientCount {
@@ -117,6 +118,7 @@ model order {
   supplierId String @db.VarChar(50)
   calcOrderAgain Json @db.Json
   orderDocument String? @db.VarChar(1000)
+  transactions transactions[]
 }
 
 model detailing {
@@ -149,4 +151,111 @@ model premiumOrder {
   orderText String
   cart Json @db.Json
   restaurantId String @db.Uuid
+}
+
+model transactions {
+  id Int @id @default(autoincrement())
+  restaurant_id String @db.Uuid
+  restaurant restaurant @relation(fields: [restaurant_id], references: [id])
+  transactions_type_id Int
+  transactions_type transactions_type @relation(fields: [transactions_type_id], references: [id])
+  order_id String
+  order order @relation(fields: [order_id], references: [id])
+  payment_ways_id Int
+  payment_ways payment_ways @relation(fields: [payment_ways_id], references: [id])
+  value Decimal @db.Decimal(10, 2)
+  value_paid Decimal? @db.Decimal(10, 2)   
+  payment_date DateTime? @db.Timestamptz(3)
+  status_id Int
+  status status @relation(fields: [status_id], references: [id])
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime? @db.Timestamptz(3) @updatedAt
+  bolecode bolecode[]
+}
+
+model transactions_type {
+  id Int @id @default(autoincrement())
+  description String 
+  transactions transactions[]
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime? @db.Timestamptz(3) @updatedAt
+}
+
+model payment_ways {
+  id Int @id @default(autoincrement())
+  description String
+  transactions transactions[]
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime? @db.Timestamptz(3) @updatedAt
+}
+
+model status {
+  id Int @id @default(autoincrement())
+  description String
+  transactions transactions[]
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime? @db.Timestamptz(3) @updatedAt
+  bolecode bolecode[]
+}
+
+model bolecode {
+  id Int @id @default(autoincrement())
+  transactions_id Int
+  transactions transactions @relation(fields: [transactions_id], references: [id])
+  public_id String? @db.VarChar(10)
+  status_id Int
+  status status @relation(fields: [status_id], references: [id])
+  status_updatedAt DateTime? @db.Timestamptz(3)
+  codebar String?
+  digitable_line String?
+  value Decimal @db.Decimal(10, 2)
+  transaction_gateway_id String?
+  txId String?
+  pix_code String?
+  payer_gateway_id String?
+  store_gateway_id String?
+  application_gateway_id String?
+  bolecode_id String?
+  createdAt DateTime @db.Timestamptz(3) @default(now())
+  updatedAt DateTime? @db.Timestamptz(3) @updatedAt
+}
+
+model companies {
+  id                           Int                      @id @default(autoincrement())
+  cnpj                         String                   @unique
+  identificador_matriz_filial  Int
+  descricao_matriz_filial      String
+  razao_social                 String
+  nome_fantasia                String
+  situacao_cadastral           Int
+  descricao_situacao_cadastral String
+  data_situacao_cadastral      DateTime
+  motivo_situacao_cadastral    Int
+  nome_cidade_exterior         String?
+  codigo_natureza_juridica     Int
+  data_inicio_atividade        DateTime
+  cnae_fiscal                  Int
+  cnae_fiscal_descricao        String
+  descricao_tipo_de_logradouro String
+  logradouro                   String
+  numero                       String
+  complemento                  String?
+  bairro                       String
+  cep                          String
+  uf                           String
+  codigo_municipio             Int
+  municipio                    String
+  ddd_telefone_1               String?
+  ddd_telefone_2               String?
+  ddd_fax                      String?
+  qualificacao_do_responsavel  Int
+  capital_social               Float
+  porte                        Int
+  descricao_porte              String
+  opcao_pelo_simples           Boolean
+  data_opcao_pelo_simples      DateTime?
+  data_exclusao_do_simples     DateTime?
+  opcao_pelo_mei               Boolean
+  situacao_especial            String?
+  data_situacao_especial       DateTime?
 }
