@@ -1,9 +1,6 @@
 import { createCompany, type Company } from '../repository/companyRepository' // Importa a função e a interface
 import axios from 'axios'
-import dotenv from 'dotenv'
 import { validateDocument } from '../utils/validateDocument'
-
-dotenv.config()
 
 const API_TOKEN_CPFCNPJ = process.env.API_TOKEN_CPFCNPJ
 const API_URL_CPFCNPJ = process.env.API_URL_CPFCNPJ
