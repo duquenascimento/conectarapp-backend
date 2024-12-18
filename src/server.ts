@@ -2,6 +2,9 @@ import Fastify, { type FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
 import { registerRoutes } from './route/route'
 import { DateTime } from 'luxon'
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 
 const server: FastifyInstance = Fastify({})
 
@@ -14,8 +17,13 @@ async function startServer (): Promise<void> {
       }),
       registerRoutes(server)
     ])
-    const address = await server.listen({ port: 3333, host: '0.0.0.0' })
+    const port = parseInt(process.env.PORT ?? '9841', 10)
+    const host = process.env.HOST ?? '192.168.201.96'
 
+    if (isNaN(port)) {
+      throw new Error('Invalid port number. Please check the PORT environment variable.')
+    }
+    const address = await server.listen({ port, host })
     console.info(`Server started at ${address} on ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
   } catch (err) {
     server.log.error(err)

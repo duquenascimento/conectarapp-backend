@@ -26,10 +26,10 @@ module.exports = {
     '@typescript-eslint/strict-boolean-expressions': 'warn', // Aviso para expressões booleanas
     '@typescript-eslint/no-unused-vars': 'warn', // Aviso para variáveis não utilizadas
     'no-console': 'warn', // Aviso para uso de `console.log`
-    //'comma-dangle': ['warn', 'always-multiline'], // Aviso para vírgulas no final de objetos/arrays multilinha
-    'quotes': ['warn', 'single'], // Aviso para uso de aspas simples
-    'semi': ['warn', 'never'], // Aviso para ponto e vírgula
-    'indent': ['warn', 2], // Aviso para indentação de 2 espaços
+    // 'comma-dangle': ['warn', 'always-multiline'], // Aviso para vírgulas no final de objetos/arrays multilinha
+    quotes: ['warn', 'single'], // Aviso para uso de aspas simples
+    semi: ['warn', 'never'], // Aviso para ponto e vírgula
+    indent: ['warn', 2] // Aviso para indentação de 2 espaços
   }
 
 }

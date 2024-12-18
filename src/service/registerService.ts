@@ -3,24 +3,37 @@ import { addClientCount, checkClientCount, findRestaurantByCompanyRegistrationNu
 import { createRestaurant } from './restaurantService'
 import { v4 as uuidv4 } from 'uuid'
 import { DateTime } from 'luxon'
-import { configure, base, type FieldSet, type Record as AirtableRecord } from 'airtable'
+import { configure } from 'airtable'
 import { decode } from 'jsonwebtoken'
+import { fetchCNPJData } from './cnpjService'
+import { createRegisterAirtable } from './airtableService'
+import { mapCnpjData } from '../utils/mapCnpjData'
 
 export interface CheckCnpj {
   cnpj: string
 }
 
 export const checkCnpj = async ({ cnpj }: CheckCnpj): Promise<any> => {
+  console.log('2 >>>>>>', cnpj)
   try {
     const cnpjFormated = cnpj.toLowerCase().trim()
     if (cnpjFormated == null) throw Error('cnpj is missing', { cause: 'visibleError' })
     if (cnpjFormated.length > 14) throw Error('invalid cnpj', { cause: 'visibleError' })
+
     const cnpjExists = await findRestaurantByCompanyRegistrationNumber(cnpjFormated)
     if (cnpjExists != null) throw Error('already exists', { cause: 'visibleError' })
-    const result = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjFormated}`)
-    if (!result.ok) throw Error('invalid cnpj', { cause: 'visibleError' })
-    const resultFormated = await result.json()
-    return resultFormated
+
+    const result = await fetchCNPJData(cnpjFormated)
+    console.log('result>>>>', result)
+    const mappedResult = mapCnpjData(result)
+    console.log('mappedResult>>>>', mappedResult)
+
+    if (mappedResult.status !== 200) {
+      console.error('Erro ao mapear os dados do CNPJ:', mappedResult)
+      return mappedResult
+    }
+
+    return mappedResult.data
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
@@ -84,42 +97,6 @@ configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
 })
 
-interface CreateRegisterAirtable {
-  'ID pagamento': string
-  'Nome do estabelecimento': string
-  CNPJ: string
-  'Inscrição estadual': string
-  Rua: string
-  Número: string
-  'Complemento': string
-  'CEP de entrega': string
-  Bairro: string
-  Cidade: string
-  'Portas fechadas': boolean
-  'Razão social': string
-  Premium: boolean
-  'Ticket médio cadastrado': string
-  'Telefone para contato com DDD': string
-  'Até que horas o seu estabelecimento pode receber o pedido?': string
-  'A partir de que horas seu estabelecimento está disponível para recebimento de hortifrúti?': string
-  'PJ ou PF': string
-  'Termos e condições': string
-  'E-mail para comunicados': string
-  'Código Promotor': string
-  'Quantas vezes em média na semana você faz pedidos?': string
-  'Cadastrado por': string
-}
-
-const createRegisterAirtable = async (req: CreateRegisterAirtable): Promise<AirtableRecord<FieldSet> | undefined> => {
-  try {
-    const _ = base(process.env.AIRTABLE_BASE_REGISTER_ID ?? '').table(process.env.AIRTABLE_TABLE_REGISTER_NAME ?? '')
-    const create = await _.create(req as unknown as Partial<FieldSet>)
-    return create
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 export const fullRegister = async (req: RestaurantFormData & { token: string }): Promise<void> => {
   try {
     const decoded = decode(req.token) as { id: string }
@@ -132,9 +109,6 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
     const minHourFormated = minHourF.toISOTime()
     const isoFormattedTimeMax = `2024-01-01T${maxHourFormated?.substring(0, 12)}000Z`
     const isoFormattedTimeMin = `2024-01-01T${minHourFormated?.substring(0, 12)}000Z`
-
-    console.log(isoFormattedTimeMax)
-    console.log(isoFormattedTimeMin)
 
     const addressData = {
       active: true,
@@ -238,6 +212,9 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'Quantas vezes em média na semana você faz pedidos?': req.weeklyOrderAmount,
       'Cadastrado por': 'App'
     })
+
+    // Salvar os dados do CNPJ na tabela `companies`
+    // await createCompany(restData);
   } catch (err) {
     console.log(err)
   }
