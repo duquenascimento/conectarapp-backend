@@ -4,10 +4,7 @@
  * @returns {boolean} - Retorna `true` se o documento for válido, caso contrário `false`
  */
 export const validateDocument = (document: string): boolean => {
-  // Remove caracteres não numéricos
   const cleanDocument = document.replace(/\D/g, '')
-
-  // Verifica o tamanho do documento
   if (cleanDocument.length === 11) {
     return validateCPF(cleanDocument)
   } else if (cleanDocument.length === 14) {
@@ -24,11 +21,8 @@ export const validateDocument = (document: string): boolean => {
  */
 const validateCPF = (cpf: string): boolean => {
   if (cpf.length !== 11) return false
-
-  // Verifica se todos os dígitos são iguais (CPF inválido)
   if (/^(\d)\1{10}$/.test(cpf)) return false
 
-  // Cálculo do primeiro dígito verificador
   let sum = 0
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cpf.charAt(i)) * (10 - i)
@@ -38,7 +32,6 @@ const validateCPF = (cpf: string): boolean => {
 
   if (digit !== parseInt(cpf.charAt(9))) return false
 
-  // Cálculo do segundo dígito verificador
   sum = 0
   for (let i = 0; i < 10; i++) {
     sum += parseInt(cpf.charAt(i)) * (11 - i)
@@ -58,11 +51,8 @@ const validateCPF = (cpf: string): boolean => {
  */
 const validateCNPJ = (cnpj: string): boolean => {
   if (cnpj.length !== 14) return false
-
-  // Verifica se todos os dígitos são iguais (CNPJ inválido)
   if (/^(\d)\1{13}$/.test(cnpj)) return false
 
-  // Cálculo do primeiro dígito verificador
   const weights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
   let sum = 0
   for (let i = 0; i < 12; i++) {
@@ -73,9 +63,8 @@ const validateCNPJ = (cnpj: string): boolean => {
 
   if (digit !== parseInt(cnpj.charAt(12))) return false
 
-  // Cálculo do segundo dígito verificador
   sum = 0
-  weights.unshift(6) // Adiciona o peso 6 no início
+  weights.unshift(6)
   for (let i = 0; i < 13; i++) {
     sum += parseInt(cnpj.charAt(i)) * weights[i]
   }

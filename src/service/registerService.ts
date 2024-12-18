@@ -8,26 +8,22 @@ import { decode } from 'jsonwebtoken'
 import { fetchCNPJData } from './cnpjService'
 import { createRegisterAirtable } from './airtableService'
 import { mapCnpjData } from '../utils/mapCnpjData'
+import { validateDocument } from '../utils/validateDocument'
 
 export interface CheckCnpj {
   cnpj: string
 }
 
 export const checkCnpj = async ({ cnpj }: CheckCnpj): Promise<any> => {
-  console.log('2 >>>>>>', cnpj)
   try {
     const cnpjFormated = cnpj.toLowerCase().trim()
-    if (cnpjFormated == null) throw Error('cnpj is missing', { cause: 'visibleError' })
-    if (cnpjFormated.length > 14) throw Error('invalid cnpj', { cause: 'visibleError' })
+    const valida = validateDocument(cnpj)
+    if (!valida) throw Error('invalid cnpj', { cause: 'visibleError' })
 
     const cnpjExists = await findRestaurantByCompanyRegistrationNumber(cnpjFormated)
     if (cnpjExists != null) throw Error('already exists', { cause: 'visibleError' })
-
     const result = await fetchCNPJData(cnpjFormated)
-    console.log('result>>>>', result)
     const mappedResult = mapCnpjData(result)
-    console.log('mappedResult>>>>', mappedResult)
-
     if (mappedResult.status !== 200) {
       console.error('Erro ao mapear os dados do CNPJ:', mappedResult)
       return mappedResult
@@ -212,9 +208,6 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'Quantas vezes em média na semana você faz pedidos?': req.weeklyOrderAmount,
       'Cadastrado por': 'App'
     })
-
-    // Salvar os dados do CNPJ na tabela `companies`
-    // await createCompany(restData);
   } catch (err) {
     console.log(err)
   }

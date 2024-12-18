@@ -1,0 +1,45 @@
+-- CreateTable
+CREATE TABLE "companies" (
+    "id" SERIAL NOT NULL,
+    "cnpj" TEXT NOT NULL,
+    "identificador_matriz_filial" INTEGER NOT NULL,
+    "descricao_matriz_filial" TEXT NOT NULL,
+    "razao_social" TEXT NOT NULL,
+    "nome_fantasia" TEXT NOT NULL,
+    "situacao_cadastral" INTEGER NOT NULL,
+    "descricao_situacao_cadastral" TEXT NOT NULL,
+    "data_situacao_cadastral" TIMESTAMP(3) NOT NULL,
+    "motivo_situacao_cadastral" INTEGER NOT NULL,
+    "nome_cidade_exterior" TEXT,
+    "codigo_natureza_juridica" INTEGER NOT NULL,
+    "data_inicio_atividade" TIMESTAMP(3) NOT NULL,
+    "cnae_fiscal" INTEGER NOT NULL,
+    "cnae_fiscal_descricao" TEXT NOT NULL,
+    "descricao_tipo_de_logradouro" TEXT NOT NULL,
+    "logradouro" TEXT NOT NULL,
+    "numero" TEXT NOT NULL,
+    "complemento" TEXT,
+    "bairro" TEXT NOT NULL,
+    "cep" TEXT NOT NULL,
+    "uf" TEXT NOT NULL,
+    "codigo_municipio" INTEGER NOT NULL,
+    "municipio" TEXT NOT NULL,
+    "ddd_telefone_1" TEXT,
+    "ddd_telefone_2" TEXT,
+    "ddd_fax" TEXT,
+    "qualificacao_do_responsavel" INTEGER NOT NULL,
+    "capital_social" DOUBLE PRECISION NOT NULL,
+    "porte" INTEGER NOT NULL,
+    "descricao_porte" TEXT NOT NULL,
+    "opcao_pelo_simples" BOOLEAN NOT NULL,
+    "data_opcao_pelo_simples" TIMESTAMP(3),
+    "data_exclusao_do_simples" TIMESTAMP(3),
+    "opcao_pelo_mei" BOOLEAN NOT NULL,
+    "situacao_especial" TEXT,
+    "data_situacao_especial" TIMESTAMP(3),
+
+    CONSTRAINT "companies_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "companies_cnpj_key" ON "companies"("cnpj");
