@@ -20,7 +20,7 @@ export const priceRoute = async (server: FastifyInstance): Promise<void> => {
         })
       } else {
         await res.status(409).send({
-          status: 200,
+          status: 409,
           msg: message
         })
       }
