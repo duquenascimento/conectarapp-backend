@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "restaurant" ADD COLUMN     "tax" DECIMAL(10,6) NOT NULL DEFAULT 4.1666;
