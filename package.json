@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": "true",
   "scripts": {
-    "dev": "npx ts-node ./src/main.ts",
+    "dev": "npx ts-node ./src/server.ts",
     "build": "npx tsc && cp package.json dist/ && cp yarn.lock dist/ && cp .env dist/ && cp -r prisma dist/ && cd dist && zip -r ../dist.zip ."
   },
   "devDependencies": {
