@@ -6,8 +6,13 @@
   "license": "MIT",
   "private": "true",
   "scripts": {
-    "dev": "npx ts-node ./src/server.ts",
-    "build": "npx tsc && cp package.json dist/ && cp yarn.lock dist/ && cp .env dist/ && cp -r prisma dist/ && cd dist && zip -r ../dist.zip ."
+    "dev": "sudo npx ts-node ./src/server.ts",
+    "build": "sudo npx tsc && cp package.json dist/ && cp package-lock.json dist/ && cp .env dist/ && cp -r prisma dist/ && cd dist && zip -r ../dist.zip .",
+    "studio": "sudo npx prisma studio",
+    "generate": "sudo npx prisma generate",
+    "migrate:dev": "sudo npx prisma migrate dev --name",
+    "start": "sudo node ./dist/server.js",
+    "start:build": "npm run build && npm run start"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
