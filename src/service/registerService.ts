@@ -3,8 +3,12 @@ import { addClientCount, checkClientCount, findRestaurantByCompanyRegistrationNu
 import { createRestaurant } from './restaurantService'
 import { v4 as uuidv4 } from 'uuid'
 import { DateTime } from 'luxon'
-import { configure, base, type FieldSet, type Record as AirtableRecord } from 'airtable'
+import { configure } from 'airtable'
 import { decode } from 'jsonwebtoken'
+import { fetchCNPJData } from './cnpjService'
+import { createRegisterAirtable } from './airtableService'
+import { mapCnpjData } from '../utils/mapCnpjData'
+import { validateDocument } from '../utils/validateDocument'
 
 export interface CheckCnpj {
   cnpj: string
@@ -13,15 +17,19 @@ export interface CheckCnpj {
 export const checkCnpj = async ({ cnpj }: CheckCnpj): Promise<any> => {
   try {
     const cnpjFormated = cnpj.toLowerCase().trim()
-    if (cnpjFormated == null) throw Error('cnpj is missing', { cause: 'visibleError' })
-    if (cnpjFormated.length > 14) throw Error('invalid cnpj', { cause: 'visibleError' })
+    const valida = validateDocument(cnpj)
+    if (!valida) throw Error('invalid cnpj', { cause: 'visibleError' })
+
     const cnpjExists = await findRestaurantByCompanyRegistrationNumber(cnpjFormated)
     if (cnpjExists != null) throw Error('already exists', { cause: 'visibleError' })
-    return JSON.parse('{"uf":"RJ","cep":"20260141","qsa":[{"pais":null,"nome_socio":"GABRIEL LOPES CARVALHO","codigo_pais":null,"faixa_etaria":"Entre 21 a 30 anos","cnpj_cpf_do_socio":"***545361**","qualificacao_socio":"Sócio-Administrador","codigo_faixa_etaria":3,"data_entrada_sociedade":"2022-12-16","identificador_de_socio":2,"cpf_representante_legal":"***000000**","nome_representante_legal":"","codigo_qualificacao_socio":49,"qualificacao_representante_legal":"Não informada","codigo_qualificacao_representante_legal":0}],"cnpj":"43507341000160","pais":null,"email":null,"porte":"MICRO EMPRESA","bairro":"TIJUCA","numero":"00209","ddd_fax":"","municipio":"RIO DE JANEIRO","logradouro":"HADDOCK LOBO","cnae_fiscal":5611201,"codigo_pais":null,"complemento":"","codigo_porte":1,"razao_social":"M.A.B RESTAURANTE LTDA","nome_fantasia":"M.A.B","capital_social":100000,"ddd_telefone_1":"2134373834","ddd_telefone_2":"","opcao_pelo_mei":false,"descricao_porte":"","codigo_municipio":6001,"cnaes_secundarios":[{"codigo":5620104,"descricao":"Fornecimento de alimentos preparados preponderantemente para consumo domiciliar"}],"natureza_juridica":"Sociedade Empresária Limitada","situacao_especial":"","opcao_pelo_simples":false,"situacao_cadastral":8,"data_opcao_pelo_mei":null,"data_exclusao_do_mei":null,"cnae_fiscal_descricao":"Restaurantes e similares","codigo_municipio_ibge":3304557,"data_inicio_atividade":"2021-09-14","data_situacao_especial":null,"data_opcao_pelo_simples":"2021-09-14","data_situacao_cadastral":"2023-07-05","nome_cidade_no_exterior":"","codigo_natureza_juridica":2062,"data_exclusao_do_simples":"2023-07-05","motivo_situacao_cadastral":1,"ente_federativo_responsavel":"","identificador_matriz_filial":1,"qualificacao_do_responsavel":49,"descricao_situacao_cadastral":"BAIXADA","descricao_tipo_de_logradouro":"RUA","descricao_motivo_situacao_cadastral":"EXTINCAO POR ENCERRAMENTO LIQUIDACAO VOLUNTARIA","descricao_identificador_matriz_filial":"MATRIZ"}')
-    // const result = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpjFormated}`)
-    // if (!result.ok) throw Error('invalid cnpj', { cause: 'visibleError' })
-    // const resultFormated = await result.json()
-    // return resultFormated
+    const result = await fetchCNPJData(cnpjFormated)
+    const mappedResult = mapCnpjData(result)
+    if (mappedResult.status !== 200) {
+      console.error('Erro ao mapear os dados do CNPJ:', mappedResult)
+      return mappedResult
+    }
+
+    return mappedResult.data
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
@@ -85,42 +93,6 @@ configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
 })
 
-interface CreateRegisterAirtable {
-  'ID pagamento': string
-  'Nome do estabelecimento': string
-  CNPJ: string
-  'Inscrição estadual': string
-  Rua: string
-  Número: string
-  'Complemento': string
-  'CEP de entrega': string
-  Bairro: string
-  Cidade: string
-  'Portas fechadas': boolean
-  'Razão social': string
-  Premium: boolean
-  'Ticket médio cadastrado': string
-  'Telefone para contato com DDD': string
-  'Até que horas o seu estabelecimento pode receber o pedido?': string
-  'A partir de que horas seu estabelecimento está disponível para recebimento de hortifrúti?': string
-  'PJ ou PF': string
-  'Termos e condições': string
-  'E-mail para comunicados': string
-  'Código Promotor': string
-  'Quantas vezes em média na semana você faz pedidos?': string
-  'Cadastrado por': string
-}
-
-const createRegisterAirtable = async (req: CreateRegisterAirtable): Promise<AirtableRecord<FieldSet> | undefined> => {
-  try {
-    const _ = base(process.env.AIRTABLE_BASE_REGISTER_ID ?? '').table(process.env.AIRTABLE_TABLE_REGISTER_NAME ?? '')
-    const create = await _.create(req as unknown as Partial<FieldSet>)
-    return create
-  } catch (err) {
-    console.error(err)
-  }
-}
-
 export const fullRegister = async (req: RestaurantFormData & { token: string }): Promise<void> => {
   try {
     const decoded = decode(req.token) as { id: string }
@@ -133,9 +105,6 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
     const minHourFormated = minHourF.toISOTime()
     const isoFormattedTimeMax = `2024-01-01T${maxHourFormated?.substring(0, 12)}000Z`
     const isoFormattedTimeMin = `2024-01-01T${minHourFormated?.substring(0, 12)}000Z`
-
-    console.log(isoFormattedTimeMax)
-    console.log(isoFormattedTimeMin)
 
     const addressData = {
       active: true,
@@ -190,7 +159,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       address: [addressId],
       favorite: [],
       paymentWay: req.paymentWay,
-      premium: Number(req.orderValue) > 400
+      premium: Number(req.orderValue) >= 400
     }
 
     await createRestaurant(restData)
