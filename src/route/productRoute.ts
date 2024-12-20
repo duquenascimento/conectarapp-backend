@@ -6,7 +6,7 @@ export const productRoute = async (server: FastifyInstance): Promise<void> => {
     try {
       const result = await listProduct()
       if (result == null) throw Error(process.env.INTERNAL_ERROR_MSG)
-      return await res.status(201).send({
+      return await res.status(200).send({
         status: 200,
         data: result.data
       })
@@ -19,7 +19,7 @@ export const productRoute = async (server: FastifyInstance): Promise<void> => {
         })
       } else {
         await res.status(409).send({
-          status: 200,
+          status: 409,
           msg: message
         })
       }

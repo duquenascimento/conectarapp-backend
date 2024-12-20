@@ -22,7 +22,7 @@ export interface Order {
   tax: number
   supplierId: string
   calcOrderAgain: any
-  orderDocument: string
+  orderDocument?: string
 }
 
 export interface Detailing {
@@ -53,9 +53,24 @@ export const addOrder = async (data: Order): Promise<any> => {
     await prisma.$disconnect()
     return result
   } catch (err: any) {
-    await prisma.$disconnect()
     await logRegister(err)
-    return null
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateOrder = async (data: Partial<Order>, id: string): Promise<void> => {
+  try {
+    await prisma.order.update({
+      data,
+      where: {
+        id
+      }
+    })
+  } catch (err: any) {
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
   }
 }
 

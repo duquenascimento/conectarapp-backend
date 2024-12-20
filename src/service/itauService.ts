@@ -55,7 +55,7 @@ interface MensagemCobranca {
   mensagem: string
 }
 
-interface DadoBoleto {
+export interface DadoBoleto {
   tipo_boleto: string
   texto_seu_numero: string
   codigo_carteira: string

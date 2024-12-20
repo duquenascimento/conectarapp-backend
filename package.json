@@ -6,16 +6,14 @@
   "license": "MIT",
   "private": "true",
   "scripts": {
-    "start": "npx ts-node ./src/server.ts",
-    "dev": "nodemon ./src/server.ts",
-    "build": "npx tsc && xcopy package.json dist\\ /Y && xcopy yarn.lock dist\\ /Y && xcopy .env dist\\ /Y && powershell -Command \"Compress-Archive -Path 'dist\\*' -DestinationPath 'dist.zip'\" -Force"
+    "dev": "npx ts-node ./src/main.ts",
+    "build": "npx tsc && cp package.json dist/ && cp yarn.lock dist/ && cp .env dist/ && cp -r prisma dist/ && cd dist && zip -r ../dist.zip ."
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/luxon": "^3.4.2",
-    "@types/node": "^20.17.9",
-    "@types/qrcode": "^1.5.5",
+    "@types/node": "^20.12.8",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^6.4.0",
     "eslint": "^8.0.1",
@@ -23,10 +21,10 @@
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "eslint-plugin-promise": "^6.0.0",
-    "nodemon": "^3.1.7",
     "prisma": "^5.18.0",
     "ts-node": "^10.9.2",
-    "typescript": "*"
+    "typescript": "*",
+    "@types/qrcode": "^1.5.5"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
@@ -43,8 +41,8 @@
     "jsbarcode": "^3.11.6",
     "jsonwebtoken": "^9.0.2",
     "luxon": "^3.4.4",
-    "qrcode": "^1.5.4",
     "redis": "^4.6.14",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "qrcode": "^1.5.4"
   }
 }
