@@ -3,3 +3,7 @@ dist
 dist.zip
 token.json
 *Zone.Identifier*
+debug.log
+yarn.lock
+logs
+.env
