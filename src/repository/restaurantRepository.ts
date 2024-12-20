@@ -144,7 +144,7 @@ export const updateUserWithRestaurant = async (userId: string, restaurantId: str
     return result
   } catch (err: any) {
     await prisma.$disconnect()
-    // await logRegister(err)
+    await logRegister(err)
     return null
   } finally {
     await prisma.$disconnect()
