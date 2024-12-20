@@ -219,3 +219,43 @@ model bolecode {
   createdAt DateTime @db.Timestamptz(3) @default(now())
   updatedAt DateTime? @db.Timestamptz(3) @updatedAt
 }
+
+model companies {
+  id                           Int                      @id @default(autoincrement())
+  cnpj                         String                   @unique
+  identificador_matriz_filial  Int
+  descricao_matriz_filial      String
+  razao_social                 String
+  nome_fantasia                String
+  situacao_cadastral           Int
+  descricao_situacao_cadastral String
+  data_situacao_cadastral      DateTime
+  motivo_situacao_cadastral    Int
+  nome_cidade_exterior         String?
+  codigo_natureza_juridica     Int
+  data_inicio_atividade        DateTime
+  cnae_fiscal                  Int
+  cnae_fiscal_descricao        String
+  descricao_tipo_de_logradouro String
+  logradouro                   String
+  numero                       String
+  complemento                  String?
+  bairro                       String
+  cep                          String
+  uf                           String
+  codigo_municipio             Int
+  municipio                    String
+  ddd_telefone_1               String?
+  ddd_telefone_2               String?
+  ddd_fax                      String?
+  qualificacao_do_responsavel  Int
+  capital_social               Float
+  porte                        Int
+  descricao_porte              String
+  opcao_pelo_simples           Boolean
+  data_opcao_pelo_simples      DateTime?
+  data_exclusao_do_simples     DateTime?
+  opcao_pelo_mei               Boolean
+  situacao_especial            String?
+  data_situacao_especial       DateTime?
+}
