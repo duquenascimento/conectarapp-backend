@@ -6,7 +6,7 @@ export const productRoute = async (server: FastifyInstance): Promise<void> => {
     try {
       const result = await listProduct()
       if (result == null) throw Error(process.env.INTERNAL_ERROR_MSG)
-      return await res.status(200).send({
+      return await res.status(201).send({
         status: 200,
         data: result.data
       })
@@ -19,7 +19,31 @@ export const productRoute = async (server: FastifyInstance): Promise<void> => {
         })
       } else {
         await res.status(409).send({
-          status: 409,
+          status: 200,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.post('/all-product/list', async (req, res): Promise<any> => {
+    try {
+      const result = await listProduct()
+      if (result == null) throw Error(process.env.INTERNAL_ERROR_MSG)
+      return await res.status(201).send({
+        status: 200,
+        data: result.data
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(409).send({
+          status: 200,
           msg: message
         })
       }
