@@ -1,6 +1,6 @@
 export const mapCnpjData = (data: any): any => {
   try {
-    if (!data?.cnpj || !data.razao || !data.fantasia || !data.matrizEndereco) {
+    if (!data?.cnpj || !data.razao) {
       console.error('Dados insuficientes para mapear o CNPJ:', data)
       return {
         status: 500,
