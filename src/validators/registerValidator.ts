@@ -6,7 +6,7 @@ const registerSchema = Joi.object({
   cnpj: Joi.string().custom(customDocumentValidation, 'Validação de CPF ou CNPJ').required().messages({
     'string.invalid': 'Documento inválido'
   }),
-  alternativeEmail: Joi.string().email().required(),
+  alternativeEmail: Joi.string().email().optional().allow(''),
   email: Joi.string().email().required(),
   alternativePhone: Joi.string().max(15).min(11).allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   phone: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais'),
