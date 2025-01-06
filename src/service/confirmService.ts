@@ -147,6 +147,7 @@ interface CreateOrderTextAirtable {
   'Data Pedido': string
   'Texto Pedido': string
   App: boolean
+  'Pedido Premium'?: boolean
 }
 
 interface CreateOrderSupplierAppAirtable {
@@ -972,7 +973,8 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       'Data Pedido': today.toISODate() ?? '',
       'ID Cliente': req.selectedRestaurant.externalId ?? '',
       'Texto Pedido': orderText,
-      App: true
+      App: true,
+      'Pedido Premium': true
     })
 
     await confirmPremium({
