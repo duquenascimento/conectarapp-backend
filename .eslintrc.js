@@ -29,7 +29,9 @@ module.exports = {
     // 'comma-dangle': ['warn', 'always-multiline'], // Aviso para vírgulas no final de objetos/arrays multilinha
     quotes: ['warn', 'single'], // Aviso para uso de aspas simples
     semi: ['warn', 'never'], // Aviso para ponto e vírgula
-    indent: ['warn', 2] // Aviso para indentação de 2 espaços
+    indent: ['warn', 2], // Aviso para indentação de 2 espaços,
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn'
   }
 
 }

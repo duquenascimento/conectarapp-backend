@@ -13,7 +13,7 @@ import { writeFileSync } from 'fs'
 import QRCode from 'qrcode'
 import { createCanvas } from 'canvas'
 import JsBarcode from 'jsbarcode'
-import { type BoletoInter, generateBolecode as generateBolecodeInter, generatePix, PixFineAndInterestResponse, WebhookBolecodeResponse } from './interService'
+import { type BoletoInter, generateBolecode as generateBolecodeInter, generatePix, type PixFineAndInterestResponse, type WebhookBolecodeResponse } from './interService'
 import { saveBolecode, saveTransaction, updateBolecode, updateTransaction } from '../repository/financeRepository'
 import { Decimal } from '@prisma/client/runtime/library'
 import { logRegister } from '../utils/logUtils'
@@ -192,7 +192,7 @@ const createOrderTextAirtable = async (req: CreateOrderTextAirtable): Promise<Ai
     const create = await _.create(req as unknown as Partial<FieldSet>)
     return create
   } catch (err) {
-    logRegister(err)
+    void logRegister(err)
   }
 }
 
@@ -217,7 +217,7 @@ const findIdFromAirtable = async (tableName: string, fieldToFilter: string, valu
       return ''
     }
   } catch (err) {
-    logRegister(err)
+    void logRegister(err)
     return ''
   }
 }
@@ -236,7 +236,7 @@ const findProductsIdsFromAirtable = async (valuesToFilter: string[]): Promise<Ar
       return []
     }
   } catch (err) {
-    logRegister(err)
+    void logRegister(err)
     return []
   }
 }
@@ -247,7 +247,7 @@ const createOrderAirtable = async (req: CreateOrderAirtable): Promise<AirtableRe
     const create = await _.create(req as unknown as Partial<FieldSet>)
     return create
   } catch (err) {
-    logRegister(err)
+    void logRegister(err)
   }
 }
 
@@ -259,7 +259,7 @@ const createDetailingAirtable = async (req: CreateDetailingAirtable[]): Promise<
     )
     return detailing
   } catch (err) {
-    logRegister(err)
+    void logRegister(err)
     return undefined
   }
 }
@@ -270,7 +270,7 @@ const createOrderSupplierAppAirtable = async (req: CreateOrderSupplierAppAirtabl
     const create = await _.create(req as unknown as Partial<FieldSet>)
     return create
   } catch (err) {
-    logRegister(err)
+    void logRegister(err)
   }
 }
 
@@ -355,7 +355,7 @@ const airtableHandler = async (_order: Order, _detailing: Detailing[], yourNumbe
       App: true,
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'ID Cliente': _order.restaurantId,
-      'Texto Pedido': orderText,
+      'Texto Pedido': orderText
     })
   } catch (err) {
     console.error(err)
@@ -495,14 +495,14 @@ const formatDataToBolecode = async (data: confirmOrderRequest, yourNumber: strin
       codigo: 'TAXAMENSAL'
     },
     mensagem: {
-      linha1: `Pedido Conéctar ${orderId} entregue em ${deliveryDate.toFormat('dd/MM/yyyy')}`,
+      linha1: `Pedido Conéctar ${orderId} entregue em ${deliveryDate.toFormat('dd/MM/yyyy')}`
     },
     formasRecebimento: ['BOLETO', 'PIX']
   }
   return interData
 }
 
-function generateBarcode(barcodeValue: string): string {
+function generateBarcode (barcodeValue: string): string {
   const canvas = createCanvas(0, 0)
   JsBarcode(canvas, barcodeValue, {
     format: 'ITF',
@@ -514,7 +514,7 @@ function generateBarcode(barcodeValue: string): string {
   return canvas.toDataURL('image/png')
 }
 
-function convertBase64ToPng(base64String: string, filePath: string): void {
+function convertBase64ToPng (base64String: string, filePath: string): void {
   const base64Data = base64String.replace(/^data:image\/png;base64,/, '')
 
   const buffer = Buffer.from(base64Data, 'base64')
@@ -522,7 +522,7 @@ function convertBase64ToPng(base64String: string, filePath: string): void {
   writeFileSync(filePath, buffer)
 }
 
-async function generateQRCode(text: string, filePath: string): Promise<void> {
+async function generateQRCode (text: string, filePath: string): Promise<void> {
   try {
     const qrImage = await QRCode.toBuffer(text, { type: 'png', width: 100 })
     writeFileSync(filePath, qrImage)
@@ -671,7 +671,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     totalSupplier: req.supplier.discount.orderWithoutTax,
     detailing: detailing.map(item => item.id),
     supplierId: req.supplier.externalId,
-    calcOrderAgain: { data: calcOrderAgain.data },
+    calcOrderAgain: { data: calcOrderAgain.data }
   }
 
   await addOrder(order)
@@ -684,12 +684,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 
     const transactionData = {
       order_id: orderId,
-      payment_date: new Date(getPaymentDate(req.restaurant.restaurant.paymentWay)),
+      payment_date: new Date(getPaymentDate(req.restaurant.restaurant.paymentWay as string)),
       status_id: 8,
       payment_ways_id: paymentWayString === 'À Vista' ? 2 : 1,
       value: new Decimal(req.supplier.discount.orderValueFinish),
       transactions_type_id: 4,
-      restaurant_id: req.restaurant.restaurant.id,
+      restaurant_id: req.restaurant.restaurant.id
     }
 
     const transaction = await saveTransaction(transactionData)
@@ -717,6 +717,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
           bolecodeResponse = await generateBolecodeInter(interData)
           if (bolecodeResponse == null) {
             await Promise.all([
+              // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
               updateTransaction({ status_id: 11 }, transaction?.id!),
               updateBolecode({ status_id: 11 }, bolecode?.id!)
             ])
@@ -728,20 +729,20 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
           const [bolecodeDataResponse] = await Promise.all([
             Promise.race([
               addPendingRequest(bolecodeResponse.codigoSolicitacao),
-              new Promise((_, reject) => {
+              new Promise((resolve, reject) => {
                 setTimeout(() => {
                   reject(new Error(`Timeout: bolecode not generated in ${SECONDS / 1000}s`))
                 }, SECONDS)
-              }),
+              })
             ])
               .catch(async (error) => {
                 await Promise.all([
                   updateTransaction({ status_id: 11 }, transaction?.id!),
-                  updateBolecode({ status_id: 11 }, bolecode?.id!),
+                  updateBolecode({ status_id: 11 }, bolecode?.id!)
                 ])
                 throw error
               }),
-            updateBolecode({ transaction_gateway_id: bolecodeResponse.codigoSolicitacao }, bolecode?.id!),
+            updateBolecode({ transaction_gateway_id: bolecodeResponse.codigoSolicitacao }, bolecode?.id!)
           ])
 
           if (bolecodeDataResponse == null) {
@@ -811,7 +812,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
               pix_code: pixCopiaECola ?? null,
               status_id: 4,
               txId: txid ?? null,
-              status_updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+              status_updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate()
             }, bolecode?.id!)
           ])
         }
@@ -827,7 +828,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     const qrCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
     const barCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`
     if (paymentWayString === 'Diário') convertBase64ToPng(barCodeImage, barCodePath)
-    await generateQRCode(pixKey as string, qrCodePath)
+    await generateQRCode(pixKey, qrCodePath)
   }
 
   const documintPromise = await fetch('https://api.documint.me/1/templates/66d9f1cbc55000285de75733/content?preview=true&active=true', {
