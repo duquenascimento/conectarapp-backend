@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateComercialBlockRepository, updateFinanceBlockRepository } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateFinanceBlockRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 
@@ -100,5 +100,14 @@ export const AddClientCount = async (req: { count: number }): Promise<void> => {
     await addClientCount(req.count)
   } catch (err) {
     console.error(err)
+  }
+}
+
+export const updateAllowCloseSupplierAndMinimumOrder =
+async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>): Promise<void> => {
+  try {
+    await updateAllowCloseSupplierAndMinimumOrderRepository(req)
+  } catch (err) {
+    void logRegister(err)
   }
 }

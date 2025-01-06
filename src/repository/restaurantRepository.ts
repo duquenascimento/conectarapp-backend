@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, type restaurant } from '@prisma/client'
 import 'dotenv/config'
 import { logRegister } from '../utils/logUtils'
 import { type IRestaurant } from '../service/restaurantService'
@@ -234,6 +234,21 @@ export const updateFinanceBlockRepository = async (restId: string, value: boolea
   } catch (err: any) {
     await prisma.$disconnect()
     await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateAllowCloseSupplierAndMinimumOrderRepository = async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>): Promise<void> => {
+  try {
+    await prisma.restaurant.updateMany({
+      data: req,
+      where: {
+        externalId: req.externalId
+      }
+    })
+  } catch (err) {
+    void logRegister(err)
   } finally {
     await prisma.$disconnect()
   }

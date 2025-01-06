@@ -53,6 +53,8 @@ model restaurant {
   comercialBlock Boolean @db.Boolean @default(false)
   financeBlock Boolean @db.Boolean @default(false)
   transactions transactions[]
+  allowClosedSupplier Boolean @default(false)
+  allowMinimumOrder Boolean @default(false)
 }
 
 model clientCount {

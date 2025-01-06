@@ -1,5 +1,6 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateComercialBlock, updateFinanceBlock } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateFinanceBlock } from '../service/restaurantService'
+import { type restaurant } from '@prisma/client'
 
 export const restaurantRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/restaurant/list', async (req, res): Promise<any> => {
@@ -95,6 +96,28 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
       await AddClientCount(req.body as { count: number, value: boolean })
+      return await res.status(200).send({
+        status: 200
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.put('/rest/updateAllowCloseSupplierAndMinimumOrder', async (req, res): Promise<void> => {
+    try {
+      await updateAllowCloseSupplierAndMinimumOrder(req.body as Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>)
       return await res.status(200).send({
         status: 200
       })
