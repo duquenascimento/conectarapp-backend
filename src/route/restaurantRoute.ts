@@ -1,6 +1,8 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateFinanceBlock } from '../service/restaurantService'
-import { type restaurant } from '@prisma/client'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateFinanceBlock, updateRestaurant, updateAddressByExternalId } from '../service/restaurantService'
+import { type address, type restaurant } from '@prisma/client'
+import restaurantUpdateSchema from '../validators/restaurantValidator'
+import addressUpdateSchema from '../validators/addrestValidator'
 
 export const restaurantRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/restaurant/list', async (req, res): Promise<any> => {
@@ -120,6 +122,70 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
       await updateAllowCloseSupplierAndMinimumOrder(req.body as Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>)
       return await res.status(200).send({
         status: 200
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.put('/rest/updateRestaurant', async (req, res): Promise<void> => {
+    try {
+      const { error } = restaurantUpdateSchema.validate(req.body)
+      if (error) {
+        return await res.status(422).send({ error: error.details[0].message })
+      }
+      const { externalId, ...restaurantData } = req.body as {
+        externalId: string
+        [key: string]: any
+      }
+
+      await updateRestaurant(externalId, restaurantData)
+      return await res.status(200).send({
+        status: 200,
+        msg: 'Restaurante atualizado com sucesso.'
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.put('/rest/updateAddressByExternalId', async (req, res): Promise<void> => {
+    try {
+      const { error } = addressUpdateSchema.validate(req.body)
+      if (error) {
+        return await res.status(422).send({ error: error.details[0].message })
+      }
+      const { externalId, ...addressData } = req.body as {
+        externalId: string
+        [key: string]: any
+      }
+
+      await updateAddressByExternalId(externalId, addressData)
+      return await res.status(200).send({
+        status: 200,
+        msg: 'Endereço atualizado com sucesso.'
       })
     } catch (err) {
       const message = (err as Error).message

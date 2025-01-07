@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateFinanceBlockRepository } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 
@@ -109,5 +109,29 @@ async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'exte
     await updateAllowCloseSupplierAndMinimumOrderRepository(req)
   } catch (err) {
     void logRegister(err)
+  }
+}
+
+export const updateRestaurant = async (
+  externalId: string,
+  restaurantData: Partial<restaurant>
+): Promise<void> => {
+  try {
+    await updateRestaurantRepository(externalId, restaurantData)
+  } catch (err) {
+    void logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
+
+export const updateAddressByExternalId = async (
+  externalId: string,
+  addressData: Partial<address>
+): Promise<void> => {
+  try {
+    await updateAddressByExternalIdRepository(externalId, addressData)
+  } catch (err) {
+    void logRegister(err)
+    throw Error((err as Error).message)
   }
 }

@@ -27,9 +27,7 @@ export const registerRoute = async (server: FastifyInstance): Promise<void> => {
   })
 
   server.post('/register/full-register', async (req, res): Promise<any> => {
-    console.log('>>>>>>req', req.body)
     const { error } = registerSchema.validate(req.body)
-    console.log('>>>>>>error', error)
     if (error) {
       return await res.status(422).send({ error: error.details[0].message })
     }

@@ -1,4 +1,4 @@
-import { PrismaClient, type restaurant } from '@prisma/client'
+import { type address, PrismaClient, type restaurant } from '@prisma/client'
 import 'dotenv/config'
 import { logRegister } from '../utils/logUtils'
 import { type IRestaurant } from '../service/restaurantService'
@@ -245,6 +245,56 @@ export const updateAllowCloseSupplierAndMinimumOrderRepository = async (req: Pic
       data: req,
       where: {
         externalId: req.externalId
+      }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateRestaurantRepository = async (
+  externalId: string,
+  restaurantData: Partial<restaurant>
+): Promise<void> => {
+  try {
+    await prisma.restaurant.updateMany({
+      data: restaurantData,
+      where: {
+        externalId
+      }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const updateAddressByExternalIdRepository = async (
+  externalId: string,
+  addressData: Partial<address>
+): Promise<void> => {
+  try {
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        externalId
+      },
+      select: {
+        address: true
+      }
+    })
+
+    if (!restaurant?.address || restaurant.address.length === 0) {
+      throw new Error('Restaurante ou endereço não encontrado.')
+    }
+
+    const addressId = restaurant.address[0]
+    await prisma.address.updateMany({
+      data: addressData,
+      where: {
+        id: addressId
       }
     })
   } catch (err) {
