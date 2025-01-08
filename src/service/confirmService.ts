@@ -18,6 +18,7 @@ import { saveBolecode, saveTransaction, updateBolecode, updateTransaction } from
 import { Decimal } from '@prisma/client/runtime/library'
 import { logRegister } from '../utils/logUtils'
 import { addPendingRequest } from './promiseService'
+import { bolecodeAndPixErrorMessage, receiptErrorMessage } from '../utils/slackUtils'
 
 export interface Supplier {
   name: string
@@ -720,7 +721,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
             await Promise.all([
               // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
               updateTransaction({ status_id: 11 }, transaction?.id!),
-              updateBolecode({ status_id: 11 }, bolecode?.id!)
+              updateBolecode({ status_id: 11 }, bolecode?.id!),
+              bolecodeAndPixErrorMessage({
+                externalId: req.restaurant.restaurant.externalId ?? '',
+                finalValue: req.supplier.discount.orderValueFinish,
+                paymentWay: paymentWayString
+              })
             ])
             throw new Error(`error generating bolecode, request used: ${JSON.stringify(interData)}`)
           }
@@ -739,7 +745,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
               .catch(async (error) => {
                 await Promise.all([
                   updateTransaction({ status_id: 11 }, transaction?.id!),
-                  updateBolecode({ status_id: 11 }, bolecode?.id!)
+                  updateBolecode({ status_id: 11 }, bolecode?.id!),
+                  bolecodeAndPixErrorMessage({
+                    externalId: req.restaurant.restaurant.externalId ?? '',
+                    finalValue: req.supplier.discount.orderValueFinish,
+                    paymentWay: paymentWayString
+                  })
                 ])
                 throw error
               }),
@@ -822,6 +833,11 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       await Promise.allSettled([
         updateTransaction({ status_id: 11 }, transaction?.id!),
         updateBolecode({ status_id: 11 }, bolecode?.id!),
+        bolecodeAndPixErrorMessage({
+          externalId: req.restaurant.restaurant.externalId ?? '',
+          finalValue: req.supplier.discount.orderValueFinish,
+          paymentWay: paymentWayString
+        }),
         logRegister(err)
       ])
     }
@@ -899,9 +915,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       nome_cliente: req.restaurant.restaurant.name.replaceAll(' ', ''),
       id_distribuidor: (req.restaurant.restaurant.externalId !== 'PF324' && req.restaurant.restaurant.externalId !== 'C186') ? 'F0' : req.supplier.externalId
     } satisfies Pedido)
+  }).catch(async (err) => {
+    await receiptErrorMessage(req.restaurant.restaurant.externalId as string)
+    void logRegister(err)
   })
 
-  const documintResponse = await documintPromise.json()
+  const documintResponse = await documintPromise?.json()
 
   const myHeaders = new Headers()
   myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
@@ -989,9 +1008,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       token: req.token,
       selectedRestaurant: []
     })
-
-    console.log()
   } catch (err) {
-    console.log(err)
+    void logRegister(err)
   }
 }
