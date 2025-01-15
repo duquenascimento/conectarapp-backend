@@ -114,7 +114,8 @@ model order {
   finalDeliveryTime DateTime @db.Time(6)
   totalSupplier Decimal @db.Decimal(10, 2)
   totalConectar Decimal @db.Decimal(10, 2)
-  status String @db.VarChar(100)
+  status_id Int @default(4)
+  status status @relation(fields: [status_id], references: [id])
   detailing String[] @db.VarChar(50)
   tax Decimal @db.Decimal(10, 5)
   supplierId String @db.VarChar(50)
@@ -198,6 +199,8 @@ model status {
   createdAt DateTime @db.Timestamptz(3) @default(now())
   updatedAt DateTime? @db.Timestamptz(3) @updatedAt
   bolecode bolecode[]
+
+  order order[]
 }
 
 model bolecode {
