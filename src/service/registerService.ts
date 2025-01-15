@@ -1,14 +1,14 @@
 import { logRegister } from '../utils/logUtils'
-import { addClientCount, checkClientCount, findRestaurantByCompanyRegistrationNumber, registerAddress, removeClientCount, updateUserWithRestaurant } from '../repository/restaurantRepository'
+import { findRestaurantByCompanyRegistrationNumber, registerAddress, updateUserWithRestaurant } from '../repository/restaurantRepository'
 import { createRestaurant } from './restaurantService'
-import { v4 as uuidv4 } from 'uuid'
 import { DateTime } from 'luxon'
 import { configure } from 'airtable'
 import { decode } from 'jsonwebtoken'
 import { fetchCNPJData } from './cnpjService'
-import { createRegisterAirtable } from './airtableService'
+import { createRegisterAirtable } from '../repository/airtableRegisterService'
 import { mapCnpjData } from '../utils/mapCnpjData'
 import { validateDocument } from '../utils/validateDocument'
+import { v4 as uuidv4 } from 'uuid'
 
 export interface CheckCnpj {
   cnpj: string
@@ -96,9 +96,8 @@ configure({
 export const fullRegister = async (req: RestaurantFormData & { token: string }): Promise<void> => {
   try {
     const decoded = decode(req.token) as { id: string }
-    const restaurantId = uuidv4()
     const addressId = uuidv4()
-
+    const restaurantId = uuidv4()
     const maxHourF = DateTime.fromFormat(req.maxHour, 'HH:mm')
     const maxHourFormated = maxHourF.toISOTime()
     const minHourF = DateTime.fromFormat(req.minHour, 'HH:mm')
@@ -106,84 +105,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
     const isoFormattedTimeMax = `2024-01-01T${maxHourFormated?.substring(0, 12)}000Z`
     const isoFormattedTimeMin = `2024-01-01T${minHourFormated?.substring(0, 12)}000Z`
 
-    const addressData = {
-      active: true,
-      complement: req.complement,
-      createdAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
-      updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
-      deliveryObs: req.deliveryObs,
-      id: addressId,
-      localNumber: req.localNumber,
-      maxHour: isoFormattedTimeMax ?? '',
-      minHour: isoFormattedTimeMin ?? '',
-      neigh: req.neigh,
-      street: req.street,
-      zipcode: req.zipcode,
-      restaurantId: [restaurantId],
-      responsibleReceivingName: '',
-      responsibleReceivingPhoneNumber: req.phone,
-      localType: req.localType,
-      city: req.city,
-      closedDoorDelivery: req.closeDoor
-    }
-
-    await registerAddress(addressData)
-
-    let count = await checkClientCount()
-    if (count == null) {
-      count = { externalId: 1 }
-    }
-
-    count.externalId++
-
-    const restData = {
-      companyRegistrationNumber: req.cnpj,
-      name: req.restaurantName,
-      externalId: `C${count.externalId}`,
-      companyRegistrationNumberForBilling: req.cnpj,
-      stateRegistrationNumber: req.stateNumberId,
-      active: true,
-      alternativeEmail: req.alternativeEmail,
-      email: req.email,
-      alternativePhone: req.alternativePhone,
-      closeDoor: req.closeDoor,
-      phone: req.phone,
-      cityRegistrationNumber: req.cityNumberId,
-      id: restaurantId,
-      orderValue: Number(req.orderValue),
-      weeklyOrderAmount: Number(req.weeklyOrderAmount),
-      legalName: req.legalRestaurantName,
-      createdAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
-      updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
-      user: [decoded.id],
-      address: [addressId],
-      favorite: [],
-      paymentWay: req.paymentWay,
-      premium: Number(req.orderValue) >= 400
-    }
-
-    await createRestaurant(restData)
-
-    await removeClientCount()
-    await addClientCount(count.externalId)
-
-    function capitalizeWithExceptions (text: string): string {
-      const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
-
-      return text
-        .toLowerCase()
-        .split(' ')
-        .map((word, index) => {
-          if (index > 0 && prepositions.includes(word)) {
-            return word
-          }
-          return word.charAt(0).toUpperCase() + word.slice(1)
-        })
-        .join(' ')
-    }
-
-    await updateUserWithRestaurant(decoded.id, restaurantId, DateTime.now().setZone('America/Sao_Paulo').toJSDate())
-    await createRegisterAirtable({
+    const airtableRecord = await createRegisterAirtable({
       'A partir de que horas seu estabelecimento está disponível para recebimento de hortifrúti?': req.minHour,
       'ID pagamento': req.paymentWay,
       'Nome do estabelecimento': req.restaurantName,
@@ -208,7 +130,84 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'Quantas vezes em média na semana você faz pedidos?': req.weeklyOrderAmount,
       'Cadastrado por': 'App'
     })
+
+    if (!airtableRecord || typeof airtableRecord !== 'object' || !('fields' in airtableRecord)) {
+      throw new Error('Falha ao criar registro no Airtable ou estrutura do registro inválida')
+    }
+
+    if (!airtableRecord.fields || typeof airtableRecord.fields !== 'object' || !('ID_Cliente' in airtableRecord.fields)) {
+      throw new Error('ID_Cliente não encontrado no registro do Airtable')
+    }
+
+    const externalId = airtableRecord.fields.ID_Cliente as string
+
+    const addressData = {
+      active: true,
+      complement: req.complement,
+      createdAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+      updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+      deliveryObs: req.deliveryObs,
+      id: addressId,
+      localNumber: req.localNumber,
+      maxHour: isoFormattedTimeMax ?? '',
+      minHour: isoFormattedTimeMin ?? '',
+      neigh: req.neigh,
+      street: req.street,
+      zipcode: req.zipcode,
+      restaurantId: [restaurantId], 
+      responsibleReceivingName: '',
+      responsibleReceivingPhoneNumber: req.phone,
+      localType: req.localType,
+      city: req.city,
+      closedDoorDelivery: req.closeDoor
+    }
+
+    const restData = {
+      companyRegistrationNumber: req.cnpj,
+      name: req.restaurantName,
+      externalId,
+      companyRegistrationNumberForBilling: req.cnpj,
+      stateRegistrationNumber: req.stateNumberId,
+      active: true,
+      alternativeEmail: req.alternativeEmail,
+      email: req.email,
+      alternativePhone: req.alternativePhone,
+      closeDoor: req.closeDoor,
+      phone: req.phone,
+      cityRegistrationNumber: req.cityNumberId,
+      id: restaurantId,
+      orderValue: Number(req.orderValue),
+      weeklyOrderAmount: Number(req.weeklyOrderAmount),
+      legalName: req.legalRestaurantName,
+      createdAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+      updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+      user: [decoded.id],
+      address: [addressId],
+      favorite: [],
+      paymentWay: req.paymentWay,
+      premium: Number(req.orderValue) >= 400
+    }
+
+    await createRestaurant(restData)
+    await registerAddress(addressData)
+
+    await updateUserWithRestaurant(decoded.id, restaurantId, DateTime.now().setZone('America/Sao_Paulo').toJSDate())
   } catch (err) {
     console.log(err)
   }
+}
+
+function capitalizeWithExceptions (text: string): string {
+  const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
+
+  return text
+    .toLowerCase()
+    .split(' ')
+    .map((word, index) => {
+      if (index > 0 && prepositions.includes(word)) {
+        return word
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
+    .join(' ')
 }
