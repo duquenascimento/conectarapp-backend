@@ -17,7 +17,7 @@ export interface Order {
   finalDeliveryTime: Date
   totalSupplier: number
   totalConectar: number
-  status: string
+  status_id: number
   detailing: string[]
   tax: number
   supplierId: string

@@ -433,7 +433,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     paymentWay: req.restaurant.restaurant.paymentWay,
     referencePoint: req.restaurant.restaurant.addressInfos[0].deliveryReference,
     restaurantId: req.restaurant.restaurant.externalId,
-    status: 'Confirmado',
+    status_id: 12,
     tax: req.restaurant.restaurant.tax / 100,
     totalConectar: req.supplier.discount.orderValueFinish,
     totalSupplier: req.supplier.discount.orderWithoutTax,
