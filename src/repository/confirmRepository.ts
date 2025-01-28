@@ -45,7 +45,7 @@ export interface Detailing {
   name?: string
 }
 
-export const addOrder = async (data: Order): Promise<any> => {
+export const addOrder = async (data: any): Promise<any> => {
   try {
     const result = await prisma.order.create({
       data
@@ -59,7 +59,7 @@ export const addOrder = async (data: Order): Promise<any> => {
   }
 }
 
-export const updateOrder = async (data: Partial<Order>, id: string): Promise<void> => {
+export const updateOrder = async (data: any, id: string): Promise<void> => {
   try {
     await prisma.order.update({
       data,

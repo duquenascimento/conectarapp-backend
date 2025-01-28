@@ -2,7 +2,7 @@ import { type FastifyInstance } from 'fastify'
 import { cancelOrder, findOrder } from '../service/orderService'
 
 export const orderRoute = async (server: FastifyInstance): Promise<void> => {
-  server.get('/order/:id', async (req, res): Promise<any> => {
+  server.get('/orders/:id', async (req, res): Promise<any> => {
     try {
       const { id } = req.params as { id: string | undefined }
       const result = await findOrder(id)
@@ -27,7 +27,7 @@ export const orderRoute = async (server: FastifyInstance): Promise<void> => {
     }
   })
 
-  server.put('/order/:id/cancel', async (req, res): Promise<any> => {
+  server.put('/orders/:id/cancel', async (req, res): Promise<any> => {
     try {
       const { id } = req.params as { id: string | undefined }
       await cancelOrder(id)
