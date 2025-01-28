@@ -1,8 +1,7 @@
 import { type order } from '@prisma/client'
-import { findById, cancelById, filterOrders,  } from '../repository/orderRepository'
+import { findById, cancelById, filterOrders } from '../repository/orderRepository'
 import { logRegister } from '../utils/logUtils'
 import { isSameDay, isTimeWithinMinutes } from '../utils/dateUtils'
-
 
 export const findOrder = async (id?: string): Promise<order> => {
   try {
@@ -24,9 +23,12 @@ export const cancelOrder = async (id?: string): Promise<void> => {
     const minutesToCancelOrder = process.env.MINUTES_TO_CANCEL_ORDER
     const minutesToCancelOrderFinal = Number.isSafeInteger(minutesToCancelOrder) ? Number(minutesToCancelOrder) : 15
 
+    console.log(isSameDay(order.orderDate, new Date()))
+    console.log(isTimeWithinMinutes(order.orderHour, new Date(), minutesToCancelOrderFinal))
+
     if (
-      (isSameDay(order.orderDate, new Date()) &&
-        isTimeWithinMinutes(order.orderHour, new Date(), minutesToCancelOrderFinal))
+      (!isSameDay(order.orderDate, new Date()) ||
+        !isTimeWithinMinutes(order.orderHour, new Date(), minutesToCancelOrderFinal))
     ) throw new Error(`to cancel it must be within ${minutesToCancelOrderFinal} minutes`, { cause: 'visibleError' })
 
     await cancelById(id)

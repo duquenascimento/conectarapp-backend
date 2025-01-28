@@ -61,7 +61,7 @@ export const orderRoute = async (server: FastifyInstance): Promise<void> => {
         return await res.status(400).send({
           status: 400,
           msg: 'Erro de validação',
-          errors: error.details.map((err: { path: any[]; message: any }) => ({
+          errors: error.details.map((err: { path: any[], message: any }) => ({
             field: err.path.join('.'),
             message: err.message
           }))
