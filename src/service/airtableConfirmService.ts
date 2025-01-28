@@ -28,7 +28,7 @@ export const airtableHandler = async (_order: Order, _detailing: Detailing[], yo
       'Data Entrega': _order.deliveryDate.toISOString().substring(0, 10),
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'Forma de pagamento': _order.paymentWay ?? '',
-      'ID Distribuidor': (_order.restaurantId !== 'PF324' && _order.restaurantId !== 'C186') ? ['rec1YouX20iXGOB5G'] : [supplierId],
+      'ID Distribuidor': (_order.restaurantId !== 'PF324' && _order.restaurantId !== 'C186') ? ['recWgNcSLy6StEn4L'] : [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
       'Presentes na cotação': _order.calcOrderAgain.data.map((item: any) => item.supplier.externalId),
