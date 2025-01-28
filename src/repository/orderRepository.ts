@@ -22,3 +22,45 @@ export const cancelById = async (id: string): Promise<void> => {
     await prisma.$disconnect()
   }
 }
+
+export const filterOrders = async (
+  filters: Record<string, string>,
+  page: number,
+  limit: number
+): Promise<{ data: order[], total: number }> => {
+  try {
+    const whereClause = Object.keys(filters).reduce<Record<string, any>>((acc, key) => {
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      if (filters[key]) {
+        acc[key] = { contains: filters[key], mode: 'insensitive' }
+      }
+      return acc
+    }, {})
+
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where: whereClause,
+        skip: (page - 1) * limit,
+        take: limit
+      }),
+      prisma.order.count({ where: whereClause })
+    ])
+
+    await prisma.$disconnect()
+
+    return {
+      data: orders.map(order => ({
+        ...order,
+        totalSupplier: order.totalSupplier.toNumber(),
+        totalConectar: order.totalConectar.toNumber(),
+        tax: order.tax.toNumber()
+      })) as unknown as order[],
+      total
+    }
+  } catch (err: any) {
+    await logRegister(err)
+    return { data: [], total: 0 }
+  } finally {
+    await prisma.$disconnect()
+  }
+}

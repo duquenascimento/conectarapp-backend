@@ -1,7 +1,8 @@
 import { type order } from '@prisma/client'
-import { findById, cancelById } from '../repository/orderRepository'
+import { findById, cancelById, filterOrders,  } from '../repository/orderRepository'
 import { logRegister } from '../utils/logUtils'
 import { isSameDay, isTimeWithinMinutes } from '../utils/dateUtils'
+
 
 export const findOrder = async (id?: string): Promise<order> => {
   try {
@@ -32,5 +33,17 @@ export const cancelOrder = async (id?: string): Promise<void> => {
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
+  }
+}
+
+export const filterOrdersService = async (
+  filters: Record<string, string>,
+  page: number,
+  limit: number
+): Promise<{ orders: order[], total: number }> => {
+  const result = await filterOrders(filters, page, limit)
+  return {
+    orders: result.data,
+    total: result.total
   }
 }

@@ -8,6 +8,7 @@ import { confirmRoute } from './confirmRoute'
 import { registerRoute } from './registerRoute'
 import { restaurantRoute } from './restaurantRoute'
 import { interRoute } from './interRoute'
+import { orderRoute } from './orderRoute'
 
 export const registerRoutes = async (server: FastifyInstance): Promise<void> => {
   await Promise.all([server.register(authRoute),
@@ -18,6 +19,7 @@ export const registerRoutes = async (server: FastifyInstance): Promise<void> => 
     server.register(confirmRoute),
     server.register(registerRoute),
     server.register(restaurantRoute),
-    server.register(interRoute)
+    server.register(interRoute),
+    server.register(orderRoute)
   ])
 }

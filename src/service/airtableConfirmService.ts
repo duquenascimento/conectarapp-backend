@@ -36,7 +36,7 @@ export const airtableHandler = async (_order: Order, _detailing: Detailing[], yo
       Horário: _order.orderHour.toISOString().substring(11, 16),
       'Total Fornecedor': _order.totalSupplier,
       'Total Conéctar': _order.totalConectar,
-      'Status Pedido': _order.status as 'Confirmado' | 'Teste' | 'Cancelado' | 'Recusado',
+      'Status Pedido': _order.status_id === 12 ? 'Confirmado' : _order.status_id === 13 ? 'Teste' : _order.status_id === 6 ? 'Cancelado' : _order.status_id === 13 ? 'Recusado' : 'Teste',
       'Recibo original': [{
         url: _order.orderDocument!
       }],
