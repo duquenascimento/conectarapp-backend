@@ -1,8 +1,7 @@
 import { type order } from '@prisma/client'
-import { findById, cancelById, filterOrders,  } from '../repository/orderRepository'
+import { findById, cancelById, filterOrders } from '../repository/orderRepository'
 import { logRegister } from '../utils/logUtils'
 import { isSameDay, isTimeWithinMinutes } from '../utils/dateUtils'
-
 
 export const findOrder = async (id?: string): Promise<order> => {
   try {

@@ -122,7 +122,7 @@ model order {
   calcOrderAgain Json @db.Json
   orderDocument String? @db.VarChar(1000)
   transactions transactions[]
-  orderInvoices order_invoice[]
+  orderInvoices order_invoice?
 }
 
 model detailing {
@@ -202,6 +202,8 @@ model status {
   bolecode bolecode[]
 
   order order[]
+
+  order_invoice order_invoice[]
 }
 
 model bolecode {
@@ -268,9 +270,10 @@ model companies {
 
 model order_invoice {
   id String @id @default(cuid()) @db.VarChar(50)
-  orderId String
-  filePath String @db.VarChar(255)
-  status Int @default(4)
+  orderId String @unique
+  filePath String[] @db.VarChar(255)
+  status_id Int
+  status status @relation(fields: [status_id], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   order order @relation(fields: [orderId], references: [id], onDelete: Cascade)
