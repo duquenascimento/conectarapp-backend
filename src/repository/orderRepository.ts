@@ -3,9 +3,14 @@ import { logRegister } from '../utils/logUtils'
 
 const prisma = new PrismaClient()
 
-export const findById = async (id: string): Promise<order | null | undefined> => {
+export const findById = async (
+  id: string
+): Promise<order | null | undefined> => {
   try {
-    return await prisma.order.findUnique({ where: { id } })
+    return await prisma.order.findUnique({
+      where: { id },
+      include: { orderInvoices: true }
+    })
   } catch (err) {
     void logRegister(err)
   } finally {
@@ -29,27 +34,29 @@ export const filterOrders = async (
   limit: number
 ): Promise<{ data: order[], total: number }> => {
   try {
-    const whereClause = Object.keys(filters).reduce<Record<string, any>>((acc, key) => {
-      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      if (filters[key]) {
-        acc[key] = { contains: filters[key], mode: 'insensitive' }
-      }
-      return acc
-    }, {})
+    const whereClause = Object.keys(filters).reduce<Record<string, any>>(
+      (acc, key) => {
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        if (filters[key]) {
+          acc[key] = { contains: filters[key], mode: 'insensitive' }
+        }
+        return acc
+      },
+      {}
+    )
 
     const [orders, total] = await Promise.all([
       prisma.order.findMany({
         where: whereClause,
         skip: (page - 1) * limit,
-        take: limit
+        take: limit,
+        include: { orderInvoices: true }
       }),
       prisma.order.count({ where: whereClause })
     ])
 
-    await prisma.$disconnect()
-
     return {
-      data: orders.map(order => ({
+      data: orders.map((order) => ({
         ...order,
         totalSupplier: order.totalSupplier.toNumber(),
         totalConectar: order.totalConectar.toNumber(),
