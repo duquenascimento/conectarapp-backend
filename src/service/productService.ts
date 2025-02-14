@@ -1,22 +1,35 @@
 import { logRegister } from '../utils/logUtils'
+import { ApiRepository } from '../repository/apiRepository'
+
+const apiRepository = new ApiRepository(process.env.URL_API_ANTIGA ?? '')
 
 export const listProduct = async (): Promise<any> => {
   try {
-    const myHeaders = new Headers()
-    myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
-    myHeaders.append('external-id', 'F0')
-    myHeaders.append('username', 'contato@conectarhortifruti.com.br')
-    myHeaders.append('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA2LTE5VDIzOjIyOjAwIiwibmJmIjoxNzE3OTc1MzIwLCJleHAiOjE3MTg4MzkzMjAsImlhdCI6MTcxNzk3NTMyMCwiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.nl50gt-jNOxwjwyeppew1Fmz6okVS95-TwRNwhwD4Js')
-    myHeaders.append('system-user-pass', 'd2NuOUVVNnJWbDR5dDE5Mnl0WFdaeGo2cjRGeEtycUMydzNaWEJ5enlub0FLQmdjdEU2anBVQ2RDbWxkM2xSMQo=')
+    const json = await apiRepository.callApi('/listProductToApp', 'GET')
 
-    const requestOptions = {
-      method: 'GET',
-      headers: myHeaders
+    // Filtrar os itens com "active": true
+    const filteredData = json.data.filter((item: any) => item.active === true)
+
+    return {
+      success: json.success,
+      statusCode: json.statusCode,
+      data: filteredData
     }
+  } catch (err) {
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
 
-    const result = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listProductToApp', requestOptions)
-    const json = await result.json()
-    return json
+export const listAllProducts = async (): Promise<any> => {
+  try {
+    const json = await apiRepository.callApi('/listProductToApp', 'GET')
+
+    return {
+      success: json.success,
+      statusCode: json.statusCode,
+      data: json.data
+    }
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
