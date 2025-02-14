@@ -36,9 +36,26 @@ export const filterOrders = async (
   try {
     const whereClause = Object.keys(filters).reduce<Record<string, any>>(
       (acc, key) => {
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
         if (filters[key]) {
-          acc[key] = { contains: filters[key], mode: 'insensitive' }
+          switch (key) {
+          case 'status':
+            // Trata o campo "status" como uma relação
+              const statusId = parseInt(filters[key], 10)
+            if (!isNaN(statusId)) {
+              acc.status_id = { equals: statusId }
+            }
+            break
+
+          case 'restaurantId':
+            // Trata o campo "restaurantId" como um UUID
+            acc.restaurantId = { equals: filters[key] }
+            break
+
+          default:
+            // Para outros campos, usa "contains"
+            acc[key] = { contains: filters[key], mode: 'insensitive' }
+            break
+          }
         }
         return acc
       },
