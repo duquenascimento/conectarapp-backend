@@ -1,14 +1,30 @@
 import Fastify, { type FastifyInstance } from 'fastify'
+import cors from '@fastify/cors'
 import { registerRoutes } from './route/route'
 import { DateTime } from 'luxon'
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 
 const server: FastifyInstance = Fastify({})
 
 async function startServer (): Promise<void> {
   try {
-    await registerRoutes(server)
-    await server.listen({ port: 9841, host: '192.168.201.96' })
-    console.info(`Server started in ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
+    await Promise.all([
+      server.register(cors, {
+        origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost:3333', 'https://beta.conectarapp.com.br', 'https://pedido.conectarapp.com.br'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+      }),
+      registerRoutes(server)
+    ])
+    const port = parseInt(process.env.PORT ?? '9841', 10)
+    const host = process.env.HOST ?? '192.168.201.96'
+
+    if (isNaN(port)) {
+      throw new Error('Invalid port number. Please check the PORT environment variable.')
+    }
+    const address = await server.listen({ port, host })
+    console.info(`Server started at ${address} on ${DateTime.now().setZone('America/Sao_Paulo').toJSDate().toString()}`)
   } catch (err) {
     server.log.error(err)
     process.exit(1)

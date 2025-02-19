@@ -1,7 +1,33 @@
 import { appendFile } from 'fs/promises'
+import { DateTime } from 'luxon'
 import 'dotenv/config'
+import path from 'path'
+
+const getSãoPauloDate = (): string => {
+  const saoPauloDateTime = DateTime.now().setZone('America/Sao_Paulo')
+  return saoPauloDateTime.toFormat('yyyy-MM-dd HH:mm:ss')
+}
 
 export const logRegister = async (err: any): Promise<void> => {
-  await appendFile(`${process.env.LOG_PATH}`, `${Date()} - ERROR: ${err}\n`)
-  throw Error(process.env.INTERNAL_ERROR_MSG ?? 'internal error, try later.')
+  try {
+    console.error(err)
+    const logDir = path.join(process.cwd(), 'logs')
+    const logFileName = DateTime.now().toFormat('yyyy-MM-dd') + '.log'
+    const logPath = path.join(logDir, logFileName)
+
+    const fs = require('fs')
+    if (!fs.existsSync(logDir)) {
+      fs.mkdirSync(logDir)
+    }
+
+    const timestamp = getSãoPauloDate()
+    const errorMessage = err instanceof Error ? err.message : String(err)
+
+    await appendFile(logPath, `${timestamp} - ERROR: ${errorMessage}\n`)
+
+    throw new Error(process.env.INTERNAL_ERROR_MSG ?? 'Internal error.')
+  } catch (error) {
+    console.error('Error logging the message:', error)
+    throw error
+  }
 }
