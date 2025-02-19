@@ -2,7 +2,7 @@ import { type FastifyInstance } from 'fastify'
 import { upsert } from '../service/invoiceService'
 import { type order_invoice } from '@prisma/client'
 
-export const orderRoute = async (server: FastifyInstance): Promise<void> => {
+export const invoiceRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/invoice', async (req, res): Promise<any> => {
     try {
       await upsert(req.body as Pick<order_invoice, 'filePath' | 'orderId'>)
