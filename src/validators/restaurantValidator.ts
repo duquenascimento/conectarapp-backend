@@ -74,7 +74,8 @@ export const restaurantPatchSchema = Joi.object({
 
   // E-mail principal (opcional)
   email: Joi.string()
-    .email(),
+    .email()
+    .allow(''),
 
   // E-mail alternativo (opcional)
   alternativeEmail: Joi.string()

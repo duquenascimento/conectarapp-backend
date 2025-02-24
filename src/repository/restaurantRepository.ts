@@ -303,3 +303,22 @@ export const updateAddressByExternalIdRepository = async (
     await prisma.$disconnect()
   }
 }
+
+export const patchRestaurantRepository = async (
+  externalId: string,
+  restaurantData: Partial<restaurant>
+): Promise<void> => {
+  console.log('>>>>>>>repository', externalId, restaurantData)
+  try {
+    await prisma.restaurant.updateMany({
+      data: restaurantData,
+      where: {
+        externalId
+      }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
