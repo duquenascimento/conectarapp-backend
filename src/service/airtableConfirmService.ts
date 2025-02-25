@@ -9,6 +9,7 @@ import { findProductsIdsFromAirtable } from '../repository/airtableProductServic
 import { findIdFromAirtable } from '../repository/airtableSupplierService'
 
 export const airtableHandler = async (_order: Order, _detailing: Detailing[], yourNumber: string, orderText: string, pixKey?: string): Promise<void> => {
+  console.log('airtable handle>>>>>>', _order)
   try {
     const [supplierId, restId, productsId, restIdInSupplierApp, supplierIdInSupplierApp] = await Promise.all([
       findIdFromAirtable(process.env.AIRTABLE_TABLE_SUPPLIER_NAME ?? '', 'ID Fornecedor', _order.supplierId, process.env.AIRTABLE_BASE_ORDER_ID ?? ''),
@@ -99,6 +100,6 @@ export const airtableHandler = async (_order: Order, _detailing: Detailing[], yo
       'Texto Pedido': orderText
     })
   } catch (err) {
-    console.error(err)
+    console.error('>>>erro: ', err)
   }
 }
