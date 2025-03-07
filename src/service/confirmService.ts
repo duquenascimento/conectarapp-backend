@@ -64,6 +64,7 @@ export interface confirmOrderRequest {
 }
 
 export interface confirmOrderPremiumRequest {
+  [x: string]: any
   token: string
   selectedRestaurant: any
 }
@@ -746,6 +747,8 @@ ${cart?.map(cart => `*${String(cart.amount).replace('.', ',')}x ${(items.data.fi
 
 *${req.selectedRestaurant.name}*
 ${req.selectedRestaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${req.selectedRestaurant.responsibleReceivingPhoneNumber ?? ''}
+
+Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)} e ${req.selectedRestaurant.addressInfos[0].finalDeliveryTime.substring(11, 16)} horas
 
 ${req.selectedRestaurant.addressInfos[0].address}, ${req.selectedRestaurant.addressInfos[0].localNumber} ${req.selectedRestaurant.addressInfos[0].complement}
 ${req.selectedRestaurant.addressInfos[0].neighborhood}, ${req.selectedRestaurant.addressInfos[0].city}
