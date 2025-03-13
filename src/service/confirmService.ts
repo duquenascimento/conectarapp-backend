@@ -680,7 +680,8 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       sigla_UF: 'RJ',
       cliente_com_boleto: (getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário') ? '1' : '0',
       nome_cliente: req.restaurant.restaurant.name.replaceAll(' ', ''),
-      id_distribuidor: (req.restaurant.restaurant.externalId !== 'PF324' && req.restaurant.restaurant.externalId !== 'C186') ? 'F0' : req.supplier.externalId
+      id_distribuidor: (req.restaurant.restaurant.externalId === 'C757') ? 'F0' : req.supplier.externalId
+      //id_distribuidor: req.supplier.externalId
     } satisfies Pedido)
   }).catch(async (err) => {
     await receiptErrorMessage(req.restaurant.restaurant.externalId as string)
