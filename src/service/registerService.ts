@@ -58,6 +58,8 @@ export interface RestaurantFormData {
   maxHour: string
   closeDoor: boolean
   deliveryObs: string
+  responsibleReceivingName: string
+  responsibleReceivingPhoneNumber: string
   weeklyOrderAmount: string
   orderValue: string
   paymentWay: string
@@ -155,8 +157,8 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       street: req.street,
       zipcode: req.zipcode,
       restaurantId: [restaurantId], 
-      responsibleReceivingName: '',
-      responsibleReceivingPhoneNumber: req.phone,
+      responsibleReceivingName: req.responsibleReceivingName,
+      responsibleReceivingPhoneNumber: req.responsibleReceivingPhoneNumber,
       localType: req.localType,
       city: req.city,
       closedDoorDelivery: req.closeDoor

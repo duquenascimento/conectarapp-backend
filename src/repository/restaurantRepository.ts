@@ -79,7 +79,7 @@ export const registerAddress = async (req: addressFormData): Promise<any> => {
         initialDeliveryTime: req.minHour,
         finalDeliveryTime: req.maxHour,
         deliveryInformation: req.deliveryObs,
-        responsibleReceivingName: '',
+        responsibleReceivingName: req.responsibleReceivingName,
         responsibleReceivingPhoneNumber: req.responsibleReceivingPhoneNumber,
         deliveryReference: '',
         closedDoorDelivery: req.closedDoorDelivery,
