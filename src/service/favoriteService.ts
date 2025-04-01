@@ -46,6 +46,7 @@ export const save = async (req: ISaveFavoriteRequest): Promise<any> => {
 export interface IDeleteFavoriteRequest {
   productId: string;
   token: string;
+  restaurantId: string;
 }
 
 export interface IDeleteFavorite {
@@ -60,7 +61,7 @@ export const del = async (req: IDeleteFavoriteRequest): Promise<any> => {
     const decoded = decode(req.token) as { id: string };
     const request: IDeleteFavorite = {
       productId: req.productId,
-      restaurantId: decoded.id,
+      restaurantId: req.restaurantId,
     };
     const result = await findByProductAndUser(request as ISaveFavorite);
     if (result == null) return null;
@@ -74,6 +75,7 @@ export const del = async (req: IDeleteFavoriteRequest): Promise<any> => {
 
 export interface IListFavorite {
   token: string;
+  restaurantId: string;
 }
 
 export const list = async (req: IListFavorite): Promise<any> => {
@@ -81,7 +83,7 @@ export const list = async (req: IListFavorite): Promise<any> => {
     if (req.token == null)
       throw Error("missing token", { cause: "visibleError" });
     const decoded = decode(req.token) as { id: string };
-    const result = await listByUser(decoded.id);
+    const result = await listByUser(req.restaurantId);
 
     const raw = JSON.stringify({
       ids: result?.map((item) => item.productId),
