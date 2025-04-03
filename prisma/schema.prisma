@@ -55,6 +55,12 @@ model restaurant {
   transactions transactions[]
   allowClosedSupplier Boolean @default(false)
   allowMinimumOrder Boolean @default(false)
+  categories String[]
+}
+
+model Categories {
+  id String @id @db.Uuid
+  category String[]
 }
 
 model clientCount {

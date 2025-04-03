@@ -82,6 +82,7 @@ export const suppliersCompletePrices = async (req: ICartList): Promise<any> => {
 
     const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/list-all-prices-of-suppliers', requestOptions)
     const data = await res.json()
+    console.log('all prices supliers', data)
     return data
   } catch (err) {
     return {}

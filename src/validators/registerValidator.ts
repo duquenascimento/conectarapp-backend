@@ -25,6 +25,8 @@ const registerSchema = Joi.object({
     'any.custom': '{{#message}}'
   }),
   deliveryObs: Joi.string().optional().allow(''),
+  responsibleReceivingName:Joi.string().max(50).required(),
+  responsibleReceivingPhoneNumber:Joi.string().min(11).max(15).required(),
   closeDoor: Joi.boolean().required(),
   maxHour: Joi.string().required(),
   minHour: Joi.string().required(),
@@ -44,7 +46,7 @@ const registerSchema = Joi.object({
 
 export default registerSchema
 
-function validateNumeroString (value: string, helpers: CustomHelpers): number | ReturnType<typeof helpers.error> {
+function validateNumeroString(value: string, helpers: CustomHelpers): number | ReturnType<typeof helpers.error> {
   const numero = parseInt(value, 10)
   if (numero < 1 || numero > 7) {
     return helpers.error('any.custom', { message: 'O número máximo permitido é 7' })
@@ -52,12 +54,12 @@ function validateNumeroString (value: string, helpers: CustomHelpers): number | 
   return numero
 }
 
-function removeSpecialCharacters (value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
+function removeSpecialCharacters(value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
   const cleanedValue = value.replace(/[^\w\s]/gi, '')
   return cleanedValue
 }
 
-function customDocumentValidation (value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
+function customDocumentValidation(value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
   const isValid = validateDocument(value)
   if (!isValid) {
     return helpers.error('string.invalid', { value: 'Documento inválido' })
