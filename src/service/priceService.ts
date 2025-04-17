@@ -11,6 +11,12 @@ interface Product {
   Sku: string;
 }
 
+type SupplierItem = {
+  supplier: {
+    externalId: string;
+  };
+};
+
 export const suppliersPrices = async (req: ICartList): Promise<any> => {
   try {
     const products = await listCartComplete(req);
@@ -55,8 +61,17 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       "POST",
       raw
     );
+    //Para o banco de produção, filtrar o fornecedor de teste
+    if (process.env.FILTER_TEST_SUPPLIER === "true") {
+      const filteredSuppliers = data.data.filter(
+        (sup: SupplierItem) => sup.supplier.externalId !== "F0"
+      );
 
-    console.log("Qtd Suppliers: ", data.data.length);
+      return {
+        ...data,
+        data: filteredSuppliers,
+      };
+    }
 
     return data;
   } catch (err) {
