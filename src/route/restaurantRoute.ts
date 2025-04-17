@@ -225,6 +225,12 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
       console.log('[DEBUG] External ID:', externalId)
       console.log('[DEBUG] Dados a serem atualizados:', restaurantData)
 
+      // Se comercialBlock for true, seta blockNewApp como true
+      if (restaurantData.comercialBlock === false) {
+        restaurantData.blockNewApp = false
+        console.log('[INFO] blockNewApp setado como true porque comercialBlock está true')
+      }
+
       // Atualização dos dados do restaurante
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       const response = await patchRestaurant(externalId, restaurantData)
