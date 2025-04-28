@@ -55,6 +55,7 @@ model restaurant {
   transactions                        transactions[]
   allowClosedSupplier                 Boolean        @default(false)
   allowMinimumOrder                   Boolean        @default(false)
+  blockNewApp                         Boolean        @default(true) @db.Boolean
   categories                          String[]
 }
 
