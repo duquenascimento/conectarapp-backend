@@ -4,7 +4,7 @@ import { Decimal } from "@prisma/client/runtime/library";
 import { ApiRepository } from "../repository/apiRepository";
 
 const apiRepository = new ApiRepository(process.env.URL_API_ANTIGA ?? "");
-
+const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? "");
 interface Product {
   Qtd: Decimal;
   Obs: string;
@@ -35,6 +35,15 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       });
     });
 
+    const inactiveSuppliersResponse = await apiDbConectar.callApi(
+      "/system/suppliers/get-inactive-external-ids",
+      "GET"
+    );
+
+    const inactiveSuppliers = inactiveSuppliersResponse.data?.map(
+      (item: any) => Object.values(item)[0]
+    );
+
     const request = {
       neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
       minimumTime: `0001-01-01T${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(
@@ -53,7 +62,7 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       Obs, */
       Product: filterProducts,
       tax: req.selectedRestaurant.tax / 100 + 1,
-      SupplierToExclude: [],
+      SupplierToExclude: inactiveSuppliers,
       ActualDayWeek: "",
       ActualHour: DateTime.now()
         .setZone("America/Sao_Paulo")
