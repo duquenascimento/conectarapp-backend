@@ -20,14 +20,19 @@ type SupplierItem = {
 export const suppliersPrices = async (req: ICartList): Promise<any> => {
   try {
     const products = await listCartComplete(req);
+
+    const filterProducts: any[] = [];
+
     const skus: string[] = [];
     const quant: number[] = [];
     const Obs: string[] = [];
 
     products?.forEach((item) => {
-      skus.push(item.sku ?? "");
-      quant.push(Number(item.amount ?? 0));
-      Obs.push(item.obs ?? "");
+      filterProducts.push({
+        Qtd: Number(item.amount ?? 0),
+        Obs: item.obs ?? "",
+        Sku: item.sku ?? "",
+      });
     });
 
     const request = {
@@ -43,9 +48,10 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       externalId: "F0",
       createdBy: "system",
       DiaEntrega: "",
-      skus,
+      /* skus,
       quant,
-      Obs,
+      Obs, */
+      Product: filterProducts,
       tax: req.selectedRestaurant.tax / 100 + 1,
       SupplierToExclude: [],
       ActualDayWeek: "",
@@ -57,7 +63,7 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
     const raw = JSON.stringify(request);
 
     const data = await apiRepository.callApi(
-      "/list-available-supplier",
+      "/list-available-supplier-new",
       "POST",
       raw
     );
