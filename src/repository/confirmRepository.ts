@@ -99,7 +99,7 @@ export const checkOrder = async (orderId: string): Promise<any> => {
     return result
   } catch (err: any) {
     await prisma.$disconnect()
-    console.log(err)
+    console.error(err)
     await logRegister(err)
     return null
   }
@@ -120,7 +120,7 @@ export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }
     return result
   } catch (err: any) {
     await prisma.$disconnect()
-    console.log(err)
+    console.error(err)
     await logRegister(err)
     return null
   }

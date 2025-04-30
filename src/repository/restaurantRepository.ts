@@ -308,7 +308,6 @@ export const patchRestaurantRepository = async (
   externalId: string,
   restaurantData: Partial<restaurant>
 ): Promise<void> => {
-  console.log('>>>>>>>repository', externalId, restaurantData)
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,

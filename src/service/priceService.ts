@@ -1,48 +1,48 @@
-import { DateTime } from "luxon";
-import { type ICartList, listCartComplete } from "./cartService";
-import { Decimal } from "@prisma/client/runtime/library";
-import { ApiRepository } from "../repository/apiRepository";
+import { DateTime } from 'luxon'
+import { type ICartList, listCartComplete } from './cartService'
+import { Decimal } from '@prisma/client/runtime/library'
+import { ApiRepository } from '../repository/apiRepository'
 
-const apiRepository = new ApiRepository(process.env.URL_API_ANTIGA ?? "");
-const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? "");
+const apiRepository = new ApiRepository(process.env.URL_API_ANTIGA ?? '')
+const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
 interface Product {
-  Qtd: Decimal;
-  Obs: string;
-  Sku: string;
+  Qtd: Decimal
+  Obs: string
+  Sku: string
 }
 
-type SupplierItem = {
+interface SupplierItem {
   supplier: {
-    externalId: string;
-  };
-};
+    externalId: string
+  }
+}
 
 export const suppliersPrices = async (req: ICartList): Promise<any> => {
   try {
-    const products = await listCartComplete(req);
+    const products = await listCartComplete(req)
 
-    const filterProducts: any[] = [];
+    const filterProducts: any[] = []
 
-    const skus: string[] = [];
-    const quant: number[] = [];
-    const Obs: string[] = [];
+    const skus: string[] = []
+    const quant: number[] = []
+    const Obs: string[] = []
 
     products?.forEach((item) => {
       filterProducts.push({
         Qtd: Number(item.amount ?? 0),
-        Obs: item.obs ?? "",
-        Sku: item.sku ?? "",
-      });
-    });
+        Obs: item.obs ?? '',
+        Sku: item.sku ?? ''
+      })
+    })
 
     const inactiveSuppliersResponse = await apiDbConectar.callApi(
-      "/system/suppliers/get-inactive-external-ids",
-      "GET"
-    );
+      '/system/suppliers/get-inactive-external-ids',
+      'GET'
+    )
 
     const inactiveSuppliers = inactiveSuppliersResponse.data?.map(
-      (item: any) => Object.values(item)[0]
-    );
+      (item: string) => Object.values(item)[0]
+    )
 
     const request = {
       neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
@@ -54,57 +54,57 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
         11,
         16
       )}:00.00000+00:00`,
-      externalId: "F0",
-      createdBy: "system",
-      DiaEntrega: "",
+      externalId: 'F0',
+      createdBy: 'system',
+      DiaEntrega: '',
       /* skus,
       quant,
       Obs, */
       Product: filterProducts,
       tax: req.selectedRestaurant.tax / 100 + 1,
       SupplierToExclude: inactiveSuppliers,
-      ActualDayWeek: "",
+      ActualDayWeek: '',
       ActualHour: DateTime.now()
-        .setZone("America/Sao_Paulo")
-        .toISO({ suppressMilliseconds: false }),
-    };
+        .setZone('America/Sao_Paulo')
+        .toISO({ suppressMilliseconds: false })
+    }
 
-    const raw = JSON.stringify(request);
+    const raw = JSON.stringify(request)
 
     const data = await apiRepository.callApi(
-      "/list-available-supplier-new",
-      "POST",
+      '/list-available-supplier-new',
+      'POST',
       raw
-    );
-    //Para o banco de produção, filtrar o fornecedor de teste
-    if (process.env.FILTER_TEST_SUPPLIER === "true") {
+    )
+    // Para o banco de produção, filtrar o fornecedor de teste
+    if (process.env.FILTER_TEST_SUPPLIER === 'true') {
       const filteredSuppliers = data.data.filter(
-        (sup: SupplierItem) => sup.supplier.externalId !== "F0"
-      );
+        (sup: SupplierItem) => sup.supplier.externalId !== 'F0'
+      )
 
       return {
         ...data,
-        data: filteredSuppliers,
-      };
+        data: filteredSuppliers
+      }
     }
 
-    return data;
+    return data
   } catch (err) {
-    console.error("Erro ao buscar preços dos fornecedores:", err);
-    return {};
+    console.error('Erro ao buscar preços dos fornecedores:', err)
+    return {}
   }
-};
+}
 
 export const suppliersCompletePrices = async (req: ICartList): Promise<any> => {
   try {
-    const products = await listCartComplete(req);
+    const products = await listCartComplete(req)
     const Product: Product[] | undefined = products?.map((item) => {
       return {
         Qtd: item.amount ?? new Decimal(0),
-        Obs: item.obs ?? "",
-        Sku: item.sku ?? "",
-      };
-    });
+        Obs: item.obs ?? '',
+        Sku: item.sku ?? ''
+      }
+    })
     const request = {
       neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
       minimumTime: `0001-01-01T${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(
@@ -115,49 +115,48 @@ export const suppliersCompletePrices = async (req: ICartList): Promise<any> => {
         11,
         16
       )}:00.00000+00:00`,
-      externalId: "F0",
-      createdBy: "system",
-      DiaEntrega: "",
+      externalId: 'F0',
+      createdBy: 'system',
+      DiaEntrega: '',
       Product,
       tax: req.selectedRestaurant.tax / 100 + 1,
       SupplierToExclude: [],
-      ActualDayWeek: "",
+      ActualDayWeek: '',
       ActualHour: DateTime.now()
-        .setZone("America/Sao_Paulo")
+        .setZone('America/Sao_Paulo')
         .toJSDate()
-        .toISOString(),
-    };
+        .toISOString()
+    }
 
-    const myHeaders = new Headers();
-    myHeaders.append("secret-key", "9ba805b2-6c58-4adc-befc-aad30c6af23a");
-    myHeaders.append("external-id", "F0");
-    myHeaders.append("username", "contato@conectarhortifruti.com.br");
-    myHeaders.append("Content-Type", "application/json");
+    const myHeaders = new Headers()
+    myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
+    myHeaders.append('external-id', 'F0')
+    myHeaders.append('username', 'contato@conectarhortifruti.com.br')
+    myHeaders.append('Content-Type', 'application/json')
     myHeaders.append(
-      "system-user-pass",
-      "d2NuOUVVNnJWbDR5dDE5Mnl0WFdaeGo2cjRGeEtycUMydzNaWEJ5enlub0FLQmdjdEU2anBVQ2RDbWxkM2xSMQo="
-    );
+      'system-user-pass',
+      'd2NuOUVVNnJWbDR5dDE5Mnl0WFdaeGo2cjRGeEtycUMydzNaWEJ5enlub0FLQmdjdEU2anBVQ2RDbWxkM2xSMQo='
+    )
     myHeaders.append(
-      "Authorization",
-      "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA2LTIwVDAzOjQwOjM3IiwibmJmIjoxNzE3OTkwODM3LCJleHAiOjE3MTg4NTQ4MzcsImlhdCI6MTcxNzk5MDgzNywiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.RBX5whQIqwtRJOnjTX622qvwCFQJxcgVXQKTyUoVFys"
-    );
+      'Authorization',
+      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA2LTIwVDAzOjQwOjM3IiwibmJmIjoxNzE3OTkwODM3LCJleHAiOjE3MTg4NTQ4MzcsImlhdCI6MTcxNzk5MDgzNywiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.RBX5whQIqwtRJOnjTX622qvwCFQJxcgVXQKTyUoVFys'
+    )
 
-    const raw = JSON.stringify(request);
+    const raw = JSON.stringify(request)
 
     const requestOptions = {
-      method: "POST",
+      method: 'POST',
       headers: myHeaders,
-      body: raw,
-    };
+      body: raw
+    }
 
     const res = await fetch(
-      "https://gateway.conectarhortifruti.com.br/api/v1/system/list-all-prices-of-suppliers",
+      'https://gateway.conectarhortifruti.com.br/api/v1/system/list-all-prices-of-suppliers',
       requestOptions
-    );
-    const data = await res.json();
-    console.log("all prices supliers", data);
-    return data;
+    )
+    const data = await res.json()
+    return data
   } catch (err) {
-    return {};
+    return {}
   }
-};
+}

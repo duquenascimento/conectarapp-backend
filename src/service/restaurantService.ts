@@ -142,14 +142,11 @@ export const patchRestaurant = async (
 ): Promise<void> => {
   try {
     // Log: Início da operação de atualização parcial
-    console.log(`[SERVICE] Iniciando atualização parcial do restaurante com externalId: ${externalId}`)
-    console.log(`[SERVICE] Dados recebidos para atualização:`, restaurantData)
 
     // Chama o repositório para atualizar os dados no banco de dados
     await patchRestaurantRepository(externalId, restaurantData)
 
     // Log: Atualização bem-sucedida
-    console.log(`[SERVICE] Restaurante com externalId ${externalId} atualizado com sucesso.`)
   } catch (err) {
     // Log: Captura e registro de erro
     console.error(`[SERVICE] Erro ao atualizar restaurante com externalId ${externalId}:`, err)

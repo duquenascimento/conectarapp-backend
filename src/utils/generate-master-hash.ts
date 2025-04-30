@@ -9,8 +9,6 @@ async function generateMasterHash() {
   }
 
   const hash = await encryptPassword(masterPassword);
-  console.log("MASTER_PASSWORD_HASH=", hash);
-  console.log("\nCopie este valor para seu .env");
 }
 
 generateMasterHash().catch(console.error);

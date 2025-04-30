@@ -1,5 +1,4 @@
 export const mapCnpjData = (data: any): any => {
-  console.log('data CHECK CNPJ', data)
   try {
     if (!data?.cnpj || !data.razao) {
       console.error('Dados insuficientes para mapear o CNPJ:', data)

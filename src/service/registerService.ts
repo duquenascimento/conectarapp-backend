@@ -195,7 +195,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
 
     await updateUserWithRestaurant(decoded.id, restaurantId, DateTime.now().setZone('America/Sao_Paulo').toJSDate())
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
 

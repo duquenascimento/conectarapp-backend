@@ -787,7 +787,6 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
   }
 }
 
-
 export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
   try {
     // Decodificar o token para obter o ID do usuário/restaurante
