@@ -203,14 +203,14 @@ export const updateAddress = async (addressId: string, data: any): Promise<any> 
   }
 }
 
-export const updateComercialBlockRepository = async (restId: string, value: boolean): Promise<void> => {
+export const updateRegistrationReleasedNewAppRepository = async (restId: string, value: boolean): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
       where: {
         externalId: restId
       },
       data: {
-        comercialBlock: value
+        registrationReleasedNewApp: value
       }
     })
   } catch (err: any) {

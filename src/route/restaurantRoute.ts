@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
 import { type address, type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -53,7 +53,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string, value: boolean })
+      await updateRegistrationReleasedNewApp(req.body as { restId: string, value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -218,10 +218,10 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         [key: string]: any
       }
 
-      // Se comercialBlock for true, seta blockNewApp como true
+      /*// Se comercialBlock for true, seta blockNewApp como true
       if (restaurantData.comercialBlock === false) {
         restaurantData.blockNewApp = false
-      }
+      }*/
 
       // Atualização dos dados do restaurante
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
