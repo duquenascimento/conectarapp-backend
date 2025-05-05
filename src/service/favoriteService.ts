@@ -1,5 +1,6 @@
 import {
   saveFavorite,
+  updateFavorite,
   deleteFavorite,
   findByProductAndUser,
   listByUser,
@@ -15,12 +16,14 @@ export interface ISaveFavoriteRequest {
   token: string;
   productId: string;
   restaurantId: string; //adicionado id do restaurante a salvar o favorito
+  obs?: string;
 }
 
 export interface ISaveFavorite {
   id: string;
   productId: string;
   restaurantId: string;
+  obs?: string;
 }
 
 export const save = async (req: ISaveFavoriteRequest): Promise<any> => {
@@ -32,7 +35,9 @@ export const save = async (req: ISaveFavoriteRequest): Promise<any> => {
       id: uuidv4(),
       productId: req.productId,
       restaurantId: req.restaurantId,
+
     };
+    console.log(request)
     const result = await findByProductAndUser(request);
     if (result != null) return null;
     await saveFavorite(request);
@@ -109,4 +114,51 @@ export const list = async (req: IListFavorite): Promise<any> => {
     if ((err as any).cause !== "visibleError") await logRegister(err);
     throw Error((err as Error).message);
   }
+
 };
+
+export interface IUpdateFavoriteRequest {
+  token: string;
+  productId: string;
+  restaurantId: string;
+  obs: string;
+}
+
+export interface IUpdateFavorite {
+  id: string,
+  obs: string
+}
+
+export const update = async (req: IUpdateFavoriteRequest): Promise<any> => {
+  console.log("Requisição recebida para update:", req);
+
+  try {
+    if (req.token == null)
+      throw Error("missing token", { cause: "visibleError" });
+
+    const decoded = decode(req.token) as { id: string };
+
+    const request: ISaveFavorite = {
+      id: uuidv4(), // você não usará esse id diretamente, mas é necessário para a função
+      productId: req.productId,
+      restaurantId: req.restaurantId,
+    };
+    console.log(request)
+    const result = await findByProductAndUser(request);
+    console.log(result)
+    if (result === null) return null;
+
+    const updateData: IUpdateFavorite = {
+      id: result.id,
+      obs: req.obs,
+    };
+    console.log("updateData", updateData)
+    await updateFavorite(updateData);
+    return true;
+  } catch (err) {
+    if ((err as any).cause !== "visibleError") await logRegister(err);
+    throw Error((err as Error).message);
+  }
+};
+
+
