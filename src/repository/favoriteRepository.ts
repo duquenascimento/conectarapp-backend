@@ -1,7 +1,7 @@
 import { type favorite, PrismaClient } from "@prisma/client";
 import "dotenv/config";
 import { logRegister } from "../utils/logUtils";
-import { type ISaveFavorite } from "../service/favoriteService";
+import { type ISaveFavorite, IUpdateFavorite } from "../service/favoriteService";
 
 const prisma = new PrismaClient();
 
@@ -23,6 +23,26 @@ export const saveFavorite = async (req: ISaveFavorite): Promise<any> => {
   }
 };
 
+export const updateFavorite = async (req: IUpdateFavorite): Promise<any> => {
+  try {
+    const result = await prisma.favorite.update({
+      where: {
+        id: req.id,
+      },
+      data: {
+        obs: req.obs,
+      },
+    });
+    await prisma.$disconnect();
+    console.log("retornoRepository", result)
+    return result;
+  } catch (err: any) {
+    await prisma.$disconnect();
+    await logRegister(err);
+    return null;
+  }
+};
+
 export const findByProductAndUser = async (
   req: ISaveFavorite
 ): Promise<favorite | null> => {
@@ -33,6 +53,7 @@ export const findByProductAndUser = async (
         restaurantId: req.restaurantId,
       },
     });
+    console.log(result)
     await prisma.$disconnect();
     return result;
   } catch (err) {
