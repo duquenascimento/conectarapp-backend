@@ -53,7 +53,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateRegistrationReleasedNewApp(req.body as { restId: string, value: boolean })
+      await updateRegistrationReleasedNewApp(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -75,7 +75,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string, value: boolean })
+      await updateFinanceBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -97,7 +97,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number, value: boolean })
+      await AddClientCount(req.body as { count: number; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -139,16 +139,32 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
+  function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
+    const result: Partial<T> = {}
+
+    ;(Object.entries(obj) as Array<[keyof T, T[keyof T]]>).forEach(([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        result[key] = value
+      }
+    })
+
+    return result
+  }
+
   server.put('/rest/updateRestaurant', async (req, res): Promise<void> => {
     try {
-      const { error } = restaurantUpdateSchema.validate(req.body)
+      const data = cleanObject(req.body as Record<string, unknown>)
+
+      const { error } = restaurantUpdateSchema.validate(data)
       if (error) {
         return await res.status(422).send({ error: error.details[0].message })
       }
-      const { externalId, ...restaurantData } = req.body as {
+      const { externalId, ...restaurantData } = data as {
         externalId: string
         [key: string]: any
       }
+
+      console.log(restaurantData)
 
       await updateRestaurant(externalId, restaurantData)
       return await res.status(200).send({
