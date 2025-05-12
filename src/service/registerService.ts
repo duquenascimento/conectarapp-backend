@@ -187,7 +187,8 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       address: [addressId],
       favorite: [],
       paymentWay: req.paymentWay,
-      premium: Number(req.orderValue) >= 400
+      premium: Number(req.orderValue) >= 400,
+      registrationReleasedNewApp: true
     }
 
     await createRestaurant(restData)
