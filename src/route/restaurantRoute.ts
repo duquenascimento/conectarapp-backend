@@ -192,8 +192,6 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         [key: string]: any
       }
 
-      console.log(restaurantData)
-
       await updateRestaurant(externalId, restaurantData)
       return await res.status(200).send({
         status: 200,
