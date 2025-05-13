@@ -256,7 +256,7 @@ export const updateAllowCloseSupplierAndMinimumOrderRepository = async (req: Pic
 
 export const updateRestaurantRepository = async (
   externalId: string,
-  restaurantData: Partial<restaurant>
+  restaurantData: Partial<restaurant> & { verduraKg?: boolean }
 ): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({

@@ -114,7 +114,7 @@ async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'exte
 
 export const updateRestaurant = async (
   externalId: string,
-  restaurantData: Partial<restaurant>
+  restaurantData: Partial<restaurant> & { verduraKg?: boolean }
 ): Promise<void> => {
   try {
     await updateRestaurantRepository(externalId, restaurantData)
