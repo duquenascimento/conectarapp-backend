@@ -203,6 +203,24 @@ export const updateAddress = async (addressId: string, data: any): Promise<any> 
   }
 }
 
+export const updateComercialBlockRepository = async (restId: string, value: boolean): Promise<void> => {
+  try {
+    await prisma.restaurant.updateMany({
+      where: {
+        externalId: restId
+      },
+      data: {
+        comercialBlock: value
+      }
+    })
+  } catch (err: any) {
+    await prisma.$disconnect()
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 export const updateRegistrationReleasedNewAppRepository = async (restId: string, value: boolean): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
@@ -214,8 +232,8 @@ export const updateRegistrationReleasedNewAppRepository = async (restId: string,
       }
     })
   } catch (err: any) {
-    await prisma.$disconnect()
     await logRegister(err)
+    throw new Error(process.env.INTERNAL_ERROR_MSG)
   } finally {
     await prisma.$disconnect()
   }
