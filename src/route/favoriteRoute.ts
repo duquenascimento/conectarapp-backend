@@ -57,7 +57,6 @@ export const favoriteRoute = async (server: FastifyInstance): Promise<void> => {
           status: 200,
           msg: message
         })
-        console.log(message)
       }
     }
   })

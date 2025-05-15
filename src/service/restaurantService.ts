@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 
@@ -85,6 +85,17 @@ export const updateComercialBlock = async (req: { restId: string, value: boolean
   }
 }
 
+export const updateRegistrationReleasedNewApp = async (req: { restId: string, value: boolean }): Promise<void> => {
+  try {
+    await updateRegistrationReleasedNewAppRepository(req.restId, req.value)
+  } catch (err: any) {
+    if (err.cause !== 'visibleError') {
+      await logRegister(err)
+    }
+    throw new Error(err.message, { cause: err.cause })
+  }
+}
+
 export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
   try {
     await updateFinanceBlockRepository(req.restId, req.value)
@@ -142,14 +153,11 @@ export const patchRestaurant = async (
 ): Promise<void> => {
   try {
     // Log: Início da operação de atualização parcial
-    console.log(`[SERVICE] Iniciando atualização parcial do restaurante com externalId: ${externalId}`)
-    console.log(`[SERVICE] Dados recebidos para atualização:`, restaurantData)
 
     // Chama o repositório para atualizar os dados no banco de dados
     await patchRestaurantRepository(externalId, restaurantData)
 
     // Log: Atualização bem-sucedida
-    console.log(`[SERVICE] Restaurante com externalId ${externalId} atualizado com sucesso.`)
   } catch (err) {
     // Log: Captura e registro de erro
     console.error(`[SERVICE] Erro ao atualizar restaurante com externalId ${externalId}:`, err)

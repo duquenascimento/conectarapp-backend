@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
 import { type address, type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -73,11 +73,40 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
+  server.post('/rest/updateRegistrationReleasedNewApp', async (req, res): Promise<void> => {
+
+  // Validação dos tipos
+  const { error } = restaurantPatchSchema.validate(req.body)
+      if (error) {
+        console.error('[ERROR] Erro de validação:', error.details[0].message)
+        return await res.status(422).send({ error: error.details[0].message })
+      }
+  try {
+    const { externalId, registrationReleasedNewApp } = req.body as { externalId: string, registrationReleasedNewApp: boolean }
+
+    // Certifique-se de que a função espera esses campos
+    await updateRegistrationReleasedNewApp({
+      restId: externalId,
+      value: registrationReleasedNewApp
+    })
+    res.status(200).send({ status: 200 })
+  } catch (err) {
+    const message = (err as Error).message
+    const isInternal = message === process.env.INTERNAL_ERROR_MSG
+
+    res.status(isInternal ? 500 : 422).send({
+      status: isInternal ? 500 : 422,
+      msg: message
+    })
+  }
+})
+
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
       await updateFinanceBlock(req.body as { restId: string, value: boolean })
       return await res.status(200).send({
-        status: 200
+        status: 200,
+        msg: "Atualização realizada com sucesso"
       })
     } catch (err) {
       const message = (err as Error).message
@@ -205,9 +234,6 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.patch('/restaurants', async (req, res) => {
     try {
-      // Log: Início da requisição
-      console.log('[DEBUG] Requisição recebida para atualizar restaurante:', req.body)
-
       // Validação do corpo da requisição
       const { error } = restaurantPatchSchema.validate(req.body)
       if (error) {
@@ -221,17 +247,14 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         [key: string]: any
       }
 
-      // Log: Dados extraídos
-      console.log('[DEBUG] External ID:', externalId)
-      console.log('[DEBUG] Dados a serem atualizados:', restaurantData)
+      /*// Se comercialBlock for true, seta blockNewApp como true
+      if (restaurantData.comercialBlock === false) {
+        restaurantData.blockNewApp = false
+      }*/
 
       // Atualização dos dados do restaurante
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       const response = await patchRestaurant(externalId, restaurantData)
-      console.log('>>>>>>>>>dados recebidos', response)
-
-      // Log: Atualização bem-sucedida
-      console.log('[DEBUG] Restaurante atualizado com sucesso.')
 
       // Resposta de sucesso
       return await res.status(200).send({
@@ -239,20 +262,13 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         msg: 'Restaurante atualizado com sucesso.'
       })
     } catch (err) {
-      // Log: Captura de erro geral
-      console.error('[ERROR] Erro ao processar a requisição:', err)
-
       const message = (err as Error).message
       if (message === process.env.INTERNAL_ERROR_MSG) {
-        // Log: Erro interno do servidor
-        console.error('[ERROR] Erro interno do servidor:', message)
         return await res.status(500).send({
           status: 500,
           msg: message
         })
       } else {
-        // Log: Recurso não encontrado ou outro erro
-        console.error('[ERROR] Recurso não encontrado ou erro desconhecido:', message)
         return await res.status(404).send({
           status: 404,
           msg: message

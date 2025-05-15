@@ -30,6 +30,7 @@ const restaurantUpdateSchema = Joi.object({
   verduraKg: Joi.boolean(),
   premium: Joi.boolean(),
   comercialBlock: Joi.boolean(),
+  registrationReleasedNewApp: Joi.boolean(),
   financeBlock: Joi.boolean(),
   allowClosedSupplier: Joi.boolean(),
   allowMinimumOrder: Joi.boolean()
@@ -152,6 +153,9 @@ export const restaurantPatchSchema = Joi.object({
 
   // Status premium (opcional)
   premium: Joi.boolean(),
+
+  // Bloqueio novo app (opcional)
+  registrationReleasedNewApp: Joi.boolean(),
 
   // Bloqueio comercial (opcional)
   comercialBlock: Joi.boolean(),

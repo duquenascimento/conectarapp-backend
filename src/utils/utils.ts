@@ -2,10 +2,6 @@ import 'dotenv/config'
 
 export const saveFile = async (url: string, fileName: string): Promise<string | null> => {
   try {
-    console.log('Iniciando saveFile...')
-    console.log('URL recebida:', url)
-    console.log('Nome do arquivo:', fileName)
-
     // Monta a URL da requisição
     const urlRequest = `https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${encodeURIComponent(url)}&fileName=${encodeURIComponent(fileName)}`
 
@@ -32,7 +28,6 @@ export const saveFile = async (url: string, fileName: string): Promise<string | 
 
     // Extrai a resposta JSON
     const responseData = await response.json()
-    console.log('Resposta completa da API:', responseData) // Log da resposta completa
 
     // Extrai a URL do arquivo salvo
     const savedFileUrl = responseData?.data?.url // Ajuste para acessar o campo correto
@@ -41,7 +36,6 @@ export const saveFile = async (url: string, fileName: string): Promise<string | 
       return null
     }
 
-    console.log('Arquivo salvo com sucesso. URL:', savedFileUrl)
     return savedFileUrl
   } catch (err) {
     console.error('Erro capturado durante o saveFile:', err)
@@ -77,7 +71,6 @@ export const sendEmail = async (data: any, email: string, templateId: string): P
       body
     })
     const response = await responsePromise.text()
-    console.log(response)
   } catch (err) {
     console.error(err)
   }
