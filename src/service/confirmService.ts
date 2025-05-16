@@ -22,6 +22,7 @@ import { bolecodeAndPixErrorMessage, receiptErrorMessage } from '../utils/slackU
 import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { type agendamentoPedido } from '../types/confirmTypes'
+import { uploadBarcodeToS3, uploadPdfFileToS3, uploadQRCodeToS3 } from '../utils/uploadToS3Utils'
 
 export interface Supplier {
   name: string
@@ -216,18 +217,26 @@ const formatDataToBolecode = async (data: confirmOrderRequest, yourNumber: strin
           data_vencimento: getPaymentDate(data.restaurant.restaurant.paymentWay as string),
           texto_uso_beneficiario: '000001',
           valor_titulo: data.supplier.discount.orderValueFinish.toFixed(2).replace('.', '').padStart(12, '0'),
-          data_limite_pagamento: DateTime.now().set({ month: DateTime.now().get('month') + 2 }).toISODate()
+          data_limite_pagamento: DateTime.now()
+            .set({ month: DateTime.now().get('month') + 2 })
+            .toISODate()
         }
       ],
       juros: {
-        data_juros: DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string)).set({ day: DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string)).get('day') + 1 }).toISODate() ?? '',
+        data_juros:
+          DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string))
+            .set({ day: DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string)).get('day') + 1 })
+            .toISODate() ?? '',
         codigo_tipo_juros: '93',
         valor_juros: ((data.supplier.discount.orderValueFinish * 0.01) / 30).toFixed(2).replace('.', '').padStart(17, '0')
       },
       multa: {
         codigo_tipo_multa: '02',
         percentual_multa: '000000200000',
-        data_multa: DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string)).set({ day: DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string)).get('day') + 1 }).toISODate() ?? ''
+        data_multa:
+          DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string))
+            .set({ day: DateTime.fromISO(getPaymentDate(data.restaurant.restaurant.paymentWay as string)).get('day') + 1 })
+            .toISODate() ?? ''
       },
       lista_mensagem_cobranca: [
         {
@@ -272,7 +281,7 @@ const formatDataToBolecode = async (data: confirmOrderRequest, yourNumber: strin
   return interData
 }
 
-function generateBarcode (barcodeValue: string): string {
+function generateBarcode(barcodeValue: string): string {
   const canvas = createCanvas(0, 0)
   JsBarcode(canvas, barcodeValue, {
     format: 'ITF',
@@ -284,7 +293,7 @@ function generateBarcode (barcodeValue: string): string {
   return canvas.toDataURL('image/png')
 }
 
-function convertBase64ToPng (base64String: string, filePath: string): void {
+function convertBase64ToPng(base64String: string, filePath: string): void {
   const base64Data = base64String.replace(/^data:image\/png;base64,/, '')
 
   const buffer = Buffer.from(base64Data, 'base64')
@@ -292,7 +301,7 @@ function convertBase64ToPng (base64String: string, filePath: string): void {
   writeFileSync(filePath, buffer)
 }
 
-async function generateQRCode (text: string, filePath: string): Promise<void> {
+async function generateQRCode(text: string, filePath: string): Promise<void> {
   try {
     const qrImage = await QRCode.toBuffer(text, { type: 'png', width: 100 })
     writeFileSync(filePath, qrImage)
@@ -302,10 +311,7 @@ async function generateQRCode (text: string, filePath: string): Promise<void> {
 }
 
 export const confirmOrder = async (req: confirmOrderRequest): Promise<any> => {
-  const diferencaEmMilissegundos = Math.abs(
-    DateTime.fromISO('1900-01-01', { zone: 'America/Sao_Paulo' }).toMillis() -
-    DateTime.now().setZone('America/Sao_Paulo').toMillis()
-  )
+  const diferencaEmMilissegundos = Math.abs(DateTime.fromISO('1900-01-01', { zone: 'America/Sao_Paulo' }).toMillis() - DateTime.now().setZone('America/Sao_Paulo').toMillis())
   const milissegundosPorDia = 1000 * 60 * 60 * 24
   const diferencaEmDias = Math.ceil(diferencaEmMilissegundos / milissegundosPorDia) + 2
 
@@ -351,13 +357,23 @@ export const confirmOrder = async (req: confirmOrderRequest): Promise<any> => {
   const calcOrderAgain = await suppliersPrices({ token: req.token, selectedRestaurant: req.restaurant.restaurant })
   const allSuppliers = await suppliersCompletePrices({ token: req.token, selectedRestaurant: req.restaurant.restaurant })
 
-  const ourNumber = (Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0')).slice(-8)
-  const yourNumber = (Date.now().toString() + Math.floor(Math.random() * 1000).toString().padStart(3, '0')).slice(-10)
+  const ourNumber = (
+    Date.now().toString() +
+    Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0')
+  ).slice(-8)
+  const yourNumber = (
+    Date.now().toString() +
+    Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0')
+  ).slice(-10)
 
   const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
-${req.supplier.discount.product?.map(cart => `*${String(cart.quant).replace('.', ',')}x ${cart.name}* cód. ${cart.sku}${(cart.obs === '') ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
+${req.supplier.discount.product?.map((cart) => `*${String(cart.quant).replace('.', ',')}x ${cart.name}* cód. ${cart.sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
 
 ---------------------------------------
 
@@ -372,22 +388,26 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     `
   const detailing: Detailing[] = []
 
-  req.supplier.discount.product.forEach(item => {
+  req.supplier.discount.product.forEach((item) => {
     if (item.sku == null) {
       console.log(item)
     }
 
-    const suppliersDetailing = allSuppliers.data.flatMap((s: any) => {
-      const product = s.supplier.discount.product.find((p: any) => p.sku === item.sku)
-      if (product != null) {
-        return [{
-          externalId: s.supplier.externalId,
-          discount: s.supplier.discount.discount,
-          priceUnique: product.priceUnique
-        }]
-      }
-      return []
-    }).filter(Boolean)
+    const suppliersDetailing = allSuppliers.data
+      .flatMap((s: any) => {
+        const product = s.supplier.discount.product.find((p: any) => p.sku === item.sku)
+        if (product != null) {
+          return [
+            {
+              externalId: s.supplier.externalId,
+              discount: s.supplier.discount.discount,
+              priceUnique: product.priceUnique
+            }
+          ]
+        }
+        return []
+      })
+      .filter(Boolean)
 
     detailing.push({
       conectarFinalPrice: item.price,
@@ -439,7 +459,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     tax: req.restaurant.restaurant.tax / 100,
     totalConectar: req.supplier.discount.orderValueFinish,
     totalSupplier: req.supplier.discount.orderWithoutTax,
-    detailing: detailing.map(item => item.id),
+    detailing: detailing.map((item) => item.id),
     supplierId: req.supplier.externalId,
     calcOrderAgain: { data: calcOrderAgain.data }
   }
@@ -448,6 +468,8 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 
   let barCodeImage = ''
   let pixKey = ''
+  let qrCodeUrl = ''
+  let barCodeUrl = ''
 
   if (paymentWayString === 'Diário' || paymentWayString === 'À Vista') {
     const bolecodeData = await formatDataToBolecode(req, yourNumber, ourNumber, orderId, deliveryDate)
@@ -509,19 +531,18 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
                   reject(new Error(`Timeout: bolecode not generated in ${SECONDS / 1000}s`))
                 }, SECONDS)
               })
-            ])
-              .catch(async (error) => {
-                await Promise.all([
-                  updateTransaction({ status_id: 11 }, transaction?.id!),
-                  updateBolecode({ status_id: 11 }, bolecode?.id!),
-                  bolecodeAndPixErrorMessage({
-                    externalId: req.restaurant.restaurant.externalId ?? '',
-                    finalValue: req.supplier.discount.orderValueFinish,
-                    paymentWay: paymentWayString
-                  })
-                ])
-                throw error
-              }),
+            ]).catch(async (error) => {
+              await Promise.all([
+                updateTransaction({ status_id: 11 }, transaction?.id!),
+                updateBolecode({ status_id: 11 }, bolecode?.id!),
+                bolecodeAndPixErrorMessage({
+                  externalId: req.restaurant.restaurant.externalId ?? '',
+                  finalValue: req.supplier.discount.orderValueFinish,
+                  paymentWay: paymentWayString
+                })
+              ])
+              throw error
+            }),
             updateBolecode({ transaction_gateway_id: bolecodeResponse.codigoSolicitacao }, bolecode?.id!)
           ])
 
@@ -529,13 +550,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
             throw new Error(`error generating bolecode, request used: ${JSON.stringify(interData)}`)
           }
 
-          const {
-            codigoBarras,
-            codigoSolicitacao,
-            linhaDigitavel,
-            pixCopiaECola,
-            txid
-          } = bolecodeDataResponse as WebhookBolecodeResponse
+          const { codigoBarras, codigoSolicitacao, linhaDigitavel, pixCopiaECola, txid } = bolecodeDataResponse as WebhookBolecodeResponse
 
           barCodeImage = generateBarcode(codigoBarras)
           digitableBarCode = linhaDigitavel
@@ -543,15 +558,18 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 
           await Promise.all([
             updateTransaction({ status_id: 4 }, transaction?.id!),
-            updateBolecode({
-              codebar: codigoBarras ?? null,
-              digitable_line: linhaDigitavel ?? null,
-              pix_code: pixCopiaECola ?? null,
-              status_id: 4,
-              txId: txid ?? null,
-              status_updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
-              transaction_gateway_id: codigoSolicitacao
-            }, bolecode?.id!)
+            updateBolecode(
+              {
+                codebar: codigoBarras ?? null,
+                digitable_line: linhaDigitavel ?? null,
+                pix_code: pixCopiaECola ?? null,
+                status_id: 4,
+                txId: txid ?? null,
+                status_updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+                transaction_gateway_id: codigoSolicitacao
+              },
+              bolecode?.id!
+            )
           ])
         } else {
           const pix = await generatePix({
@@ -579,21 +597,21 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
             infoAdicionais: []
           })
 
-          const {
-            pixCopiaECola,
-            txid
-          } = pix as PixFineAndInterestResponse
+          const { pixCopiaECola, txid } = pix as PixFineAndInterestResponse
 
           pixKey = pixCopiaECola
 
           await Promise.all([
             updateTransaction({ status_id: 4 }, transaction?.id!),
-            updateBolecode({
-              pix_code: pixCopiaECola ?? null,
-              status_id: 4,
-              txId: txid ?? null,
-              status_updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate()
-            }, bolecode?.id!)
+            updateBolecode(
+              {
+                pix_code: pixCopiaECola ?? null,
+                status_id: 4,
+                txId: txid ?? null,
+                status_updatedAt: DateTime.now().setZone('America/Sao_Paulo').toJSDate()
+              },
+              bolecode?.id!
+            )
           ])
         }
       }
@@ -610,10 +628,17 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       ])
     }
 
-    const qrCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
+    /*     const qrCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
     const barCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`
     if (paymentWayString === 'Diário') convertBase64ToPng(barCodeImage, barCodePath)
-    await generateQRCode(pixKey, qrCodePath)
+    await generateQRCode(pixKey, qrCodePath) */
+    const qrKey = `banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
+    const barKey = `banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`
+
+    if (paymentWayString === 'Diário') {
+      barCodeUrl = await uploadBarcodeToS3(barCodeImage, barKey)
+    }
+    qrCodeUrl = await uploadQRCodeToS3(pixKey, qrKey)
   }
 
   const documintPromise = await fetch('https://api.documint.me/1/templates/66d9f1cbc55000285de75733/content?preview=true&active=true', {
@@ -662,10 +687,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
           produto_descricao: item.name ?? ''
         }
       }),
-      url_img_pix: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`,
+      // url_img_pix: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`,
+      url_img_pix: qrCodeUrl,
       cnpj: req.restaurant.restaurant.companyRegistrationNumber,
       cnpj_fornecedor: '',
-      codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
+      // codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
+      codigo_barras: barCodeUrl,
       codigo_carteira: '109',
       data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyy/MM/dd'),
       data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
@@ -679,9 +706,9 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       numero_linha_digitavel: digitableBarCode ?? '',
       numero_nosso_numero: ourNumber,
       sigla_UF: 'RJ',
-      cliente_com_boleto: (getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário') ? '1' : '0',
+      cliente_com_boleto: getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário' ? '1' : '0',
       nome_cliente: req.restaurant.restaurant.name.replaceAll(' ', ''),
-      id_distribuidor: (req.restaurant.restaurant.externalId === 'C757') ? 'F0' : req.supplier.externalId
+      id_distribuidor: req.restaurant.restaurant.externalId === 'C757' ? 'F0' : req.supplier.externalId
       // id_distribuidor: req.supplier.externalId
     } satisfies Pedido)
   }).catch(async (err) => {
@@ -704,16 +731,20 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     headers: myHeaders
   }
 
-  const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename.replaceAll('/', '')}`, requestOptions)
+  /* const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename.replaceAll('/', '')}`, requestOptions)
   const resultFile = await responseFile.json()
 
-  order.orderDocument = resultFile.data.url
+  order.orderDocument = resultFile.data.url */
 
-  await Promise.all([
-    updateOrder({ orderDocument: resultFile.data.url }, orderId),
-    addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)),
-    airtableHandler(order, detailing, yourNumber, orderText, pixKey)
-  ])
+  const pdfFileName = `${documintResponse.name.replaceAll('/', '')}.pdf`
+  const s3PdfKey = `recibos/${pdfFileName}`
+
+  const finalPdfUrl = await uploadPdfFileToS3(String(documintResponse.url), s3PdfKey)
+
+  order.orderDocument = finalPdfUrl
+
+  // await Promise.all([updateOrder({ orderDocument: resultFile.data.url }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
+  await Promise.all([updateOrder({ orderDocument: finalPdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
 
   await deleteCartByUser({
     token: req.token,
@@ -743,7 +774,7 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
-${cart?.map(cart => `*${String(cart.amount).replace('.', ',')}x ${(items.data.find(((i: { id: string | undefined, name: string }) => i.id === cart.productId))).name}* cód. ${(items.data.find(((i: { id: string | undefined, name: string }) => i.id === cart.productId))).sku}${(cart.obs === '') ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
+${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
 
 ---------------------------------------
 
@@ -810,12 +841,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     }
 
     // Codificar a mensagem
-    const msg = encodeURIComponent(req.message)
-      .replace('!', '%21')
-      .replace('\'', '%27')
-      .replace('(', '%28')
-      .replace(')', '%29')
-      .replace('*', '%2A')
+    const msg = encodeURIComponent(req.message).replace('!', '%21').replace("'", '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
 
     // Validar e formatar a data/hora agendada
     const [year, month, day] = req.sendDate.split('-').map(Number)
