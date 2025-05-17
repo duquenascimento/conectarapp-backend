@@ -20,8 +20,6 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
   // Filtra os arquivos salvos com sucesso
   const validFiles = files.filter((file): file is string => file !== null)
 
-  console.log(validFiles)
-
   // Chama o upsertInvoice para criar ou atualizar o registro
   if (validFiles.length > 0) {
     await upsertInvoice(orderId, validFiles)
