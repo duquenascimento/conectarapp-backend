@@ -22,7 +22,6 @@ import { bolecodeAndPixErrorMessage, receiptErrorMessage } from '../utils/slackU
 import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { type agendamentoPedido } from '../types/confirmTypes'
-import { uploadBarcodeToS3, uploadPdfFileToS3, uploadQRCodeToS3 } from '../utils/uploadToS3Utils'
 
 export interface Supplier {
   name: string
@@ -468,8 +467,6 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 
   let barCodeImage = ''
   let pixKey = ''
-  let qrCodeUrl = ''
-  let barCodeUrl = ''
 
   if (paymentWayString === 'Diário' || paymentWayString === 'À Vista') {
     const bolecodeData = await formatDataToBolecode(req, yourNumber, ourNumber, orderId, deliveryDate)
@@ -628,17 +625,10 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       ])
     }
 
-    /*     const qrCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
+    const qrCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
     const barCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`
     if (paymentWayString === 'Diário') convertBase64ToPng(barCodeImage, barCodePath)
-    await generateQRCode(pixKey, qrCodePath) */
-    const qrKey = `banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
-    const barKey = `banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`
-
-    if (paymentWayString === 'Diário') {
-      barCodeUrl = await uploadBarcodeToS3(barCodeImage, barKey)
-    }
-    qrCodeUrl = await uploadQRCodeToS3(pixKey, qrKey)
+    await generateQRCode(pixKey, qrCodePath)
   }
 
   const documintPromise = await fetch('https://api.documint.me/1/templates/66d9f1cbc55000285de75733/content?preview=true&active=true', {
@@ -687,12 +677,10 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
           produto_descricao: item.name ?? ''
         }
       }),
-      // url_img_pix: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`,
-      url_img_pix: qrCodeUrl,
+      url_img_pix: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`,
       cnpj: req.restaurant.restaurant.companyRegistrationNumber,
       cnpj_fornecedor: '',
-      // codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
-      codigo_barras: barCodeUrl,
+      codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
       codigo_carteira: '109',
       data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyy/MM/dd'),
       data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
@@ -731,20 +719,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     headers: myHeaders
   }
 
-  /* const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename.replaceAll('/', '')}`, requestOptions)
+  const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename.replaceAll('/', '')}`, requestOptions)
   const resultFile = await responseFile.json()
 
-  order.orderDocument = resultFile.data.url */
+  order.orderDocument = resultFile.data.url
 
-  const pdfFileName = `${documintResponse.name.replaceAll('/', '')}.pdf`
-  const s3PdfKey = `recibos/${pdfFileName}`
-
-  const finalPdfUrl = await uploadPdfFileToS3(String(documintResponse.url), s3PdfKey)
-
-  order.orderDocument = finalPdfUrl
-
-  // await Promise.all([updateOrder({ orderDocument: resultFile.data.url }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
-  await Promise.all([updateOrder({ orderDocument: finalPdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
+  await Promise.all([updateOrder({ orderDocument: resultFile.data.url }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
 
   await deleteCartByUser({
     token: req.token,

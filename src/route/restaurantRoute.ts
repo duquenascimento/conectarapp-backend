@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
 import { type address, type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -53,7 +53,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateRegistrationReleasedNewApp(req.body as { restId: string, value: boolean })
+      await updateComercialBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -73,11 +73,39 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
+  server.post('/rest/updateRegistrationReleasedNewApp', async (req, res): Promise<void> => {
+    // Validação dos tipos
+    const { error } = restaurantPatchSchema.validate(req.body)
+    if (error) {
+      console.error('[ERROR] Erro de validação:', error.details[0].message)
+      return await res.status(422).send({ error: error.details[0].message })
+    }
+    try {
+      const { externalId, registrationReleasedNewApp } = req.body as { externalId: string; registrationReleasedNewApp: boolean }
+
+      // Certifique-se de que a função espera esses campos
+      await updateRegistrationReleasedNewApp({
+        restId: externalId,
+        value: registrationReleasedNewApp
+      })
+      res.status(200).send({ status: 200 })
+    } catch (err) {
+      const message = (err as Error).message
+      const isInternal = message === process.env.INTERNAL_ERROR_MSG
+
+      res.status(isInternal ? 500 : 422).send({
+        status: isInternal ? 500 : 422,
+        msg: message
+      })
+    }
+  })
+
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string, value: boolean })
+      await updateFinanceBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
-        status: 200
+        status: 200,
+        msg: 'Atualização realizada com sucesso'
       })
     } catch (err) {
       const message = (err as Error).message
@@ -97,7 +125,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number, value: boolean })
+      await AddClientCount(req.body as { count: number; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -139,13 +167,27 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
+  function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
+    const result: Partial<T> = {}
+
+    ;(Object.entries(obj) as Array<[keyof T, T[keyof T]]>).forEach(([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) {
+        result[key] = value
+      }
+    })
+
+    return result
+  }
+
   server.put('/rest/updateRestaurant', async (req, res): Promise<void> => {
     try {
-      const { error } = restaurantUpdateSchema.validate(req.body)
+      const data = cleanObject(req.body as Record<string, unknown>)
+
+      const { error } = restaurantUpdateSchema.validate(data)
       if (error) {
         return await res.status(422).send({ error: error.details[0].message })
       }
-      const { externalId, ...restaurantData } = req.body as {
+      const { externalId, ...restaurantData } = data as {
         externalId: string
         [key: string]: any
       }

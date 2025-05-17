@@ -5,7 +5,10 @@ import {
   type ISaveFavoriteRequest,
   type IDeleteFavoriteRequest,
   list,
-  type IListFavorite
+  type IListFavorite,
+  type IUpdateFavorite,
+  update,
+  type IUpdateFavoriteRequest
 } from '../service/favoriteService'
 
 export const favoriteRoute = async (server: FastifyInstance): Promise<void> => {
@@ -16,6 +19,31 @@ export const favoriteRoute = async (server: FastifyInstance): Promise<void> => {
       return await res.status(200).send({
         status: 200,
         data: result.data
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(409).send({
+          status: 200,
+          msg: message
+        })
+        console.log(message)
+      }
+    }
+  })
+
+  server.post('/favorite/update', async (req, res): Promise<any> => {
+    try {
+      const result = await update(req.body as IUpdateFavoriteRequest)
+      if (result == null) throw Error(process.env.INTERNAL_ERROR_MSG)
+      return await res.status(200).send({
+        status: 200,
+        data: result
       })
     } catch (err) {
       const message = (err as Error).message
