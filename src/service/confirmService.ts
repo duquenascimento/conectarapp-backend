@@ -684,7 +684,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       codigo_carteira: '109',
       data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyy/MM/dd'),
       data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
-      data_vencimento: getPaymentDate(req.restaurant.restaurant.paymentWay as string).replaceAll('-', '/'),
+      data_vencimento: getPaymentDate(req.restaurant.restaurant.paymentWay as string)?.replaceAll('-', '/'),
       id_beneficiario: '6030000983545',
       identificador_calculado: yourNumber,
       nome_bairro: req.restaurant.restaurant.addressInfos[0].neighborhood,
@@ -695,7 +695,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       numero_nosso_numero: ourNumber,
       sigla_UF: 'RJ',
       cliente_com_boleto: getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário' ? '1' : '0',
-      nome_cliente: req.restaurant.restaurant.name.replaceAll(' ', ''),
+      nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
       id_distribuidor: req.restaurant.restaurant.externalId === 'C757' ? 'F0' : req.supplier.externalId
       // id_distribuidor: req.supplier.externalId
     } satisfies Pedido)
@@ -719,7 +719,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     headers: myHeaders
   }
 
-  const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename.replaceAll('/', '')}`, requestOptions)
+  const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename?.replaceAll('/', '')}`, requestOptions)
   const resultFile = await responseFile.json()
 
   order.orderDocument = resultFile.data.url
