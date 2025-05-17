@@ -1,22 +1,24 @@
-import Fastify, { type FastifyInstance } from 'fastify'
+import Fastify, { type FastifyPluginCallback, type FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
 import { registerRoutes } from './route/route'
 import { DateTime } from 'luxon'
 import * as dotenv from 'dotenv'
+import multipart from '@fastify/multipart'
 
 dotenv.config()
 
 const server: FastifyInstance = Fastify({})
 
-async function startServer (): Promise<void> {
+async function startServer(): Promise<void> {
   try {
     await Promise.all([
       server.register(cors, {
         origin: ['http://localhost:8081', 'http://localhost:3000', 'http://localhost:3333', 'https://beta.conectarapp.com.br', 'https://pedido.conectarapp.com.br'],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-      }),
-      registerRoutes(server)
+      })
     ])
+    await server.register(multipart)
+    await registerRoutes(server)
     const port = parseInt(process.env.PORT ?? '9841', 10)
     const host = process.env.HOST ?? '192.168.201.96'
 
@@ -31,7 +33,7 @@ async function startServer (): Promise<void> {
   }
 }
 
-startServer().catch(err => {
+startServer().catch((err) => {
   console.error(err)
   process.exit(1)
 })
