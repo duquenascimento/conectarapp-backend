@@ -2,6 +2,7 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { createCanvas } from 'canvas'
 import JsBarcode from 'jsbarcode'
 import QRCode from 'qrcode'
+import { HttpException } from '../errors/httpException'
 
 // Configura o cliente S3
 const s3Client = new S3Client({
@@ -29,7 +30,10 @@ export async function uploadToS3(buffer: Buffer, key: string, contentType: strin
     await s3Client.send(command)
     return `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
   } catch (error) {
-    throw new Error(`Erro ao enviar arquivo para o S3: ${(error as Error).message}`)
+    const metadata = (error as any)?.$metadata
+    const statusCode = metadata?.httpStatusCode ? Number(metadata.httpStatusCode) : 500
+    const message = (error as Error).message ? (error as Error).message : 'Erro desconhecido ao enviar para o S3'
+    throw new HttpException(message, statusCode)
   }
 }
 
@@ -71,7 +75,7 @@ export async function uploadPdfFileToS3(pdfUrl: string, s3Key: string): Promise<
   const response = await fetch(pdfUrl)
 
   if (!response.ok) {
-    throw new Error(`Falha ao carregar arquivo ${pdfUrl}: ${response.statusText}`)
+    throw new HttpException(`Falha ao carregar arquivo ${pdfUrl}: ${response.statusText}`, response.status)
   }
 
   const arrayBuffer = await response.arrayBuffer()
