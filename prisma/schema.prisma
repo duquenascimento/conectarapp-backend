@@ -26,7 +26,7 @@ model user {
 
 model restaurant {
   id                                  String         @id @db.Uuid
-  externalId                          String         @db.VarChar(10)
+  externalId                          String         @unique @db.VarChar(10)
   name                                String         @db.VarChar(200)
   legalName                           String         @db.VarChar()
   active                              Boolean
@@ -57,7 +57,21 @@ model restaurant {
   allowMinimumOrder                   Boolean        @default(false)
   registrationReleasedNewApp          Boolean        @default(true) @db.Boolean
   categories                          String[]
+  appVersion                          appVersion?     @relation("RestaurantAppVersion")
 }
+
+model appVersion {
+  id                  String      @id @default(uuid()) @db.Uuid
+  externalId          String      @unique @db.VarChar(10)
+  restaurant          restaurant  @relation("RestaurantAppVersion", fields: [externalId], references: [externalId])
+  OperationalSystem   String
+  version             String      @db.VarChar(10)
+  statusId            Int
+  status              status      @relation(fields: [statusId], references: [id])
+  createdAt           DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime    @updatedAt @db.Timestamptz(3)
+}
+
 
 model Categories {
   id       String   @id @db.Uuid
@@ -211,6 +225,7 @@ model status {
   order order[]
 
   order_invoice order_invoice[]
+  appVersions  appVersion[] 
 }
 
 model bolecode {
