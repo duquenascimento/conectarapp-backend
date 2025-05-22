@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -72,7 +66,6 @@ model appVersion {
   updatedAt           DateTime    @updatedAt @db.Timestamptz(3)
 }
 
-
 model Categories {
   id       String   @id @db.Uuid
   category String[]
@@ -100,17 +93,17 @@ model address {
   deliveryReference               String    @db.VarChar(500)
   createdAt                       DateTime  @db.Date
   updatedAt                       DateTime? @db.Date
-  localType                       String?   @db.VarChar(200)
-  localNumber                     String?   @db.VarChar(25)
   city                            String?   @db.VarChar(200)
   complement                      String?   @db.VarChar(200)
+  localNumber                     String?   @db.VarChar(25)
+  localType                       String?   @db.VarChar(200)
 }
 
 model favorite {
   id           String  @id @db.Uuid
-  obs          String? @db.VarChar(200)
   productId    String  @db.Uuid
   restaurantId String  @db.Uuid
+  obs          String? @db.VarChar(200)
 }
 
 model cart {
@@ -135,15 +128,15 @@ model order {
   finalDeliveryTime   DateTime       @db.Time(6)
   totalSupplier       Decimal        @db.Decimal(10, 2)
   totalConectar       Decimal        @db.Decimal(10, 2)
-  status_id           Int            @default(4)
-  status              status         @relation(fields: [status_id], references: [id])
   detailing           String[]       @db.VarChar(50)
   tax                 Decimal        @db.Decimal(10, 5)
   supplierId          String         @db.VarChar(50)
   calcOrderAgain      Json           @db.Json
   orderDocument       String?        @db.VarChar(1000)
-  transactions        transactions[]
+  status_id           Int            @default(4)
+  status              status         @relation(fields: [status_id], references: [id])
   orderInvoices       order_invoice?
+  transactions        transactions[]
 }
 
 model detailing {
@@ -181,60 +174,56 @@ model premiumOrder {
 model transactions {
   id                   Int               @id @default(autoincrement())
   restaurant_id        String            @db.Uuid
-  restaurant           restaurant        @relation(fields: [restaurant_id], references: [id])
   transactions_type_id Int
-  transactions_type    transactions_type @relation(fields: [transactions_type_id], references: [id])
   order_id             String
-  order                order             @relation(fields: [order_id], references: [id])
   payment_ways_id      Int
-  payment_ways         payment_ways      @relation(fields: [payment_ways_id], references: [id])
   value                Decimal           @db.Decimal(10, 2)
   value_paid           Decimal?          @db.Decimal(10, 2)
   payment_date         DateTime?         @db.Timestamptz(3)
   status_id            Int
-  status               status            @relation(fields: [status_id], references: [id])
   createdAt            DateTime          @default(now()) @db.Timestamptz(3)
   updatedAt            DateTime?         @updatedAt @db.Timestamptz(3)
   bolecode             bolecode[]
+  order                order             @relation(fields: [order_id], references: [id])
+  payment_ways         payment_ways      @relation(fields: [payment_ways_id], references: [id])
+  restaurant           restaurant        @relation(fields: [restaurant_id], references: [id])
+  status               status            @relation(fields: [status_id], references: [id])
+  transactions_type    transactions_type @relation(fields: [transactions_type_id], references: [id])
 }
 
 model transactions_type {
   id           Int            @id @default(autoincrement())
   description  String
-  transactions transactions[]
   createdAt    DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
+  transactions transactions[]
 }
 
 model payment_ways {
   id           Int            @id @default(autoincrement())
   description  String
-  transactions transactions[]
   createdAt    DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
+  transactions transactions[]
 }
 
 model status {
-  id           Int            @id @default(autoincrement())
-  description  String
-  transactions transactions[]
-  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
-  bolecode     bolecode[]
-
-  order order[]
-
+  id            Int             @id @default(autoincrement())
+  description   String
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
+  bolecode      bolecode[]
+  order         order[]
   order_invoice order_invoice[]
-  appVersions  appVersion[] 
+  transactions  transactions[]
+  appVersions  appVersion[]
 }
 
 model bolecode {
   id                     Int          @id @default(autoincrement())
   transactions_id        Int
-  transactions           transactions @relation(fields: [transactions_id], references: [id])
   public_id              String?      @db.VarChar(10)
   status_id              Int
-  status                 status       @relation(fields: [status_id], references: [id])
   status_updatedAt       DateTime?    @db.Timestamptz(3)
   codebar                String?
   digitable_line         String?
@@ -245,9 +234,11 @@ model bolecode {
   payer_gateway_id       String?
   store_gateway_id       String?
   application_gateway_id String?
-  bolecode_id            String?
   createdAt              DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt              DateTime?    @updatedAt @db.Timestamptz(3)
+  bolecode_id            String?
+  status                 status       @relation(fields: [status_id], references: [id])
+  transactions           transactions @relation(fields: [transactions_id], references: [id])
 }
 
 model companies {
@@ -293,10 +284,27 @@ model companies {
 model order_invoice {
   id        String   @id @default(cuid()) @db.VarChar(50)
   orderId   String   @unique
-  filePath  String[] @db.VarChar(255)
-  status_id Int
-  status    status   @relation(fields: [status_id], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  filePath  String[] @db.VarChar(255)
+  status_id Int
   order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status    status   @relation(fields: [status_id], references: [id])
+}
+
+model file_log {
+  id         String    @id @db.VarChar(50)
+  fileUrl    String    @db.VarChar(255)
+  entity     String    @db.VarChar(100)
+  entityId   String?   @db.VarChar(100)
+  message    String?
+  status     LogStatus @default(SUCCESS)
+  httpStatus Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+}
+
+enum LogStatus {
+  SUCCESS
+  FAIL
 }
