@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addRepository, deleteByUserId, deleteByUserIdAndProductId, findByProductAndUser, type ICartAdd, listByUser } from '../repository/cartRepository'
+import { addRepository, deleteByUserId, deleteByUserIdAndProductId, findByProductAndUser, findCartItemByRestaurantAndProduct, type ICartAdd, listByUser, upsertCartItem } from '../repository/cartRepository'
 import { logRegister } from '../utils/logUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { Decimal } from '@prisma/client/runtime/library'
@@ -56,22 +56,27 @@ interface Product {
   thirdUnit: number
 }
 
-const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
-  const request: ICartAdd = {
-    ...req,
-    id: uuidv4(),
-    restaurantId: id
-  }
-  const result = await findByProductAndUser({
-    productId: req.productId,
-    restaurantId: request.restaurantId
-  })
-  if (result != null) request.id = result.id
-  if (request.amount === 0) {
-    await deleteByUserIdAndProductId(request.id)
-  }
-  await addRepository(request)
-}
+const addToCart = async (req: ICartAddRequest, restaurantId: string): Promise<void> => {
+  const { productId, amount, obs } = req;
+
+  // Busca se já existe esse produto no carrinho deste restaurante
+  const existingItem = await findCartItemByRestaurantAndProduct(restaurantId, productId);
+
+  // Reutiliza o ID existente ou gera um novo
+  const cartItemId = existingItem?.id ?? uuidv4();
+
+  // Monta o item do carrinho com amount = 0 se for "removido"
+  const cartItem: ICartAdd = {
+    id: cartItemId,
+    productId,
+    restaurantId,
+    amount: amount,
+    obs: obs ?? '',
+  };
+
+  // Faz upsert mesmo com amount = 0
+  await upsertCartItem(cartItem);
+};
 
 const deleteItens = async (req: ICartAddRequest, id: string): Promise<void> => {
   const result = await findByProductAndUser({

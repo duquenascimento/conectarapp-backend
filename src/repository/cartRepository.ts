@@ -18,6 +18,45 @@ export interface IFindByProductAndUser {
   restaurantId: string
 }
 
+export const findCartItemByRestaurantAndProduct = async (
+  restaurantId: string,
+  productId: string
+): Promise<ICartAdd | null> => {
+  try {
+    const result = await prisma.cart.findFirst({
+      where: {
+        restaurantId,
+        productId,
+      },
+    });
+    return result as ICartAdd | null;
+  } catch (err) {
+    await logRegister(err);
+    return null;
+  }
+};
+
+export const upsertCartItem = async (cartItem: ICartAdd): Promise<void> => {
+  try {
+    await prisma.cart.upsert({
+      where: { id: cartItem.id },
+      create: {
+        id: cartItem.id,
+        productId: cartItem.productId,
+        restaurantId: cartItem.restaurantId,
+        amount: cartItem.amount,
+        obs: cartItem.obs ?? '',
+      },
+      update: {
+        amount: cartItem.amount,
+        obs: cartItem.obs ?? '',
+      },
+    });
+  } catch (err) {
+    await logRegister(err);
+    throw err;
+  }
+};
 export const addRepository = async (req: ICartAdd): Promise<void> => {
   try {
     await prisma.cart.upsert({
@@ -113,3 +152,14 @@ export const deleteByUserId = async (id: string): Promise<void> => {
     await logRegister(err)
   }
 }
+
+export const deleteCartItemById = async (id: string): Promise<void> => {
+  try {
+    await prisma.cart.delete({
+      where: { id },
+    });
+  } catch (err) {
+    await logRegister(err);
+    throw err;
+  }
+};

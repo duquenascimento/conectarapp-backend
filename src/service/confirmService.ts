@@ -742,7 +742,9 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 }
 
 export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Promise<any> => {
-  try {
+  console.log('>>>>>>>>>>>>>>>>>>>>>')
+  console.log('>>>>>>>>>>>>>>>>>>>>>', req)
+    try {
     const id = uuidv4()
     const today = DateTime.now().setZone('America/Sao_Paulo')
 
