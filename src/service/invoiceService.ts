@@ -16,7 +16,7 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
         return await uploadPdfFileToS3(file, s3Key)
       } catch (err) {
         const statusCode = err instanceof HttpException ? err.statusCode : 500
-        const message = err instanceof HttpException ? err.message : 'Erro desconhecido ao enviar arquivo para o S3'
+        const message = err instanceof HttpException ? err.message : 'Erro desconhecido ao enviar nota fiscal para o S3'
 
         await createFileLog({
           fileUrl: file,
