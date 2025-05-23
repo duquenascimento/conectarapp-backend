@@ -18,20 +18,44 @@ export const createAppVersion = async (data: { externalId: string, version: stri
       version: data.version,
       statusId: data.statusId,
       OperationalSystem: data.OperationalSystem
+    },
+    include: {
+      status: {
+        select: {
+          id: true,
+          description: true
+        }
+      }
     }
   })
 }
 
-export const updateAppVersion = async (data: { externalId: string, version: string, statusId: number, OperationalSystem: string }): Promise<appVersion> => {
+export const updateAppVersion = async (data: {
+  externalId: string
+  version: string
+  statusId: number
+  OperationalSystem: string
+}) => {
   return await prisma.appVersion.update({
-    where: { externalId: data.externalId },
+    where: {
+      externalId: data.externalId
+    },
     data: {
       version: data.version,
       statusId: data.statusId,
       OperationalSystem: data.OperationalSystem
+    },
+    include: {
+      status: {
+        select: {
+          id: true,
+          description: true
+        }
+      }
     }
   })
 }
+
 
 export const findAppVersionByExternalId = async (externalId: string): Promise<appVersion | null> => {
   return await prisma.appVersion.findFirst({
