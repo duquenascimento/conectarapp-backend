@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId } from '../repository/airtableRegisterService'
@@ -105,16 +105,27 @@ export const updateAddressService = async (rest: any): Promise<void> => {
   }
 }
 
-export const updateRegistrationReleasedNewApp = async (req: { restId: string; value: boolean }): Promise<void> => {
+export const updateComercialBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
   try {
-    await updateRegistrationReleasedNewAppRepository(req.restId, req.value)
+    await updateComercialBlockRepository(req.restId, req.value)
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
   }
 }
 
-export const updateFinanceBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
+export const updateRegistrationReleasedNewApp = async (req: { restId: string, value: boolean }): Promise<void> => {
+  try {
+    await updateRegistrationReleasedNewAppRepository(req.restId, req.value)
+  } catch (err: any) {
+    if (err.cause !== 'visibleError') {
+      await logRegister(err)
+    }
+    throw new Error(err.message, { cause: err.cause })
+  }
+}
+
+export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
   try {
     await updateFinanceBlockRepository(req.restId, req.value)
   } catch (err) {
