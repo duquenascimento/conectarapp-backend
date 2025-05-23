@@ -24,6 +24,8 @@ export const createFileLog = async (data: Omit<file_log, 'id' | 'createdAt' | 'u
         ...data
       }
     })
+    const { id, updatedAt, ...message } = log
+    console.log('[FILE LOG]: ', message)
     return log
   } catch (err) {
     console.error('Erro ao criar file_log:', err)

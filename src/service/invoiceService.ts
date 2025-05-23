@@ -37,13 +37,22 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
   if (validFiles.length > 0) {
     try {
       await upsertInvoice(orderId, validFiles)
-    } catch (err) {
-      const statusCode = err instanceof HttpException ? err.statusCode : 500
-      const message = err instanceof HttpException ? err.message : 'Erro desconhecido ao salvar invoice'
 
       await createFileLog({
         fileUrl: JSON.stringify(validFiles),
-        entity: 'order',
+        entity: 'order_invoice',
+        entityId: orderId,
+        message: 'Notas salvas com sucesso na base de dados',
+        status: 'SUCCESS',
+        httpStatus: 200
+      })
+    } catch (err) {
+      const statusCode = err instanceof HttpException ? err.statusCode : 500
+      const message = err instanceof HttpException ? err.message : 'Erro desconhecido ao salvar notas na base de dados'
+
+      await createFileLog({
+        fileUrl: JSON.stringify(validFiles),
+        entity: 'order_invoice',
         entityId: orderId,
         message,
         status: 'FAIL',
@@ -57,7 +66,7 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
       fileUrl: JSON.stringify(filePath),
       entity: 'order',
       entityId: orderId,
-      message: 'Nenhum arquivo foi processado com sucesso',
+      message: 'Nenhum arquivo foi processado com sucesso na base de dados',
       status: 'FAIL',
       httpStatus: 422
     })
