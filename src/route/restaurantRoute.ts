@@ -53,7 +53,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string; value: boolean })
+      await updateComercialBlock(req.body as { restId: string, value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -81,19 +81,19 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
       return await res.status(422).send({ error: error.details[0].message })
     }
     try {
-      const { externalId, registrationReleasedNewApp } = req.body as { externalId: string; registrationReleasedNewApp: boolean }
+      const { externalId, registrationReleasedNewApp } = req.body as { externalId: string, registrationReleasedNewApp: boolean }
 
       // Certifique-se de que a função espera esses campos
       await updateRegistrationReleasedNewApp({
         restId: externalId,
         value: registrationReleasedNewApp
       })
-      res.status(200).send({ status: 200 })
+      await res.status(200).send({ status: 200 })
     } catch (err) {
       const message = (err as Error).message
       const isInternal = message === process.env.INTERNAL_ERROR_MSG
 
-      res.status(isInternal ? 500 : 422).send({
+      await res.status(isInternal ? 500 : 422).send({
         status: isInternal ? 500 : 422,
         msg: message
       })
@@ -102,7 +102,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string; value: boolean })
+      await updateFinanceBlock(req.body as { restId: string, value: boolean })
       return await res.status(200).send({
         status: 200,
         msg: 'Atualização realizada com sucesso'
@@ -125,7 +125,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number; value: boolean })
+      await AddClientCount(req.body as { count: number, value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -167,7 +167,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
-  function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
+  function cleanObject<T extends Record<string, unknown>> (obj: T): Partial<T> {
     const result: Partial<T> = {}
 
     ;(Object.entries(obj) as Array<[keyof T, T[keyof T]]>).forEach(([key, value]) => {
