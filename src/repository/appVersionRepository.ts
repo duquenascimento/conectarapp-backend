@@ -3,6 +3,15 @@ import { PrismaClient, type appVersion } from '@prisma/client'
 const prisma = new PrismaClient()
 
 export const createAppVersion = async (data: { externalId: string, version: string, statusId: number, OperationalSystem: string }): Promise<appVersion> => {
+  // Verifica se o restaurante com o externalId existe
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { externalId: data.externalId }
+  })
+
+  if (!restaurant) {
+    throw new Error(`Restaurante com externalId '${data.externalId}' não encontrado.`)
+  }
+
   return await prisma.appVersion.create({
     data: {
       externalId: data.externalId,

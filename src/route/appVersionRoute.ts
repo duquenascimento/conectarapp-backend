@@ -2,7 +2,7 @@ import { type FastifyInstance } from 'fastify'
 import { registerAppVersionService } from '../service/appVersionService'
 
 export const AppVersionRoute = async (server: FastifyInstance): Promise<void> => {
-  server.post('/appVersion', async (req, res): Promise<any> => {
+  server.post('/version/app', async (req, res): Promise<any> => {
     try {
       const { externalId, version, statusId, OperationalSystem } = req.body as {
         externalId: string
