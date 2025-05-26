@@ -16,7 +16,7 @@ export const createAppVersion = async (data: { externalId: string, version: stri
     data: {
       externalId: data.externalId,
       version: data.version,
-      statusId: data.statusId,
+      statusId: data.statusId ?? null,
       OperationalSystem: data.OperationalSystem
     },
     include: {
@@ -42,7 +42,7 @@ export const updateAppVersion = async (data: {
     },
     data: {
       version: data.version,
-      statusId: data.statusId,
+      statusId: data.statusId ?? null,
       OperationalSystem: data.OperationalSystem
     },
     include: {
