@@ -82,13 +82,13 @@ export const updateAddressService = async (rest: any): Promise<void> => {
     if (!airtableRecordId) throw new Error('Registro do cliente não encontrado no Airtable')
 
     const updateAirtableRecord = await updateAddressRegisterAirtable({
-      ID_Cliente: airtableRecordId,
-      Número: data.localNumber ?? '',
-      Rua: `${data.address} ${data.localType}`,
+      'ID_Cliente': airtableRecordId,
+      'Número': data.localNumber ?? '',
+      'Rua': `${data.address} ${data.localType}`,
       'Resp. recebimento': data.responsibleReceivingName,
       'Tel resp. recebimento': data.responsibleReceivingPhoneNumber,
-      Complemento: data.complement ?? '',
-      CEP: data.zipCode,
+      'Complemento': data.complement ?? '',
+      'CEP': data.zipCode,
       'Informações de entrega': data.deliveryInformation
     })
 

@@ -24,9 +24,6 @@ export const findRecordIdByClientId = async (externaId: string): Promise<string 
         maxRecords: 1
       })
       .firstPage()
-
-    if (records.length > 0) console.log('📄 ID do registro encontrado:', records[0].id)
-
     return records[0]?.id
   } catch (err) {
     console.error('Erro ao buscar recordId no Airtable:', err)

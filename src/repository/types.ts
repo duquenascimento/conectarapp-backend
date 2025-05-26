@@ -92,13 +92,13 @@ export interface CreateRegisterAirtable {
 }
 
 export interface UpdateAddressRegisterAirtable {
-  ID_Cliente: string
-  Número: string
-  Rua: string
+  'ID_Cliente': string
+  'Número': string
+  'Rua': string
   'Resp. recebimento': string
   'Tel resp. recebimento': string
-  Complemento: string
-  CEP: string
+  'Complemento': string
+  'CEP': string
   'Informações de entrega': string
 }
 
