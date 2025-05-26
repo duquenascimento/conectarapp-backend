@@ -2,6 +2,7 @@ import { decode } from 'jsonwebtoken'
 import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
+import { updateAddressRegisterAirtable, findRecordIdByClientId } from '../repository/airtableRegisterService'
 
 export interface ICreateRestaurantRequest {
   name: string
@@ -71,7 +72,33 @@ export const listRestaurantsByUserId = async (req: { token: string }): Promise<a
 export const updateAddressService = async (rest: any): Promise<void> => {
   try {
     const data = rest.addressInfos[0] as address
+    const restaurantData = rest as unknown as restaurant
+    const externalId = restaurantData.externalId
+
+    // Atualiza os dados no banco de dados
     await updateAddress(data.id, data)
+    
+    const airtableRecordId = await findRecordIdByClientId(externalId)
+    if (!airtableRecordId) throw new Error('Registro do cliente não encontrado no Airtable')
+
+    const updateAirtableRecord = await updateAddressRegisterAirtable({
+      'ID_Cliente': airtableRecordId,
+      'Número': data.localNumber ?? '',
+      'Rua': `${data.address} ${data.localType}`,
+      'Resp. recebimento': data.responsibleReceivingName,
+      'Tel resp. recebimento': data.responsibleReceivingPhoneNumber,
+      'Complemento': data.complement ?? '',
+      'CEP': data.zipCode,
+      'Informações de entrega': data.deliveryInformation
+    })
+
+    if (!updateAirtableRecord || typeof updateAirtableRecord !== 'object' || !('fields' in updateAirtableRecord)) {
+      throw new Error('Falha ao atualizar registro no Airtable ou estrutura do registro inválida')
+    }
+
+    if (!updateAirtableRecord.fields || typeof updateAirtableRecord.fields !== 'object' || !('ID_Cliente' in updateAirtableRecord.fields)) {
+      throw new Error('ID_Cliente não encontrado no registro do Airtable')
+    }
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
