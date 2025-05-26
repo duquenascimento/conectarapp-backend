@@ -272,10 +272,7 @@ export const updateAllowCloseSupplierAndMinimumOrderRepository = async (req: Pic
   }
 }
 
-export const updateRestaurantRepository = async (
-  externalId: string,
-  restaurantData: Partial<restaurant>
-): Promise<void> => {
+export const updateRestaurantRepository = async (externalId: string, restaurantData: Partial<restaurant>): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,
@@ -290,10 +287,7 @@ export const updateRestaurantRepository = async (
   }
 }
 
-export const updateAddressByExternalIdRepository = async (
-  externalId: string,
-  addressData: Partial<address>
-): Promise<void> => {
+export const updateAddressByExternalIdRepository = async (externalId: string, addressData: Partial<address>): Promise<void> => {
   try {
     const restaurant = await prisma.restaurant.findFirst({
       where: {
@@ -322,10 +316,7 @@ export const updateAddressByExternalIdRepository = async (
   }
 }
 
-export const patchRestaurantRepository = async (
-  externalId: string,
-  restaurantData: Partial<restaurant>
-): Promise<void> => {
+export const patchRestaurantRepository = async (externalId: string, restaurantData: Partial<restaurant>): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,
@@ -333,6 +324,36 @@ export const patchRestaurantRepository = async (
         externalId
       }
     })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const findRestaurantByExternalId = async (externalId: string): Promise<any> => {
+  try {
+    return await prisma.restaurant.findFirst({
+      where: { externalId }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const getBlockingSuppliersByRestaurant = async (externalId: string): Promise<any> => {
+  if (!externalId) {
+    throw new Error('externalId é obrigatório')
+  }
+  try {
+    const restaurant = await findAddressByRestaurantId(externalId)
+    if (!restaurant) {
+      throw new Error('Restaurante não encontrado')
+    }
+
+    return restaurant?.blockedBySuppliers
   } catch (err) {
     void logRegister(err)
   } finally {
