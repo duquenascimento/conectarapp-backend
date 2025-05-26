@@ -60,8 +60,8 @@ model appVersion {
   restaurant          restaurant  @relation("RestaurantAppVersion", fields: [externalId], references: [externalId])
   OperationalSystem   String
   version             String      @db.VarChar(10)
-  statusId            Int
-  status              status      @relation(fields: [statusId], references: [id])
+  statusId            Int?
+  status              status?     @relation(fields: [statusId], references: [id])
   createdAt           DateTime    @default(now()) @db.Timestamptz(3)
   updatedAt           DateTime    @updatedAt @db.Timestamptz(3)
 }
