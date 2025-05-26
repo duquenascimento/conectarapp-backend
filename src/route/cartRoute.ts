@@ -4,6 +4,7 @@ import { type ICartList, listCart, type ICartAddRequestArray, listCartComplete, 
 
 export const cartRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/cart/add', async (req, res): Promise<any> => {
+    console.log('<><><><><> cart/add', req.body)
     try {
       // Adiciona a requisição na fila
       await addService(req.body as ICartAddRequestArray)
@@ -27,6 +28,7 @@ export const cartRoute = async (server: FastifyInstance): Promise<void> => {
   })
 
   server.post('/cart/list', async (req, res): Promise<any> => {
+    console.log('<><><><><> cart/list', req.body)
     try {
       // Adiciona a requisição na fila
       const result = await listCart(req.body as ICartList)
@@ -51,6 +53,7 @@ export const cartRoute = async (server: FastifyInstance): Promise<void> => {
   })
 
   server.post('/cart/full-list', async (req, res): Promise<any> => {
+    console.log('<><><><><> cart/full-list', req.body)
     try {
       // Adiciona a requisição na fila
       const result = await listCartComplete(req.body as ICartList)
