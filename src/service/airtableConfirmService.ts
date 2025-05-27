@@ -3,7 +3,6 @@ import { type Order, type Detailing } from '../repository/confirmRepository'
 import { chunkArray } from '../utils/chunkArray'
 import { createOrderAirtable } from '../repository/airtableOrderService'
 import { createDetailingAirtable } from '../repository/airtableDetailingService'
-import { createOrderSupplierAppAirtable } from '../repository/airtableSupplierAppService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { findProductsIdsFromAirtable } from '../repository/airtableProductService'
 import { findIdFromAirtable } from '../repository/airtableSupplierService'
@@ -64,7 +63,7 @@ export const airtableHandler = async (
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'Forma de pagamento': _order.paymentWay ?? '',
       'ID Distribuidor':
-        _order.restaurantId === 'C757' ? ['recWgNcSLy6StEn4L'] : [supplierId],
+        _order.restaurantId === 'C757' || _order.restaurantId === 'C939' || _order.restaurantId === 'C940' || _order.restaurantId === 'C941' ? ['recWgNcSLy6StEn4L'] : [supplierId],
       // 'ID Distribuidor': [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
@@ -79,12 +78,12 @@ export const airtableHandler = async (
         _order.status_id === 12
           ? 'Confirmado'
           : _order.status_id === 13
-          ? 'Teste'
-          : _order.status_id === 6
-          ? 'Cancelado'
-          : _order.status_id === 13
-          ? 'Recusado'
-          : 'Teste',
+            ? 'Teste'
+            : _order.status_id === 6
+              ? 'Cancelado'
+              : _order.status_id === 13
+                ? 'Recusado'
+                : 'Teste',
       'Recibo original': [
         {
           url: _order.orderDocument!
@@ -128,20 +127,6 @@ export const airtableHandler = async (
       await createDetailingAirtable(batch)
     }
 
-    /*  await createOrderSupplierAppAirtable({
-      'Data Entrega': _order.deliveryDate.toISOString().substring(0, 10),
-      'Exibir pedido': true,
-      'ID Cliente': [restIdInSupplierApp],
-      'ID fornecedor': (_order.restaurantId === 'C757') ? ['recM5Rdmh8oxjdOrC'] : [supplierIdInSupplierApp],
-      // 'ID fornecedor': [supplierIdInSupplierApp],
-      'Tipo de pedido': _order.id.split('_').length > 2 ? _order.id.split('_')[2] : 'P1',
-      'Valor auto': _order.totalConectar,
-      Recibo: [{ url: _order.orderDocument! }],
-      Status: 'Confirmado',
-      'Código operador': ['rec2NPFiWR9r7mxfn'],
-      'Chave pix': pixKey ?? ''
-    })
- */
     await createOrderTextAirtable({
       App: true,
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
