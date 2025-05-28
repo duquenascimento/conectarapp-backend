@@ -89,6 +89,8 @@ export const updateAddressService = async (rest: any): Promise<void> => {
       'Tel resp. recebimento': data.responsibleReceivingPhoneNumber,
       'Complemento': data.complement ?? '',
       'CEP': data.zipCode,
+      'Bairro String': data.neighborhood,
+      'Cidade String': data.city ?? '',
       'Informações de entrega': data.deliveryInformation
     })
 
