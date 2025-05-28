@@ -201,10 +201,15 @@ model status {
   description   String
   createdAt     DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
+  <<<<<<< HEAD
   appVersion    appVersion[]
+  =======
+  >>>>>>> develop
   bolecode      bolecode[]
   order         order[]
   order_invoice order_invoice[]
+  transactions  transactions[]
+  appVersions   appVersion[]
   transactions  transactions[]
 }
 

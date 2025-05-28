@@ -1,7 +1,8 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateComercialBlockRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
+import { updateAddressRegisterAirtable, findRecordIdByClientId } from '../repository/airtableRegisterService'
 
 export interface ICreateRestaurantRequest {
   name: string
@@ -53,12 +54,14 @@ export const listRestaurantsByUserId = async (req: { token: string }): Promise<a
     const decoded = decode(req.token) as { id: string }
     const restaurants: restaurant[] = await listByUserId(decoded.id)
 
-    const newRestaurant = await Promise.all(restaurants.map(async (restaurant: restaurant) => {
-      const rest = { ...restaurant, addressInfos: [] as any[] }
-      const address: address[] = await findAddressByRestaurantId(restaurant.id)
-      rest.addressInfos = address
-      return rest
-    }))
+    const newRestaurant = await Promise.all(
+      restaurants.map(async (restaurant: restaurant) => {
+        const rest = { ...restaurant, addressInfos: [] as any[] }
+        const address: address[] = await findAddressByRestaurantId(restaurant.id)
+        rest.addressInfos = address
+        return rest
+      })
+    )
     return newRestaurant
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
@@ -69,14 +72,49 @@ export const listRestaurantsByUserId = async (req: { token: string }): Promise<a
 export const updateAddressService = async (rest: any): Promise<void> => {
   try {
     const data = rest.addressInfos[0] as address
+    const restaurantData = rest as unknown as restaurant
+    const externalId = restaurantData.externalId
+
+    // Atualiza os dados no banco de dados
     await updateAddress(data.id, data)
+    
+    const airtableRecordId = await findRecordIdByClientId(externalId)
+    if (!airtableRecordId) throw new Error('Registro do cliente não encontrado no Airtable')
+
+    const updateAirtableRecord = await updateAddressRegisterAirtable({
+      'ID_Cliente': airtableRecordId,
+      'Número': data.localNumber ?? '',
+      'Rua': `${data.address} ${data.localType}`,
+      'Resp. recebimento': data.responsibleReceivingName,
+      'Tel resp. recebimento': data.responsibleReceivingPhoneNumber,
+      'Complemento': data.complement ?? '',
+      'CEP': data.zipCode,
+      'Informações de entrega': data.deliveryInformation
+    })
+
+    if (!updateAirtableRecord || typeof updateAirtableRecord !== 'object' || !('fields' in updateAirtableRecord)) {
+      throw new Error('Falha ao atualizar registro no Airtable ou estrutura do registro inválida')
+    }
+
+    if (!updateAirtableRecord.fields || typeof updateAirtableRecord.fields !== 'object' || !('ID_Cliente' in updateAirtableRecord.fields)) {
+      throw new Error('ID_Cliente não encontrado no registro do Airtable')
+    }
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
   }
 }
 
-export const updateComercialBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+export const updateRegistrationReleasedNewApp = async (req: { externalId: string; registrationReleasedNewApp: boolean }): Promise<void> => {
+  try {
+    await updateRegistrationReleasedNewAppRepository(req.externalId, req.registrationReleasedNewApp)
+  } catch (err) {
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
+
+export const updateComercialBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
   try {
     await updateComercialBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -85,18 +123,7 @@ export const updateComercialBlock = async (req: { restId: string, value: boolean
   }
 }
 
-export const updateRegistrationReleasedNewApp = async (req: { restId: string, value: boolean }): Promise<void> => {
-  try {
-    await updateRegistrationReleasedNewAppRepository(req.restId, req.value)
-  } catch (err: any) {
-    if (err.cause !== 'visibleError') {
-      await logRegister(err)
-    }
-    throw new Error(err.message, { cause: err.cause })
-  }
-}
-
-export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+export const updateFinanceBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
   try {
     await updateFinanceBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -114,8 +141,7 @@ export const AddClientCount = async (req: { count: number }): Promise<void> => {
   }
 }
 
-export const updateAllowCloseSupplierAndMinimumOrder =
-async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>): Promise<void> => {
+export const updateAllowCloseSupplierAndMinimumOrder = async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>): Promise<void> => {
   try {
     await updateAllowCloseSupplierAndMinimumOrderRepository(req)
   } catch (err) {
@@ -123,10 +149,7 @@ async (req: Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'exte
   }
 }
 
-export const updateRestaurant = async (
-  externalId: string,
-  restaurantData: Partial<restaurant>
-): Promise<void> => {
+export const updateRestaurant = async (externalId: string, restaurantData: Partial<restaurant>): Promise<void> => {
   try {
     await updateRestaurantRepository(externalId, restaurantData)
   } catch (err) {
@@ -135,10 +158,7 @@ export const updateRestaurant = async (
   }
 }
 
-export const updateAddressByExternalId = async (
-  externalId: string,
-  addressData: Partial<address>
-): Promise<void> => {
+export const updateAddressByExternalId = async (externalId: string, addressData: Partial<address>): Promise<void> => {
   try {
     await updateAddressByExternalIdRepository(externalId, addressData)
   } catch (err) {
@@ -147,10 +167,7 @@ export const updateAddressByExternalId = async (
   }
 }
 
-export const patchRestaurant = async (
-  externalId: string,
-  restaurantData: Partial<restaurant>
-): Promise<void> => {
+export const patchRestaurant = async (externalId: string, restaurantData: Partial<restaurant>): Promise<void> => {
   try {
     // Log: Início da operação de atualização parcial
 

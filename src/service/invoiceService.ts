@@ -1,30 +1,75 @@
 import { type order_invoice } from '@prisma/client'
-import { findInvoice, upsertInvoice } from '../repository/invoiceRepository'
-import { saveFile } from '../utils/utils'
+import { upsertInvoice } from '../repository/invoiceRepository'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
+import { createFileLog } from '../repository/fileLogRepository'
+import { HttpException } from '../errors/httpException'
 
 export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePath' | 'orderId'>): Promise<void> => {
-  // Processa os arquivos
-  const files = await Promise.all(
+  if (!orderId || !Array.isArray(filePath) || filePath.length === 0) {
+    throw new HttpException('orderId e arquivos são obrigatórios para envio de nota fiscal.', 400)
+  }
+
+  const files: Array<string | null> = await Promise.all(
     filePath.map(async (file, i) => {
-      // const savedFileUrl = await saveFile(file, `invoice-${i}-${orderId}.pdf`)
-      const savedFileUrl = await uploadPdfFileToS3(file, `NF/invoice-${i}-${orderId}.pdf`)
-      if (!savedFileUrl) {
-        console.error(`Falha ao salvar o arquivo ${file}`)
+      const s3Key = `NF/invoice-${i}-${orderId}.pdf`
+      try {
+        return await uploadPdfFileToS3(file, s3Key)
+      } catch (err) {
+        const statusCode = err instanceof HttpException ? err.statusCode : 500
+        const message = err instanceof HttpException ? err.message : 'Erro desconhecido ao enviar nota fiscal para o S3'
+
+        await createFileLog({
+          fileUrl: file,
+          entity: 'order_invoice',
+          entityId: orderId,
+          message,
+          status: 'FAIL',
+          httpStatus: statusCode
+        })
+
         return null
       }
-      console.log('[upsert S3] >>> arquivo salvo no s3:', savedFileUrl)
-      return savedFileUrl
     })
   )
 
-  // Filtra os arquivos salvos com sucesso
   const validFiles = files.filter((file): file is string => file !== null)
-  console.log('[upsert S3] >>> arquivos para salvar na base:', validFiles)
-  // Chama o upsertInvoice para criar ou atualizar o registro
+
   if (validFiles.length > 0) {
-    await upsertInvoice(orderId, validFiles)
+    try {
+      await upsertInvoice(orderId, validFiles)
+
+      await createFileLog({
+        fileUrl: JSON.stringify(validFiles),
+        entity: 'order_invoice',
+        entityId: orderId,
+        message: 'Notas salvas com sucesso na base de dados',
+        status: 'SUCCESS',
+        httpStatus: 200
+      })
+    } catch (err) {
+      const statusCode = err instanceof HttpException ? err.statusCode : 500
+      const message = err instanceof HttpException ? err.message : 'Erro desconhecido ao salvar notas na base de dados'
+
+      await createFileLog({
+        fileUrl: JSON.stringify(validFiles),
+        entity: 'order_invoice',
+        entityId: orderId,
+        message,
+        status: 'FAIL',
+        httpStatus: statusCode
+      })
+
+      throw new HttpException(message, statusCode)
+    }
   } else {
-    console.error('Nenhum arquivo foi salvo com sucesso.')
+    await createFileLog({
+      fileUrl: JSON.stringify(filePath),
+      entity: 'order',
+      entityId: orderId,
+      message: 'Nenhum arquivo foi processado com sucesso na base de dados',
+      status: 'FAIL',
+      httpStatus: 422
+    })
+    throw new HttpException('Erro ao processar todos os arquivos de nota fiscal', 422)
   }
 }
