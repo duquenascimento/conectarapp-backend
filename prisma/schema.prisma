@@ -50,8 +50,8 @@ model restaurant {
   allowMinimumOrder                   Boolean        @default(false)
   categories                          String[]
   registrationReleasedNewApp          Boolean        @default(true)
-  appVersion                          appVersion?
   blockedBySuppliers                  String[]       @db.VarChar(10)
+  appVersion                          appVersion?
   transactions                        transactions[]
 }
 
