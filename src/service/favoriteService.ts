@@ -1,10 +1,4 @@
-import {
-  saveFavorite,
-  updateFavorite,
-  deleteFavorite,
-  findByProductAndUser,
-  listByUser
-} from '../repository/favoriteRepository'
+import { saveFavorite, updateFavorite, deleteFavorite, findByProductAndUser, listByUser } from '../repository/favoriteRepository'
 import { logRegister } from '../utils/logUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { decode } from 'jsonwebtoken'
@@ -28,15 +22,15 @@ export interface ISaveFavorite {
 
 export const save = async (req: ISaveFavoriteRequest): Promise<any> => {
   try {
-    if (req.token == null) { throw Error('missing token', { cause: 'visibleError' }) }
+    if (req.token == null) {
+      throw Error('missing token', { cause: 'visibleError' })
+    }
     const decoded = decode(req.token) as { id: string }
     const request: ISaveFavorite = {
       id: uuidv4(),
       productId: req.productId,
       restaurantId: req.restaurantId
-
     }
-    console.log(request)
     const result = await findByProductAndUser(request)
     if (result != null) return null
     await saveFavorite(request)
@@ -60,7 +54,9 @@ export interface IDeleteFavorite {
 
 export const del = async (req: IDeleteFavoriteRequest): Promise<any> => {
   try {
-    if (req.token == null) { throw Error('missing token', { cause: 'visibleError' }) }
+    if (req.token == null) {
+      throw Error('missing token', { cause: 'visibleError' })
+    }
     const decoded = decode(req.token) as { id: string }
     const request: IDeleteFavorite = {
       productId: req.productId,
@@ -83,7 +79,9 @@ export interface IListFavorite {
 
 export const list = async (req: IListFavorite): Promise<any> => {
   try {
-    if (req.token == null) { throw Error('missing token', { cause: 'visibleError' }) }
+    if (req.token == null) {
+      throw Error('missing token', { cause: 'visibleError' })
+    }
     const decoded = decode(req.token) as { id: string }
     const result = await listByUser(req.restaurantId)
 
@@ -91,20 +89,14 @@ export const list = async (req: IListFavorite): Promise<any> => {
       ids: result?.map((item) => item.productId)
     })
 
-    const response = await apiRepository.callApi(
-      '/listFavoriteProductToApp',
-      'POST',
-      raw
-    )
+    const response = await apiRepository.callApi('/listFavoriteProductToApp', 'POST', raw)
 
     if (!response?.data || !Array.isArray(response.data)) {
       throw new Error('Resposta da API inválida')
     }
 
     // Filtrar os itens com active: true
-    const filteredData = response.data.filter(
-      (item: any) => item.active === true
-    )
+    const filteredData = response.data.filter((item: any) => item.active === true)
 
     return filteredData
   } catch (err) {
@@ -127,7 +119,9 @@ export interface IUpdateFavorite {
 
 export const update = async (req: IUpdateFavoriteRequest): Promise<any> => {
   try {
-    if (req.token == null) { throw Error('missing token', { cause: 'visibleError' }) }
+    if (req.token == null) {
+      throw Error('missing token', { cause: 'visibleError' })
+    }
 
     const decoded = decode(req.token) as { id: string }
 

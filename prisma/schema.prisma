@@ -212,6 +212,7 @@ model status {
   description   String
   createdAt     DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
+  appVersion    appVersion[]
   bolecode      bolecode[]
   order         order[]
   order_invoice order_invoice[]
@@ -297,7 +298,7 @@ model file_log {
   fileUrl    String    @db.VarChar(255)
   entity     String    @db.VarChar(100)
   entityId   String?   @db.VarChar(100)
-  message    String?   @db.Text
+  message    String?
   status     LogStatus @default(SUCCESS)
   httpStatus Int?
   createdAt  DateTime  @default(now())

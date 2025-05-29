@@ -78,9 +78,7 @@ const deleteItens = async (req: ICartAddRequest, id: string): Promise<void> => {
     productId: req.productId,
     restaurantId: id
   })
-  console.log('[deleteItens] >>> itens para deletar:', result)
   if (result == null) return
-  console.log('[deleteItens] >>> chamada deleteByUserIdAndProductId')
   await deleteByUserIdAndProductId(result.id)
 }
 
@@ -90,10 +88,8 @@ export const deleteItem = async (req: ICartDeleteItem): Promise<void> => {
     productId: req.productId,
     restaurantId: decoded.id
   })
-  console.log('[deleteItem] >>> item para deletar:', result)
 
   if (result == null) return
-  console.log('[deleteItem] >>> chamada deleteByUserIdAndProductId')
   await deleteByUserIdAndProductId(result.id)
 }
 

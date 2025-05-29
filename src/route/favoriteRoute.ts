@@ -1,15 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import {
-  save,
-  del,
-  type ISaveFavoriteRequest,
-  type IDeleteFavoriteRequest,
-  list,
-  type IListFavorite,
-  type IUpdateFavorite,
-  update,
-  type IUpdateFavoriteRequest
-} from '../service/favoriteService'
+import { save, del, type ISaveFavoriteRequest, type IDeleteFavoriteRequest, list, type IListFavorite, type IUpdateFavorite, update, type IUpdateFavoriteRequest } from '../service/favoriteService'
 
 export const favoriteRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/favorite/save', async (req, res): Promise<any> => {
@@ -32,7 +22,6 @@ export const favoriteRoute = async (server: FastifyInstance): Promise<void> => {
           status: 200,
           msg: message
         })
-        console.log(message)
       }
     }
   })

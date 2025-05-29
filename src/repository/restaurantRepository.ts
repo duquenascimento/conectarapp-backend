@@ -4,6 +4,7 @@ import { logRegister } from '../utils/logUtils'
 import { type IRestaurant } from '../service/restaurantService'
 import { type addressFormData } from '../service/registerService'
 import { v4 as uuidv4 } from 'uuid'
+import { HttpException } from '../errors/httpException'
 
 const prisma = new PrismaClient()
 
@@ -326,6 +327,28 @@ export const patchRestaurantRepository = async (externalId: string, restaurantDa
     })
   } catch (err) {
     void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const getBlockingSuppliers = async (externalId: string): Promise<string[] | undefined> => {
+  try {
+    if (!externalId) {
+      throw new HttpException('externalId é obrigatório', 422)
+    }
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        externalId
+      }
+    })
+    if (restaurant && restaurant?.blockedBySuppliers.length > 0) {
+      return restaurant.blockedBySuppliers
+    }
+    return []
+  } catch (err) {
+    void logRegister(err)
+    throw new HttpException('Erro ao buscar fornecedores que bloqueiam o cliente', 500)
   } finally {
     await prisma.$disconnect()
   }
