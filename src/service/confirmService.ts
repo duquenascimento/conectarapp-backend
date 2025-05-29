@@ -280,7 +280,7 @@ const formatDataToBolecode = async (data: confirmOrderRequest, yourNumber: strin
   return interData
 }
 
-function generateBarcode(barcodeValue: string): string {
+function generateBarcode (barcodeValue: string): string {
   const canvas = createCanvas(0, 0)
   JsBarcode(canvas, barcodeValue, {
     format: 'ITF',
@@ -292,7 +292,7 @@ function generateBarcode(barcodeValue: string): string {
   return canvas.toDataURL('image/png')
 }
 
-function convertBase64ToPng(base64String: string, filePath: string): void {
+function convertBase64ToPng (base64String: string, filePath: string): void {
   const base64Data = base64String.replace(/^data:image\/png;base64,/, '')
 
   const buffer = Buffer.from(base64Data, 'base64')
@@ -300,7 +300,7 @@ function convertBase64ToPng(base64String: string, filePath: string): void {
   writeFileSync(filePath, buffer)
 }
 
-async function generateQRCode(text: string, filePath: string): Promise<void> {
+async function generateQRCode (text: string, filePath: string): Promise<void> {
   try {
     const qrImage = await QRCode.toBuffer(text, { type: 'png', width: 100 })
     writeFileSync(filePath, qrImage)
@@ -696,7 +696,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       sigla_UF: 'RJ',
       cliente_com_boleto: getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário' ? '1' : '0',
       nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
-      id_distribuidor: req.restaurant.restaurant.externalId === 'C757' ? 'F0' : req.supplier.externalId
+      id_distribuidor: req.restaurant.restaurant.externalId === 'C757' || req.restaurant.restaurant.externalId === 'C939' || req.restaurant.restaurant.externalId === 'C940' || req.restaurant.restaurant.externalId === 'C941' ? 'F0' : req.supplier.externalId
       // id_distribuidor: req.supplier.externalId
     } satisfies Pedido)
   }).catch(async (err) => {
@@ -754,7 +754,7 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
-${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
+${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
 
 ---------------------------------------
 
@@ -821,7 +821,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     }
 
     // Codificar a mensagem
-    const msg = encodeURIComponent(req.message).replace('!', '%21').replace("'", '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
+    const msg = encodeURIComponent(req.message).replace('!', '%21').replace('\'', '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
 
     // Validar e formatar a data/hora agendada
     const [year, month, day] = req.sendDate.split('-').map(Number)

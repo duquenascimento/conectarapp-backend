@@ -20,39 +20,50 @@ model user {
 
 model restaurant {
   id                                  String         @id @db.Uuid
+  externalId                          String         @unique @db.VarChar(10)
   name                                String         @db.VarChar(200)
+  legalName                           String         @db.VarChar()
   active                              Boolean
+  phone                               String
+  alternativePhone                    String
+  email                               String
+  alternativeEmail                    String
   user                                String[]       @db.Uuid
   address                             String[]       @db.Uuid
+  closeDoor                           Boolean        @db.Boolean
   favorite                            String[]       @db.Uuid
-  companyRegistrationNumber           String         @db.VarChar(14)
-  createdAt                           DateTime       @db.Date
-  stateRegistrationNumber             String?        @db.VarChar
-  updatedAt                           DateTime?      @db.Date
-  companyRegistrationNumberForBilling String         @db.VarChar(14)
-  alternativeEmail                    String
-  alternativePhone                    String
-  cityRegistrationNumber              String?        @db.VarChar
-  closeDoor                           Boolean
-  email                               String
-  legalName                           String         @db.VarChar
-  orderValue                          Decimal        @db.Decimal(10, 2)
-  phone                               String
   weeklyOrderAmount                   Int            @db.SmallInt
+  orderValue                          Decimal        @db.Decimal(10, 2)
+  companyRegistrationNumber           String         @db.VarChar(14)
+  companyRegistrationNumberForBilling String         @db.VarChar(14)
+  stateRegistrationNumber             String?        @db.VarChar()
+  cityRegistrationNumber              String?        @db.VarChar()
+  createdAt                           DateTime       @db.Date
+  updatedAt                           DateTime?      @db.Date
   tax                                 Decimal        @default(4.1666) @db.Decimal(10, 6)
   paymentWay                          String         @db.VarChar(200)
-  verduraKg                           Boolean?
-  externalId                          String         @unique @db.VarChar(10)
-  premium                             Boolean        @default(false)
-  comercialBlock                      Boolean        @default(true)
-  financeBlock                        Boolean        @default(false)
+  verduraKg                           Boolean?       @db.Boolean
+  premium                             Boolean        @default(false) @db.Boolean
+  comercialBlock                      Boolean        @default(true) @db.Boolean
+  financeBlock                        Boolean        @default(false) @db.Boolean
+  transactions                        transactions[]
   allowClosedSupplier                 Boolean        @default(false)
   allowMinimumOrder                   Boolean        @default(false)
+  registrationReleasedNewApp          Boolean        @default(true) @db.Boolean
   categories                          String[]
-  registrationReleasedNewApp          Boolean        @default(true)
-  blockedBySuppliers                  String[]       @db.VarChar(10)
-  appVersion                          appVersion?
-  transactions                        transactions[]
+  appVersion                          appVersion?    @relation("RestaurantAppVersion")
+}
+
+model appVersion {
+  id                String     @id @default(uuid()) @db.Uuid
+  externalId        String     @unique @db.VarChar(10)
+  restaurant        restaurant @relation("RestaurantAppVersion", fields: [externalId], references: [externalId])
+  OperationalSystem String
+  version           String     @db.VarChar(10)
+  statusId          Int?
+  status            status?    @relation(fields: [statusId], references: [id])
+  createdAt         DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime   @updatedAt @db.Timestamptz(3)
 }
 
 model Categories {
@@ -206,6 +217,7 @@ model status {
   order         order[]
   order_invoice order_invoice[]
   transactions  transactions[]
+  appVersions   appVersion[]
 }
 
 model bolecode {
