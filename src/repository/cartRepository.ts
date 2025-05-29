@@ -45,7 +45,6 @@ export const addRepository = async (req: ICartAdd): Promise<void> => {
 
 export const findByProductAndUser = async (req: IFindByProductAndUser): Promise<cart | null> => {
   try {
-    console.log('[findByProductAndUser] >>> Busca itens no carrinho:', req)
     const result = await prisma.cart.findFirst({
       where: {
         AND: [{ productId: req.productId, restaurantId: req.restaurantId }]
@@ -62,7 +61,6 @@ export const findByProductAndUser = async (req: IFindByProductAndUser): Promise<
 
 export const listByUser = async (req: any): Promise<ICartResponse[] | null> => {
   try {
-    console.log('[listByUser] >>> Busca carrinho do restaurante com id:', req.restaurantId)
     const result = await prisma.cart.findMany({
       where: {
         AND: [{ restaurantId: req.restaurantId }]
@@ -77,7 +75,6 @@ export const listByUser = async (req: any): Promise<ICartResponse[] | null> => {
 
     return result
   } catch (err: any) {
-    console.log('[listByUser] >>> Falha ao buscar carrinho do restaurante com id:', req.restaurantId)
     await prisma.$disconnect()
     await logRegister(err)
     return null
@@ -86,7 +83,6 @@ export const listByUser = async (req: any): Promise<ICartResponse[] | null> => {
 
 export const deleteByUserIdAndProductId = async (id: string): Promise<void> => {
   try {
-    console.log('[deleteByUserIdAndProductId] >>> Deleta carrinho com id:', id)
     await prisma.cart.delete({
       where: {
         id
@@ -94,7 +90,6 @@ export const deleteByUserIdAndProductId = async (id: string): Promise<void> => {
     })
     await prisma.$disconnect()
   } catch (err: any) {
-    console.log('[deleteByUserIdAndProductId] >>> Falha ao deletar carrinho com id:', id)
     await prisma.$disconnect()
     await logRegister(err)
   }
