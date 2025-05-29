@@ -305,18 +305,6 @@ model file_log {
   updatedAt  DateTime  @default(now())
 }
 
-model appVersion {
-  id                String     @id @db.Uuid
-  externalId        String     @unique @db.VarChar(10)
-  OperationalSystem String
-  version           String     @db.VarChar(10)
-  statusId          Int?
-  createdAt         DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime   @db.Timestamptz(3)
-  restaurant        restaurant @relation(fields: [externalId], references: [externalId])
-  status            status?    @relation(fields: [statusId], references: [id])
-}
-
 enum LogStatus {
   SUCCESS
   FAIL
