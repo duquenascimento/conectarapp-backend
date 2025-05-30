@@ -105,7 +105,24 @@ export const checkOrder = async (orderId: string): Promise<any> => {
   }
 }
 
-export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }: premiumOrder): Promise<any> => {
+export const checkPremiumOrder = async (orderId: string): Promise<any> => {
+  try {
+    const result = await prisma.premiumOrder.count({
+      where: {
+        orderId: { contains: orderId }
+      }
+    })
+    await prisma.$disconnect()
+    return result
+  } catch (err: any) {
+    await prisma.$disconnect()
+    console.error(err)
+    await logRegister(err)
+    return null
+  }
+}
+
+export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart, orderId }: premiumOrder): Promise<any> => {
   try {
     const result = await prisma.premiumOrder.create({
       data: {
@@ -113,7 +130,8 @@ export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }
         id,
         restaurantId,
         Date,
-        cart: JSON.stringify(JSON.parse((cart) as string))
+        cart: JSON.stringify(JSON.parse((cart) as string)),
+        orderId
       }
     })
     await prisma.$disconnect()

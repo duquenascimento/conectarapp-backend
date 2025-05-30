@@ -22,6 +22,7 @@ import { bolecodeAndPixErrorMessage, receiptErrorMessage } from '../utils/slackU
 import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { type agendamentoPedido } from '../types/confirmTypes'
+import { generateOrderId } from '../utils/generateOrderId'
 
 export interface Supplier {
   name: string
@@ -749,8 +750,8 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
     const decoded = decode(req.token) as { id: string }
     const cart = await listByUser({ restaurantId: decoded.id })
     const items = await listProduct()
+    const orderId = await generateOrderId(true, req.selectedRestaurant.externalId as string)
     if (cart == null || items == null) throw Error('Empty cart/items', { cause: 'visibleError' })
-
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
@@ -772,7 +773,6 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)} e ${req.selectedRestaurant.addressInfos[0].finalDeliveryTime.substring(11, 16)} horas
 
     `
-
     await createOrderTextAirtable({
       'Data Pedido': today.toISODate() ?? '',
       'ID Cliente': req.selectedRestaurant.externalId ?? '',
@@ -786,7 +786,8 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
       Date: new Date(today.toString().substring(0, 10)),
       id,
       orderText,
-      restaurantId: decoded.id
+      restaurantId: decoded.id,
+      orderId
     })
 
     await deleteCartByUser({
