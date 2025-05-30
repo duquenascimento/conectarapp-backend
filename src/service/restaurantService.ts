@@ -84,11 +84,13 @@ export const updateAddressService = async (rest: any): Promise<void> => {
     const updateAirtableRecord = await updateAddressRegisterAirtable({
       'ID_Cliente': airtableRecordId,
       'Número': data.localNumber ?? '',
-      'Rua': `${data.address} ${data.localType}`,
+      'Rua': `${data.localType} ${data.address}`,
       'Resp. recebimento': data.responsibleReceivingName,
       'Tel resp. recebimento': data.responsibleReceivingPhoneNumber,
       'Complemento': data.complement ?? '',
       'CEP': data.zipCode,
+      'Bairro String': data.neighborhood,
+      'Cidade String': data.city ?? '',
       'Informações de entrega': data.deliveryInformation
     })
 

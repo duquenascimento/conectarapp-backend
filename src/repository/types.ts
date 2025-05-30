@@ -99,6 +99,8 @@ export interface UpdateAddressRegisterAirtable {
   'Tel resp. recebimento': string
   'Complemento': string
   'CEP': string
+  'Bairro String': string
+  'Cidade String': string
   'Informações de entrega': string
 }
 
