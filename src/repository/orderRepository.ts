@@ -9,7 +9,6 @@ export const findById = async (
   try {
     return await prisma.order.findUnique({
       where: { id }
-      // include: { orderInvoices: true }
     })
   } catch (err) {
     void logRegister(err)
@@ -39,7 +38,6 @@ export const filterOrders = async (
         if (filters[key]) {
           switch (key) {
           case 'status':
-            // Trata o campo "status" como uma relação
               const statusId = parseInt(filters[key], 10)
             if (!isNaN(statusId)) {
               acc.status_id = { equals: statusId }
@@ -47,12 +45,10 @@ export const filterOrders = async (
             break
 
           case 'restaurantId':
-            // Trata o campo "restaurantId" como um UUID
             acc.restaurantId = { equals: filters[key] }
             break
 
           default:
-            // Para outros campos, usa "contains"
             acc[key] = { contains: filters[key], mode: 'insensitive' }
             break
           }
@@ -67,7 +63,6 @@ export const filterOrders = async (
         where: whereClause,
         skip: (page - 1) * limit,
         take: limit
-        // include: { orderInvoices: true }
       }),
       prisma.order.count({ where: whereClause })
     ])

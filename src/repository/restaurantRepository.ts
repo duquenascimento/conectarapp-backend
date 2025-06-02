@@ -353,3 +353,15 @@ export const getBlockingSuppliers = async (externalId: string): Promise<string[]
     await prisma.$disconnect()
   }
 }
+
+export const findRestaurantByExternalId = async (externalId: string): Promise<any> => {
+  try {
+    return await prisma.restaurant.findFirst({
+      where: { externalId }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}

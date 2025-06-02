@@ -35,10 +35,8 @@ model restaurant {
   cityRegistrationNumber              String?        @db.VarChar
   closeDoor                           Boolean
   email                               String
-  legalName                           String         @db.VarChar
-  orderValue                          Decimal        @db.Decimal(10, 2)
-  phone                               String
   weeklyOrderAmount                   Int            @db.SmallInt
+  orderValue                          Decimal        @db.Decimal(10, 2)
   tax                                 Decimal        @default(4.1666) @db.Decimal(10, 6)
   paymentWay                          String         @db.VarChar(200)
   verduraKg                           Boolean?
@@ -49,7 +47,6 @@ model restaurant {
   allowClosedSupplier                 Boolean        @default(false)
   allowMinimumOrder                   Boolean        @default(false)
   categories                          String[]
-  registrationReleasedNewApp          Boolean        @default(true)
   blockedBySuppliers                  String[]       @db.VarChar(10)
   appVersion                          appVersion?    @relation("RestaurantAppVersion")
   transactions                        transactions[]
@@ -213,11 +210,11 @@ model status {
   description   String
   createdAt     DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
-  appVersions   appVersion[]
   bolecode      bolecode[]
   order         order[]
   order_invoice order_invoice[]
   transactions  transactions[]
+  appVersion    appVersion[]
 }
 
 model bolecode {
@@ -294,7 +291,7 @@ model order_invoice {
 }
 
 model file_log {
-  id         String    @id @default(cuid()) @db.VarChar(50)
+  id         String    @id @db.VarChar(50)
   fileUrl    String    @db.VarChar(255)
   entity     String    @db.VarChar(100)
   entityId   String?   @db.VarChar(100)
