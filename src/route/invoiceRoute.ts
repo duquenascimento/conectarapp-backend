@@ -15,7 +15,7 @@ type VerifyLinkRequest = FastifyRequest<{
 export const invoiceRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/invoice', async (req, res): Promise<any> => {
     try {
-      await upsert(req.body as Pick<order_invoice, 'filePath' | 'orderId'>)
+      await upsert(req.body as Pick<order_invoice, 'filePath' | 'orderId' | 'premium'>)
       return await res.status(200).send({
         status: 200
       })
