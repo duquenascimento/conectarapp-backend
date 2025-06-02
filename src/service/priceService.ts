@@ -2,7 +2,7 @@ import { DateTime } from 'luxon'
 import { type ICartList, listCartComplete } from './cartService'
 import { Decimal } from '@prisma/client/runtime/library'
 import { ApiRepository } from '../repository/apiRepository'
-import { getBlockingSuppliersByRestaurant } from '../repository/restaurantRepository'
+import { getBlockingSuppliers } from '../repository/restaurantRepository'
 
 const apiRepository = new ApiRepository(process.env.URL_API_ANTIGA ?? '')
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
@@ -40,11 +40,10 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
 
     const inactiveSuppliers = inactiveSuppliersResponse.data?.map((item: string) => Object.values(item)[0])
 
-    const blockingSuppliers = await getBlockingSuppliersByRestaurant(String(req.selectedRestaurant?.externalId))
+    const externalId: string = req.selectedRestaurant.externalId
 
-    if (blockingSuppliers && blockingSuppliers.length > 0) {
-      inactiveSuppliers.concat(blockingSuppliers)
-    }
+    const blockingSuppliers = await getBlockingSuppliers(externalId)
+    const excludedSuppliers = inactiveSuppliers.concat(blockingSuppliers)
 
     const request = {
       neighborhood: req.selectedRestaurant.addressInfos[0].neighborhood,
@@ -53,12 +52,9 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
       externalId: 'F0',
       createdBy: 'system',
       DiaEntrega: '',
-      /* skus,
-      quant,
-      Obs, */
       Product: filterProducts,
       tax: req.selectedRestaurant.tax / 100 + 1,
-      SupplierToExclude: inactiveSuppliers,
+      SupplierToExclude: excludedSuppliers,
       ActualDayWeek: '',
       ActualHour: DateTime.now().setZone('America/Sao_Paulo').toISO({ suppressMilliseconds: false })
     }
@@ -66,7 +62,6 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
     const raw = JSON.stringify(request)
 
     const data = await apiRepository.callApi('/list-available-supplier-new', 'POST', raw)
-    console.log('Data:', data.data)
     // Para o banco de produção, filtrar o fornecedor de teste
     if (process.env.FILTER_TEST_SUPPLIER === 'true') {
       const filteredSuppliers = data.data.filter((sup: SupplierItem) => sup.supplier.externalId !== 'F0')

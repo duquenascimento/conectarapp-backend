@@ -42,9 +42,7 @@ export const updateFavorite = async (req: IUpdateFavorite): Promise<any> => {
   }
 }
 
-export const findByProductAndUser = async (
-  req: ISaveFavorite
-): Promise<favorite | null> => {
+export const findByProductAndUser = async (req: ISaveFavorite): Promise<favorite | null> => {
   try {
     const result = await prisma.favorite.findFirst({
       where: {
@@ -52,7 +50,6 @@ export const findByProductAndUser = async (
         restaurantId: req.restaurantId
       }
     })
-    console.log(result)
     await prisma.$disconnect()
     return result
   } catch (err) {
