@@ -24,22 +24,21 @@ model restaurant {
   name                                String         @db.VarChar(200)
   legalName                           String         @db.VarChar()
   active                              Boolean
-  phone                               String
-  alternativePhone                    String
-  email                               String
-  alternativeEmail                    String
   user                                String[]       @db.Uuid
   address                             String[]       @db.Uuid
-  closeDoor                           Boolean        @db.Boolean
   favorite                            String[]       @db.Uuid
+  companyRegistrationNumber           String         @db.VarChar(14)
+  createdAt                           DateTime       @db.Date
+  stateRegistrationNumber             String?        @db.VarChar
+  updatedAt                           DateTime?      @db.Date
+  companyRegistrationNumberForBilling String         @db.VarChar(14)
+  alternativeEmail                    String
+  alternativePhone                    String
+  cityRegistrationNumber              String?        @db.VarChar
+  closeDoor                           Boolean
+  email                               String
   weeklyOrderAmount                   Int            @db.SmallInt
   orderValue                          Decimal        @db.Decimal(10, 2)
-  companyRegistrationNumber           String         @db.VarChar(14)
-  companyRegistrationNumberForBilling String         @db.VarChar(14)
-  stateRegistrationNumber             String?        @db.VarChar()
-  cityRegistrationNumber              String?        @db.VarChar()
-  createdAt                           DateTime       @db.Date
-  updatedAt                           DateTime?      @db.Date
   tax                                 Decimal        @default(4.1666) @db.Decimal(10, 6)
   paymentWay                          String         @db.VarChar(200)
   verduraKg                           Boolean?       @db.Boolean
@@ -51,6 +50,7 @@ model restaurant {
   allowMinimumOrder                   Boolean        @default(false)
   registrationReleasedNewApp          Boolean        @default(true) @db.Boolean
   categories                          String[]
+  blockedBySuppliers                  String[]       @db.VarChar(10)
   appVersion                          appVersion?    @relation("RestaurantAppVersion")
 }
 
@@ -212,7 +212,6 @@ model status {
   description   String
   createdAt     DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
-  appVersion    appVersion[]
   bolecode      bolecode[]
   order         order[]
   order_invoice order_invoice[]
@@ -294,7 +293,7 @@ model order_invoice {
 }
 
 model file_log {
-  id         String    @id @default(cuid()) @db.VarChar(50)
+  id         String    @id @db.VarChar(50)
   fileUrl    String    @db.VarChar(255)
   entity     String    @db.VarChar(100)
   entityId   String?   @db.VarChar(100)
