@@ -37,19 +37,8 @@ model restaurant {
   cityRegistrationNumber              String?        @db.VarChar
   closeDoor                           Boolean
   email                               String
-  alternativeEmail                    String
-  user                                String[]       @db.Uuid
-  address                             String[]       @db.Uuid
-  closeDoor                           Boolean        @db.Boolean
-  favorite                            String[]       @db.Uuid
   weeklyOrderAmount                   Int            @db.SmallInt
   orderValue                          Decimal        @db.Decimal(10, 2)
-  companyRegistrationNumber           String         @db.VarChar(14)
-  companyRegistrationNumberForBilling String         @db.VarChar(14)
-  stateRegistrationNumber             String?        @db.VarChar()
-  cityRegistrationNumber              String?        @db.VarChar()
-  createdAt                           DateTime       @db.Date
-  updatedAt                           DateTime?      @db.Date
   tax                                 Decimal        @default(4.1666) @db.Decimal(10, 6)
   paymentWay                          String         @db.VarChar(200)
   verduraKg                           Boolean?       @db.Boolean
@@ -61,6 +50,7 @@ model restaurant {
   allowMinimumOrder                   Boolean        @default(false)
   registrationReleasedNewApp          Boolean        @default(true) @db.Boolean
   categories                          String[]
+  blockedBySuppliers                  String[]       @db.VarChar(10)
   appVersion                          appVersion?    @relation("RestaurantAppVersion")
 }
 
@@ -222,7 +212,6 @@ model status {
   description   String
   createdAt     DateTime        @default(now()) @db.Timestamptz(3)
   updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
-  appVersion    appVersion[]
   bolecode      bolecode[]
   order         order[]
   order_invoice order_invoice[]
@@ -301,18 +290,6 @@ model order_invoice {
   status_id Int
   order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   status    status   @relation(fields: [status_id], references: [id])
-}
-
-model appVersion {
-  id                String     @id @db.Uuid
-  externalId        String     @unique @db.VarChar(10)
-  OperationalSystem String
-  version           String     @db.VarChar(10)
-  statusId          Int
-  createdAt         DateTime   @default(now()) @db.Timestamptz(3)
-  updatedAt         DateTime   @db.Timestamptz(3)
-  restaurant        restaurant @relation(fields: [externalId], references: [externalId])
-  status            status     @relation(fields: [statusId], references: [id])
 }
 
 model file_log {

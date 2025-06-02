@@ -365,21 +365,3 @@ export const findRestaurantByExternalId = async (externalId: string): Promise<an
     await prisma.$disconnect()
   }
 }
-
-export const getBlockingSuppliersByRestaurant = async (externalId: string): Promise<any> => {
-  if (!externalId) {
-    throw new Error('externalId é obrigatório')
-  }
-  try {
-    const restaurant = await findAddressByRestaurantId(externalId)
-    if (!restaurant) {
-      throw new Error('Restaurante não encontrado')
-    }
-
-    return restaurant?.blockedBySuppliers
-  } catch (err) {
-    void logRegister(err)
-  } finally {
-    await prisma.$disconnect()
-  }
-}
