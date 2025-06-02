@@ -5,13 +5,15 @@ const prisma = new PrismaClient()
 
 export const upsertInvoice = async (
   orderId: string,
-  filePath: string[]
+  filePath: string[],
+  premium: boolean
 ): Promise<void> => {
   try {
     await prisma.order_invoice.upsert({
       create: {
         filePath,
         orderId,
+        premium,
         status_id: 4
       },
       where: {

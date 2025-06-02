@@ -3,10 +3,18 @@ import { upsertInvoice } from '../repository/invoiceRepository'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
 import { createFileLog } from '../repository/fileLogRepository'
 import { HttpException } from '../errors/httpException'
+import { findPremiumByOrderId, insertIncrementalPremiumOrder } from '../repository/confirmRepository'
 
-export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePath' | 'orderId'>): Promise<void> => {
+export const upsert = async ({ filePath, orderId, premium }: Pick<order_invoice, 'filePath' | 'orderId' | 'premium'>): Promise<void> => {
   if (!orderId || !Array.isArray(filePath) || filePath.length === 0) {
     throw new HttpException('orderId e arquivos são obrigatórios para envio de nota fiscal.', 400)
+  }
+
+  if (premium) {
+    const premiumOrder = await findPremiumByOrderId(orderId)
+    if (!premiumOrder) {
+      await insertIncrementalPremiumOrder(orderId)
+    }
   }
 
   const files: Array<string | null> = await Promise.all(
@@ -36,11 +44,11 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
 
   if (validFiles.length > 0) {
     try {
-      await upsertInvoice(orderId, validFiles)
+      await upsertInvoice(orderId, validFiles, premium)
 
       await createFileLog({
         fileUrl: JSON.stringify(validFiles),
-        entity: 'order_invoice',
+        entity: premium ? 'order_invoice (premium)' : 'order_invoice',
         entityId: orderId,
         message: 'Notas salvas com sucesso na base de dados',
         status: 'SUCCESS',
@@ -52,7 +60,7 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
 
       await createFileLog({
         fileUrl: JSON.stringify(validFiles),
-        entity: 'order_invoice',
+        entity: premium ? 'order_invoice (premium)' : 'order_invoice',
         entityId: orderId,
         message,
         status: 'FAIL',
@@ -64,7 +72,7 @@ export const upsert = async ({ filePath, orderId }: Pick<order_invoice, 'filePat
   } else {
     await createFileLog({
       fileUrl: JSON.stringify(filePath),
-      entity: 'order',
+      entity: premium ? 'premiumOrder' : 'order',
       entityId: orderId,
       message: 'Nenhum arquivo foi processado com sucesso na base de dados',
       status: 'FAIL',

@@ -1,6 +1,8 @@
 import { type premiumOrder, PrismaClient } from '@prisma/client'
 import 'dotenv/config'
 import { logRegister } from '../utils/logUtils'
+import { v4 as uuidv4 } from 'uuid'
+import { HttpException } from '../errors/httpException'
 
 const prisma = new PrismaClient()
 
@@ -105,15 +107,11 @@ export const checkOrder = async (orderId: string): Promise<any> => {
   }
 }
 
-export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }: premiumOrder): Promise<any> => {
+export const checkPremiumOrder = async (orderId: string): Promise<any> => {
   try {
-    const result = await prisma.premiumOrder.create({
-      data: {
-        orderText,
-        id,
-        restaurantId,
-        Date,
-        cart: JSON.stringify(JSON.parse((cart) as string))
+    const result = await prisma.premiumOrder.count({
+      where: {
+        orderId: { contains: orderId }
       }
     })
     await prisma.$disconnect()
@@ -123,5 +121,66 @@ export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart }
     console.error(err)
     await logRegister(err)
     return null
+  }
+}
+
+export const confirmPremium = async ({ orderText, Date, restaurantId, id, cart, orderId }: premiumOrder): Promise<any> => {
+  try {
+    const result = await prisma.premiumOrder.create({
+      data: {
+        orderText,
+        id,
+        restaurantId,
+        Date,
+        cart: JSON.stringify(JSON.parse((cart) as string)),
+        orderId
+      }
+    })
+    await prisma.$disconnect()
+    return result
+  } catch (err: any) {
+    await prisma.$disconnect()
+    console.error(err)
+    await logRegister(err)
+    return null
+  }
+}
+
+export const findPremiumByOrderId = async (orderId: string): Promise<premiumOrder | null> => {
+  try {
+    const order = await prisma.premiumOrder.findFirst({
+      where: {
+        orderId
+      }
+    })
+
+    return order
+  } catch (error) {
+    console.error(error)
+    throw new HttpException('Falha ao buscar premiumOrder', 500)
+  }
+}
+
+export const insertIncrementalPremiumOrder = async (orderId: string) => {
+  try {
+    const originalOrderId = orderId.replace(/_P\d+$/, '')
+    const originalOrder = await findPremiumByOrderId(originalOrderId)
+
+    if (!originalOrder) {
+      throw new HttpException('Pedido premium não encontrado', 404)
+    }
+    const { Date, restaurantId } = originalOrder
+
+    await confirmPremium({
+      id: uuidv4(),
+      Date,
+      orderId,
+      orderText: '',
+      cart: [],
+      restaurantId
+    })
+  } catch (error) {
+    console.error(error)
+    throw new HttpException('Falha ao inserir incremento de premiumOrder', 500)
   }
 }

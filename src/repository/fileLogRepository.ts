@@ -1,4 +1,5 @@
 import { PrismaClient, type file_log } from '@prisma/client'
+import { v4 as uuidv4 } from 'uuid'
 
 const prisma = new PrismaClient()
 
@@ -21,6 +22,9 @@ export const createFileLog = async (data: Omit<file_log, 'id' | 'createdAt' | 'u
   try {
     const log = await prisma.file_log.create({
       data: {
+        id: uuidv4(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
         ...data
       }
     })
