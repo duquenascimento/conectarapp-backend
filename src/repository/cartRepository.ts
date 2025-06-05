@@ -11,6 +11,7 @@ export interface ICartAdd {
   productId: string
   id: string
   restaurantId: string
+  addOrder: number
 }
 
 export interface IFindByProductAndUser {
@@ -26,7 +27,8 @@ export const addRepository = async (req: ICartAdd): Promise<void> => {
         productId: req.productId,
         id: req.id,
         restaurantId: req.restaurantId,
-        obs: req.obs ?? ''
+        obs: req.obs ?? '',
+        addOrder: req.addOrder
       },
       update: {
         amount: req.amount,
@@ -41,6 +43,13 @@ export const addRepository = async (req: ICartAdd): Promise<void> => {
     await prisma.$disconnect()
     await logRegister(err)
   }
+}
+
+export const countCartItens = async (restaurantId: string): Promise<number> => {
+  const itemQuantity = await prisma.cart.count({
+    where: { restaurantId }
+  })
+  return itemQuantity
 }
 
 export const findByProductAndUser = async (req: IFindByProductAndUser): Promise<cart | null> => {
@@ -68,7 +77,8 @@ export const listByUser = async (req: any): Promise<ICartResponse[] | null> => {
       select: {
         productId: true,
         amount: true,
-        obs: true
+        obs: true,
+        addOrder: true
       }
     })
     await prisma.$disconnect()

@@ -3,11 +3,13 @@ import { addRepository, deleteByUserId, deleteByUserIdAndProductId, findByProduc
 import { logRegister } from '../utils/logUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { Decimal } from '@prisma/client/runtime/library'
+import { countCartItens } from '../repository/cartRepository'
 
 export interface ICartAddRequest {
   amount: number
   obs: string
   productId: string
+  addOrder: number
 }
 
 export interface ICartAddRequestArray {
@@ -31,6 +33,7 @@ export interface ICartResponse {
   amount: Decimal
   obs: string | null
   sku?: string
+  addOrder: number
 }
 
 interface Product {
@@ -54,13 +57,15 @@ interface Product {
   firstUnit: number
   secondUnit: number
   thirdUnit: number
+  addOrder: number
 }
 
 const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
   const request: ICartAdd = {
     ...req,
     id: uuidv4(),
-    restaurantId: id
+    restaurantId: id,
+    addOrder: req.addOrder
   }
   const result = await findByProductAndUser({
     productId: req.productId,
@@ -96,11 +101,14 @@ export const deleteItem = async (req: ICartDeleteItem): Promise<void> => {
 export const addService = async (req: ICartAddRequestArray): Promise<void> => {
   try {
     const decoded = decode(req.token) as { id: string }
-    await Promise.all(
-      req.carts.map(async (cart) => {
-        await addToCart(cart, decoded.id)
-      })
-    )
+    const countItens = await countCartItens(decoded.id)
+    let orderIndex = countItens
+    for (const cart of req.carts) {
+      orderIndex++
+      cart.addOrder = orderIndex
+      await addToCart(cart, decoded.id)
+    }
+
     await Promise.all(
       req.cartToExclude.map(async (cartToDelete) => {
         await deleteItens(cartToDelete, decoded.id)
@@ -170,7 +178,8 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
         sku: item.sku,
         updatedAt: item.updatedAt,
         amount: produto?.amount ?? new Decimal(0),
-        obs: produto?.obs ?? ''
+        obs: produto?.obs ?? '',
+        addOrder: produto?.addOrder ?? 0
       } satisfies Product
     })
 
