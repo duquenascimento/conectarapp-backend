@@ -29,7 +29,8 @@ export const save = async (req: ISaveFavoriteRequest): Promise<any> => {
     const request: ISaveFavorite = {
       id: uuidv4(),
       productId: req.productId,
-      restaurantId: req.restaurantId
+      restaurantId: req.restaurantId,
+      obs: req.obs
     }
     const result = await findByProductAndUser(request)
     if (result != null) return null
@@ -75,6 +76,7 @@ export const del = async (req: IDeleteFavoriteRequest): Promise<any> => {
 export interface IListFavorite {
   token: string
   restaurantId: string
+  obs: string
 }
 
 export const list = async (req: IListFavorite): Promise<any> => {
@@ -83,7 +85,17 @@ export const list = async (req: IListFavorite): Promise<any> => {
       throw Error('missing token', { cause: 'visibleError' })
     }
     const decoded = decode(req.token) as { id: string }
+
+    // Obter a lista de favoritos do seu banco de dados
     const result = await listByUser(req.restaurantId)
+
+    // Criar um mapa de productId para obs para fácil acesso
+    const obsMap = new Map<string, string>()
+    result?.forEach((item) => {
+      if (item.productId && item.obs) {
+        obsMap.set(item.productId, item.obs)
+      }
+    })
 
     const raw = JSON.stringify({
       ids: result?.map((item) => item.productId)
@@ -95,8 +107,13 @@ export const list = async (req: IListFavorite): Promise<any> => {
       throw new Error('Resposta da API inválida')
     }
 
-    // Filtrar os itens com active: true
-    const filteredData = response.data.filter((item: any) => item.active === true)
+    // Filtrar os itens com active: true e adicionar as obs
+    const filteredData = response.data
+      .filter((item: any) => item.active === true)
+      .map((item: any) => ({
+        ...item,
+        obs: obsMap.get(String(item.id)) ?? '' // Adiciona a obs do seu banco ou null se não existir
+      }))
 
     return filteredData
   } catch (err) {
