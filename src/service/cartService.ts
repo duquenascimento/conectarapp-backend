@@ -33,7 +33,7 @@ export interface ICartResponse {
   amount: Decimal
   obs: string | null
   sku?: string
-  addOrder: number
+  addOrder: number | null
 }
 
 interface Product {
