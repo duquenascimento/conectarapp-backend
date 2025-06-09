@@ -114,7 +114,7 @@ model cart {
   amount       Decimal @db.Decimal(10, 3)
   restaurantId String  @db.Uuid
   version      Int     @default(0)
-  addOrder     Int     @default(0)
+  addOrder     Int?    @default(0)
 }
 
 model order {
