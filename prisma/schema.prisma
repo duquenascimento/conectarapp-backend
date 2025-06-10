@@ -31,6 +31,9 @@ model restaurant {
   alternativePhone                    String
   email                               String
   alternativeEmail                    String
+  emailBilling                        String?
+  financeResponsibleName              String?
+  financeResponsiblePhoneNumber       String?
   user                                String[]       @db.Uuid
   address                             String[]       @db.Uuid
   closeDoor                           Boolean        @db.Boolean
