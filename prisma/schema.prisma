@@ -11,6 +11,9 @@ model user {
   id         String    @id @db.Uuid
   email      String    @unique @db.VarChar(256)
   password   String?   @db.VarChar(60)
+  name       String?   @db.VarChar(60)
+  phone      String?
+  position   String? 
   active     Boolean
   restaurant String[]  @db.Uuid
   role       String[]  @db.VarChar(500)
