@@ -68,6 +68,9 @@ export interface RestaurantFormData {
   localType: string
   city: string
   inviteCode?: string
+  emailBilling: string
+  financeResponsibleName: string
+  financeResponsiblePhoneNumber: string
 }
 
 export interface addressFormData {
@@ -156,7 +159,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       neigh: req.neigh,
       street: req.street,
       zipcode: req.zipcode,
-      restaurantId: [restaurantId], 
+      restaurantId: [restaurantId],
       responsibleReceivingName: req.responsibleReceivingName,
       responsibleReceivingPhoneNumber: req.responsibleReceivingPhoneNumber,
       localType: req.localType,
@@ -188,7 +191,10 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       favorite: [],
       paymentWay: req.paymentWay,
       premium: Number(req.orderValue) >= 400,
-      registrationReleasedNewApp: true
+      registrationReleasedNewApp: true,
+      emailBilling: req.emailBilling,
+      financeResponsibleName: req.financeResponsibleName,
+      financeResponsiblePhoneNumber: req.financeResponsiblePhoneNumber
     }
 
     await createRestaurant(restData)
@@ -200,7 +206,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
   }
 }
 
-function capitalizeWithExceptions (text: string): string {
+function capitalizeWithExceptions(text: string): string {
   const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
 
   return text
