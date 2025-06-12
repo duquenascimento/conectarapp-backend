@@ -27,7 +27,7 @@ model restaurant {
   name                                String         @db.VarChar(200)
   legalName                           String         @db.VarChar()
   active                              Boolean
-  phone                               String
+  phone                               String?
   alternativePhone                    String
   email                               String
   alternativeEmail                    String
@@ -94,8 +94,8 @@ model address {
   finalDeliveryTime               DateTime  @db.Time(6)
   deliveryInformation             String    @db.VarChar(500)
   closedDoorDelivery              Boolean
-  responsibleReceivingName        String    @db.VarChar(200)
-  responsibleReceivingPhoneNumber String    @db.VarChar(50)
+  responsibleReceivingName        String?    @db.VarChar(200)
+  responsibleReceivingPhoneNumber String?    @db.VarChar(50)
   zipCode                         String    @db.VarChar(10)
   deliveryReference               String    @db.VarChar(500)
   createdAt                       DateTime  @db.Date
