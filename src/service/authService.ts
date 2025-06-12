@@ -9,12 +9,18 @@ import { generateRandomSequenceObject, sendEmail } from '../utils/utils'
 export interface IFirstStepSignUpRequest {
   email: string
   password?: string
+  name?: string
+  phone?: string
+  position?: string
 }
 
 export interface IFirstStepSignUp {
   email: string
   password?: string
   id: string
+  name?: string
+  phone?: string
+  position?: string
   role?: string[]
   restaurant?: string[]
   active: boolean
