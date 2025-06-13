@@ -7,7 +7,6 @@ const restaurantUpdateSchema = Joi.object({
   name: Joi.string().max(200).required(),
   legalName: Joi.string().required(),
   active: Joi.boolean(),
-  phone: Joi.string().max(15).min(11).custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   alternativePhone: Joi.string().max(15).min(11).custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   email: Joi.string().email(),
   alternativeEmail: Joi.string().email().allow(''),
@@ -34,7 +33,10 @@ const restaurantUpdateSchema = Joi.object({
   financeBlock: Joi.boolean(),
   allowClosedSupplier: Joi.boolean(),
   allowMinimumOrder: Joi.boolean(),
-  blockedBySuppliers: Joi.array().items(Joi.string())
+  blockedBySuppliers: Joi.array().items(Joi.string()),
+  emailBilling: Joi.string().email().required(),
+  financeResponsibleName: Joi.string().required().max(255),
+  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais')
 }).messages({
   'any.required': 'O campo {#label} é obrigatório',
   'string.empty': 'O campo {#label} não pode estar vazio',
@@ -51,7 +53,6 @@ export const restaurantPatchSchema = Joi.object({
   name: Joi.string().max(200),
   legalName: Joi.string(),
   active: Joi.boolean(),
-  phone: Joi.string().max(15).min(11).custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   alternativePhone: Joi.string().max(15).min(11).custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   email: Joi.string().email().allow(''),
   alternativeEmail: Joi.string().email().allow(''),
@@ -77,7 +78,10 @@ export const restaurantPatchSchema = Joi.object({
   comercialBlock: Joi.boolean(),
   financeBlock: Joi.boolean(),
   allowClosedSupplier: Joi.boolean(),
-  allowMinimumOrder: Joi.boolean()
+  allowMinimumOrder: Joi.boolean(),
+  emailBilling: Joi.string().email().required(),
+  financeResponsibleName: Joi.string().required().max(255),
+  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais')
 }).messages({
   'any.required': 'O campo {#label} é obrigatório',
   'string.empty': 'O campo {#label} não pode estar vazio',
@@ -94,7 +98,7 @@ export const restaurantPatchSchema = Joi.object({
 
 export default restaurantUpdateSchema
 
-export function cleanObject<T extends Record<string, unknown>> (obj: T): Partial<T> {
+export function cleanObject<T extends Record<string, unknown>>(obj: T): Partial<T> {
   const result: Partial<T> = {}
 
   ;(Object.entries(obj) as Array<[keyof T, T[keyof T]]>).forEach(([key, value]) => {
@@ -106,12 +110,12 @@ export function cleanObject<T extends Record<string, unknown>> (obj: T): Partial
   return result
 }
 
-function removeSpecialCharacters (value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
+function removeSpecialCharacters(value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
   const cleanedValue = value.replace(/[^\w\s]/gi, '')
   return cleanedValue
 }
 
-function customDocumentValidation (value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
+function customDocumentValidation(value: string, helpers: CustomHelpers): string | ReturnType<typeof helpers.error> {
   const isValid = validateDocument(value)
   if (!isValid) {
     return helpers.error('string.invalid', { value: 'Documento inválido' })

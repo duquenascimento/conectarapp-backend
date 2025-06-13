@@ -8,6 +8,9 @@ const prisma = new PrismaClient()
 export interface IFindUserByEmail {
   id: string
   email: string
+  name: string | null
+  phone: string | null
+  position: string | null
   active: boolean
   restaurant: string[]
   role: string[]
@@ -23,6 +26,9 @@ export const findUserByEmail = async (email: string): Promise<IFindUserByEmail |
       select: {
         email: true,
         active: true,
+        name: true,
+        phone: true,
+        position: true,
         id: true,
         restaurant: true,
         role: true,

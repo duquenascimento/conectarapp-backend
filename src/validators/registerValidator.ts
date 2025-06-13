@@ -9,7 +9,6 @@ const registerSchema = Joi.object({
   alternativeEmail: Joi.string().email().optional().allow(''),
   email: Joi.string().email().required(),
   alternativePhone: Joi.string().max(15).min(11).allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais'),
-  phone: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   complement: Joi.string().optional().allow(''),
   localNumber: Joi.string().required(),
   street: Joi.string().required().max(255),
@@ -25,14 +24,15 @@ const registerSchema = Joi.object({
     'any.custom': '{{#message}}'
   }),
   deliveryObs: Joi.string().optional().allow(''),
-  responsibleReceivingName:Joi.string().max(50).required(),
-  responsibleReceivingPhoneNumber:Joi.string().min(11).max(15).required(),
   closeDoor: Joi.boolean().required(),
   maxHour: Joi.string().required(),
   minHour: Joi.string().required(),
   localType: Joi.string().required(),
   city: Joi.string().required(),
-  inviteCode: Joi.string().optional().allow('')
+  inviteCode: Joi.string().optional().allow(''),
+  emailBilling: Joi.string().email().required(),
+  financeResponsibleName: Joi.string().required().max(255),
+  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais')
 }).messages({
   'any.required': 'O campo {#label} é obrigatório',
   'string.empty': 'O campo {#label} não pode estar vazio',
