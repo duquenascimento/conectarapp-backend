@@ -62,7 +62,10 @@ export const filterOrders = async (
       prisma.order.findMany({
         where: whereClause,
         skip: (page - 1) * limit,
-        take: limit
+        take: limit,
+        orderBy: {
+          orderDate: 'desc'
+        }
       }),
       prisma.order.count({ where: whereClause })
     ])
