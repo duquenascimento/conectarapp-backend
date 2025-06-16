@@ -6,6 +6,7 @@ const registerSchema = Joi.object({
   cnpj: Joi.string().custom(customDocumentValidation, 'Validação de CPF ou CNPJ').required().messages({
     'string.invalid': 'Documento inválido'
   }),
+  phone: Joi.string().max(15).min(11).optional().allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   alternativeEmail: Joi.string().email().optional().allow(''),
   email: Joi.string().email().required(),
   alternativePhone: Joi.string().max(15).min(11).allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais'),
@@ -18,6 +19,8 @@ const registerSchema = Joi.object({
   legalRestaurantName: Joi.string().required(),
   cityNumberId: Joi.string().required().allow(''),
   stateNumberId: Joi.string().optional().allow(''),
+  responsibleReceivingName: Joi.string().max(50).optional().allow(''),
+  responsibleReceivingPhoneNumber: Joi.string().min(11).max(15).optional().allow(''),
   paymentWay: Joi.string().required(),
   orderValue: Joi.number().min(1).required(),
   weeklyOrderAmount: Joi.string().pattern(/^\d+$/).required().custom(validateNumeroString, 'Validação de número entre 1 e 7').messages({
@@ -30,9 +33,9 @@ const registerSchema = Joi.object({
   localType: Joi.string().required(),
   city: Joi.string().required(),
   inviteCode: Joi.string().optional().allow(''),
-  emailBilling: Joi.string().email().required(),
-  financeResponsibleName: Joi.string().required().max(255),
-  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais')
+  emailBilling: Joi.string().email().optional().allow(''),
+  financeResponsibleName: Joi.string().optional().allow('').max(255),
+  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).optional().allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais')
 }).messages({
   'any.required': 'O campo {#label} é obrigatório',
   'string.empty': 'O campo {#label} não pode estar vazio',
