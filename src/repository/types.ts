@@ -99,6 +99,20 @@ export interface UpdateAddressRegisterAirtable {
   'Tel resp. recebimento': string
   'Complemento': string
   'CEP': string
+  'h_min seg': string
+  'h_max seg': string
+  'h_min ter': string
+  'h_max ter': string
+  'h_min qua': string
+  'h_max qua': string
+  'h_min qui': string
+  'h_max qui': string
+  'h_min sex': string
+  'h_max sex': string
+  'h_min sab': string
+  'h_max sab': string
+  'h_min dom': string
+  'h_max dom': string
   'Bairro String': string
   'Cidade String': string
   'Informações de entrega': string
