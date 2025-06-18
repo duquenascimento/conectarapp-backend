@@ -8,7 +8,8 @@ export const findById = async (
 ): Promise<order | null | undefined> => {
   try {
     return await prisma.order.findUnique({
-      where: { id }
+      where: { id },
+      include: { orderInvoices: true }
     })
   } catch (err) {
     void logRegister(err)

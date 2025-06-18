@@ -4,7 +4,6 @@ import JsBarcode from 'jsbarcode'
 import QRCode from 'qrcode'
 import { HttpException } from '../errors/httpException'
 
-// Configura o cliente S3
 const s3Client = new S3Client({
   region: process.env.AWS_REGION!,
   credentials: {
@@ -13,10 +12,7 @@ const s3Client = new S3Client({
   }
 })
 
-/**
- * Envia um arquivo para o S3
- */
-export async function uploadToS3(buffer: Buffer, key: string, contentType: string): Promise<string> {
+export async function uploadToS3 (buffer: Buffer, key: string, contentType: string): Promise<string> {
   const bucket = process.env.BUCKET_NAME!
 
   const command = new PutObjectCommand({
@@ -37,10 +33,7 @@ export async function uploadToS3(buffer: Buffer, key: string, contentType: strin
   }
 }
 
-/**
- * Gera QR Code e envia para o S3
- */
-export async function uploadQRCodeToS3(text: string, s3Key: string): Promise<string> {
+export async function uploadQRCodeToS3 (text: string, s3Key: string): Promise<string> {
   try {
     const qrImage = await QRCode.toBuffer(text, { type: 'png', width: 100 })
     return await uploadToS3(qrImage, s3Key, 'image/png')
@@ -49,10 +42,7 @@ export async function uploadQRCodeToS3(text: string, s3Key: string): Promise<str
   }
 }
 
-/**
- * Gera código de barras (ITF) e envia para o S3
- */
-export async function uploadBarcodeToS3(barcodeValue: string, s3Key: string): Promise<string> {
+export async function uploadBarcodeToS3 (barcodeValue: string, s3Key: string): Promise<string> {
   try {
     const canvas = createCanvas(0, 0)
     JsBarcode(canvas, barcodeValue, {
@@ -68,10 +58,7 @@ export async function uploadBarcodeToS3(barcodeValue: string, s3Key: string): Pr
   }
 }
 
-/**
- * Baixa PDF da Documint e reenvia para seu bucket S3
- */
-export async function uploadPdfFileToS3(pdfUrl: string, s3Key: string): Promise<string> {
+export async function uploadPdfFileToS3 (pdfUrl: string, s3Key: string): Promise<string> {
   const response = await fetch(pdfUrl)
 
   if (!response.ok) {
