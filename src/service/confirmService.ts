@@ -509,12 +509,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
             await Promise.all([
               // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
               updateTransaction({ status_id: 11 }, transaction?.id!),
-              updateBolecode({ status_id: 11 }, bolecode?.id!),
-              bolecodeAndPixErrorMessage({
+              updateBolecode({ status_id: 11 }, bolecode?.id!)
+              /* bolecodeAndPixErrorMessage({
                 externalId: req.restaurant.restaurant.externalId ?? '',
                 finalValue: req.supplier.discount.orderValueFinish,
                 paymentWay: paymentWayString
-              })
+              }) */
             ])
             throw new Error(`error generating bolecode, request used: ${JSON.stringify(interData)}`)
           }
@@ -532,12 +532,12 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
             ]).catch(async (error) => {
               await Promise.all([
                 updateTransaction({ status_id: 11 }, transaction?.id!),
-                updateBolecode({ status_id: 11 }, bolecode?.id!),
-                bolecodeAndPixErrorMessage({
+                updateBolecode({ status_id: 11 }, bolecode?.id!)
+                /* bolecodeAndPixErrorMessage({
                   externalId: req.restaurant.restaurant.externalId ?? '',
                   finalValue: req.supplier.discount.orderValueFinish,
                   paymentWay: paymentWayString
-                })
+                }) */
               ])
               throw error
             }),
@@ -617,11 +617,11 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       await Promise.allSettled([
         updateTransaction({ status_id: 11 }, transaction?.id!),
         updateBolecode({ status_id: 11 }, bolecode?.id!),
-        bolecodeAndPixErrorMessage({
+        /* bolecodeAndPixErrorMessage({
           externalId: req.restaurant.restaurant.externalId ?? '',
           finalValue: req.supplier.discount.orderValueFinish,
           paymentWay: paymentWayString
-        }),
+        }), */
         logRegister(err)
       ])
     }
