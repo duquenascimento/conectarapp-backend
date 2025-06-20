@@ -77,7 +77,27 @@ export const updateAddressService = async (rest: any): Promise<void> => {
 
     // Atualiza os dados no banco de dados
     await updateAddress(data.id, data)
-    
+
+    const safeParseDate = (value: unknown, fieldName: string): Date => {
+      const date = new Date(value as string)
+
+      const isValidDate = date instanceof Date && !isNaN(date.getTime())
+      if (!isValidDate) {
+        throw new Error(`Campo "${fieldName}" inválido ou ausente: ${value}`)
+      }
+
+      return date
+    }
+
+    const initialDeliveryTime = safeParseDate(data.initialDeliveryTime, 'initialDeliveryTime')
+    const finalDeliveryTime = safeParseDate(data.finalDeliveryTime, 'finalDeliveryTime')
+
+    const toHourMinute = (date: Date): string => {
+      const hours = date.getUTCHours().toString().padStart(2, '0')
+      const minutes = date.getUTCMinutes().toString().padStart(2, '0')
+      return `${hours}:${minutes}`
+    }
+
     const airtableRecordId = await findRecordIdByClientId(externalId)
     if (!airtableRecordId) throw new Error('Registro do cliente não encontrado no Airtable')
 
@@ -89,6 +109,20 @@ export const updateAddressService = async (rest: any): Promise<void> => {
       'Tel resp. recebimento': data.responsibleReceivingPhoneNumber ?? '',
       'Complemento': data.complement ?? '',
       'CEP': data.zipCode,
+      'h_min seg': toHourMinute(initialDeliveryTime),
+      'h_max seg': toHourMinute(finalDeliveryTime),
+      'h_min ter': toHourMinute(initialDeliveryTime),
+      'h_max ter': toHourMinute(finalDeliveryTime),
+      'h_min qua': toHourMinute(initialDeliveryTime),
+      'h_max qua': toHourMinute(finalDeliveryTime),
+      'h_min qui': toHourMinute(initialDeliveryTime),
+      'h_max qui': toHourMinute(finalDeliveryTime),
+      'h_min sex': toHourMinute(initialDeliveryTime),
+      'h_max sex': toHourMinute(finalDeliveryTime),
+      'h_min sab': toHourMinute(initialDeliveryTime),
+      'h_max sab': toHourMinute(finalDeliveryTime),
+      'h_min dom': toHourMinute(initialDeliveryTime),
+      'h_max dom': toHourMinute(finalDeliveryTime),
       'Bairro String': data.neighborhood,
       'Cidade String': data.city ?? '',
       'Informações de entrega': data.deliveryInformation

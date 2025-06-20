@@ -383,9 +383,13 @@ ${req.restaurant.restaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${
 
 ${req.restaurant.restaurant.addressInfos[0].address}, ${req.restaurant.restaurant.addressInfos[0].localNumber} ${req.restaurant.restaurant.addressInfos[0].complement}
 ${req.restaurant.restaurant.addressInfos[0].neighborhood}, ${req.restaurant.restaurant.addressInfos[0].city}
-${req.restaurant.restaurant.addressInfos[0].zipCode}
+${req.restaurant.restaurant.addressInfos[0].zipCode} - ${req.restaurant.restaurant.addressInfos[0].deliveryInformation}
+
 
 Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
+
+Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)} e ${req.restaurant.restaurant.addressInfos[0].finalDeliveryTime.substring(11, 16)} horas
+
     `
   const detailing: Detailing[] = []
 
