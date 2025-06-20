@@ -78,12 +78,14 @@ export const updateAddressService = async (rest: any): Promise<void> => {
     // Atualiza os dados no banco de dados
     await updateAddress(data.id, data)
 
-     // Conversão segura para Date
     const safeParseDate = (value: unknown, fieldName: string): Date => {
-      const date = typeof value === 'string' ? new Date(value) : value
-      if (!(date instanceof Date) || isNaN(date.getTime())) {
-        throw new Error(`Campo ${fieldName} inválido ou ausente: ${value}`)
+      const date = new Date(value as string)
+
+      const isValidDate = date instanceof Date && !isNaN(date.getTime())
+      if (!isValidDate) {
+        throw new Error(`Campo "${fieldName}" inválido ou ausente: ${value}`)
       }
+
       return date
     }
 
