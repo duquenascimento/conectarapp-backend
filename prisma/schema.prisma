@@ -13,7 +13,7 @@ model user {
   password   String?   @db.VarChar(60)
   name       String?   @db.VarChar(60)
   phone      String?
-  position   String? 
+  position   String?
   active     Boolean
   restaurant String[]  @db.Uuid
   role       String[]  @db.VarChar(500)
@@ -58,7 +58,7 @@ model restaurant {
   registrationReleasedNewApp          Boolean        @default(true) @db.Boolean
   categories                          String[]
   blockedBySuppliers                  String[]       @db.VarChar(10)
-  appVersion                          appVersion?    @relation("RestaurantAppVersion")                  
+  appVersion                          appVersion?    @relation("RestaurantAppVersion")
 }
 
 model appVersion {
@@ -94,8 +94,8 @@ model address {
   finalDeliveryTime               DateTime  @db.Time(6)
   deliveryInformation             String    @db.VarChar(500)
   closedDoorDelivery              Boolean
-  responsibleReceivingName        String?    @db.VarChar(200)
-  responsibleReceivingPhoneNumber String?    @db.VarChar(50)
+  responsibleReceivingName        String?   @db.VarChar(200)
+  responsibleReceivingPhoneNumber String?   @db.VarChar(50)
   zipCode                         String    @db.VarChar(10)
   deliveryReference               String    @db.VarChar(500)
   createdAt                       DateTime  @db.Date
@@ -144,6 +144,7 @@ model order {
   status_id           Int            @default(4)
   status              status         @relation(fields: [status_id], references: [id])
   transactions        transactions[]
+  orderInvoices       order_invoice?
 }
 
 model detailing {
@@ -298,6 +299,7 @@ model order_invoice {
   status_id Int
   premium   Boolean  @default(false)
   status    status   @relation(fields: [status_id], references: [id])
+  order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model file_log {

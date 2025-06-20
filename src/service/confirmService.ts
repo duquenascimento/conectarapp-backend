@@ -23,6 +23,7 @@ import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { type agendamentoPedido } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
+import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
 
 export interface Supplier {
   name: string
@@ -707,7 +708,7 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
 
   const documintResponse = await documintPromise?.json()
 
-  const myHeaders = new Headers()
+  /*   const myHeaders = new Headers()
   myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
   myHeaders.append('external-id', 'F0')
   myHeaders.append('username', 'contato@conectarhortifruti.com.br')
@@ -719,13 +720,18 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     method: 'GET',
     headers: myHeaders
   }
-
   const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename?.replaceAll('/', '')}`, requestOptions)
   const resultFile = await responseFile.json()
+  */
 
-  order.orderDocument = resultFile.data.url
+  const pdfKey = `receipts/${orderId}-recibo.pdf`
+  let pdfUrl = ''
+  if (documintResponse) {
+    pdfUrl = await uploadPdfFileToS3(String(documintResponse.url), pdfKey)
+    order.orderDocument = pdfUrl
+  }
 
-  await Promise.all([updateOrder({ orderDocument: resultFile.data.url }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
+  await Promise.all([updateOrder({ orderDocument: pdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText, pixKey)])
 
   await deleteCartByUser({
     token: req.token,

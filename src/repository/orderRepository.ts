@@ -8,7 +8,8 @@ export const findById = async (
 ): Promise<order | null | undefined> => {
   try {
     return await prisma.order.findUnique({
-      where: { id }
+      where: { id },
+      include: { orderInvoices: true }
     })
   } catch (err) {
     void logRegister(err)
@@ -62,7 +63,10 @@ export const filterOrders = async (
       prisma.order.findMany({
         where: whereClause,
         skip: (page - 1) * limit,
-        take: limit
+        take: limit,
+        orderBy: {
+          orderDate: 'desc'
+        }
       }),
       prisma.order.count({ where: whereClause })
     ])
