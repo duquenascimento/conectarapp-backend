@@ -65,6 +65,23 @@ export interface ProductAirtable {
   airtableId: string
 }
 
+export interface CreateUserAirtable {
+  'ID_Usuário': string
+  'Nome usuário': string
+  'Cargo': string
+  'Telefone usuário': string
+  'Email login': string
+}
+
+export interface UpdateUserAirtable {
+  'ID_Usuário': string
+  'Nome usuário'?: string
+  'Cargo'?: string
+  'Telefone usuário'?: string
+  'Email login'?: string
+  'Restaurantes associados Novo': string
+}
+
 export interface CreateRegisterAirtable {
   'ID pagamento': string
   'Nome do estabelecimento': string
