@@ -5,6 +5,7 @@ import { logRegister } from '../utils/logUtils'
 import { sign, verify } from 'jsonwebtoken'
 import { DateTime } from 'luxon'
 import { generateRandomSequenceObject, sendEmail } from '../utils/utils'
+import { createUserAirtable } from '../repository/airtableRegisterService'
 
 export interface IFirstStepSignUpRequest {
   email: string
@@ -58,14 +59,33 @@ export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<fir
     }
 
     await signInFirstStepUser(request)
-    const jwt = sign({
-      role: request.role,
-      id: request.id,
-      email: request.email,
-      restaurant: request.restaurant,
-      active: request.active,
-      createdAt: request.createdAt
-    }, process.env.JWT_SECRET)
+    const jwt = sign(
+      {
+        role: request.role,
+        id: request.id,
+        email: request.email,
+        restaurant: request.restaurant,
+        active: request.active,
+        createdAt: request.createdAt
+      },
+      process.env.JWT_SECRET
+    )
+
+    const airtableUserRecord = await createUserAirtable({
+      'ID_Usuário': request.id,
+      'Nome usuário': request.name ?? '',
+      'Cargo': request.position ?? '',
+      'Telefone usuário': request.phone ?? '',
+      'Email login': request.email
+    })
+
+    if (!airtableUserRecord || typeof airtableUserRecord !== 'object' || !('fields' in airtableUserRecord)) {
+      throw new Error('Falha ao criar registro de cadastro no Airtable ou estrutura do registro inválida')
+    }
+
+    if (!airtableUserRecord.fields || typeof airtableUserRecord.fields !== 'object' || !('ID_Usuário' in airtableUserRecord.fields)) {
+      throw new Error('ID_Usuário não encontrado no registro do Airtable')
+    }
 
     return { token: jwt, role: request.role ?? [] }
   } catch (err) {
@@ -85,14 +105,17 @@ export const signIn = async (req: IFirstStepSignUpRequest): Promise<firstStepSig
     const valid = await verifyPassword(req.password, user.password ?? '')
     if (!valid) throw Error('invalid password', { cause: 'visibleError' })
 
-    const jwt = sign({
-      role: user.role,
-      id: user.id,
-      email: user.email,
-      restaurant: user.restaurant,
-      active: user.active,
-      createdAt: user.createdAt
-    }, process.env.JWT_SECRET)
+    const jwt = sign(
+      {
+        role: user.role,
+        id: user.id,
+        email: user.email,
+        restaurant: user.restaurant,
+        active: user.active,
+        createdAt: user.createdAt
+      },
+      process.env.JWT_SECRET
+    )
 
     return { token: jwt, role: user.role ?? [] }
   } catch (err) {
