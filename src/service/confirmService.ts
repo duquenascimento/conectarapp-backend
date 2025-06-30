@@ -282,7 +282,7 @@ const formatDataToBolecode = async (data: confirmOrderRequest, yourNumber: strin
   return interData
 }
 
-function generateBarcode (barcodeValue: string): string {
+function generateBarcode(barcodeValue: string): string {
   const canvas = createCanvas(0, 0)
   JsBarcode(canvas, barcodeValue, {
     format: 'ITF',
@@ -294,7 +294,7 @@ function generateBarcode (barcodeValue: string): string {
   return canvas.toDataURL('image/png')
 }
 
-function convertBase64ToPng (base64String: string, filePath: string): void {
+function convertBase64ToPng(base64String: string, filePath: string): void {
   const base64Data = base64String.replace(/^data:image\/png;base64,/, '')
 
   const buffer = Buffer.from(base64Data, 'base64')
@@ -302,7 +302,7 @@ function convertBase64ToPng (base64String: string, filePath: string): void {
   writeFileSync(filePath, buffer)
 }
 
-async function generateQRCode (text: string, filePath: string): Promise<void> {
+async function generateQRCode(text: string, filePath: string): Promise<void> {
   try {
     const qrImage = await QRCode.toBuffer(text, { type: 'png', width: 100 })
     writeFileSync(filePath, qrImage)
@@ -637,7 +637,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     await generateQRCode(pixKey, qrCodePath)
   }
 
-  const documintPromise = await fetch('https://api.documint.me/1/templates/66d9f1cbc55000285de75733/content?preview=true&active=true', {
+  const documintPromise = await fetch('https://api.documint.me/1/templates/66c89d6350bcff4eb423c34f/content?preview=true&active=true', {
     method: 'POST',
     headers: {
       'Content-type': 'application/json',
@@ -688,7 +688,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       cnpj_fornecedor: '',
       codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
       codigo_carteira: '109',
-      data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyy/MM/dd'),
+      data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd'),
       data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
       data_vencimento: getPaymentDate(req.restaurant.restaurant.paymentWay as string)?.replaceAll('-', '/'),
       id_beneficiario: '6030000983545',
@@ -711,7 +711,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   })
 
   const documintResponse = await documintPromise?.json()
-
   /*   const myHeaders = new Headers()
   myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
   myHeaders.append('external-id', 'F0')
@@ -727,8 +726,10 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename?.replaceAll('/', '')}`, requestOptions)
   const resultFile = await responseFile.json()
   */
+  const dataPedido = DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd').toString().replaceAll('/', '')
+  const restaurant = req.restaurant.restaurant.name
+  const pdfKey = `receipts/${dataPedido}-${restaurant}-${orderId}-${req.supplier.externalId}.pdf`
 
-  const pdfKey = `receipts/${orderId}-recibo.pdf`
   let pdfUrl = ''
   if (documintResponse) {
     pdfUrl = await uploadPdfFileToS3(String(documintResponse.url), pdfKey)
@@ -765,7 +766,7 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
-${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
+${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
 
 ---------------------------------------
 
@@ -832,7 +833,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     }
 
     // Codificar a mensagem
-    const msg = encodeURIComponent(req.message).replace('!', '%21').replace('\'', '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
+    const msg = encodeURIComponent(req.message).replace('!', '%21').replace("'", '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
 
     // Validar e formatar a data/hora agendada
     const [year, month, day] = req.sendDate.split('-').map(Number)
