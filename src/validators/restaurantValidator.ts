@@ -34,9 +34,9 @@ const restaurantUpdateSchema = Joi.object({
   allowClosedSupplier: Joi.boolean(),
   allowMinimumOrder: Joi.boolean(),
   blockedBySuppliers: Joi.array().items(Joi.string()),
-  emailBilling: Joi.string().email().required(),
-  financeResponsibleName: Joi.string().required().max(255),
-  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais')
+  emailBilling: Joi.string().email().optional().allow(''),
+  financeResponsibleName: Joi.string().optional().allow('').max(255),
+  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).optional().allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais')
 }).messages({
   'any.required': 'O campo {#label} é obrigatório',
   'string.empty': 'O campo {#label} não pode estar vazio',
@@ -79,9 +79,9 @@ export const restaurantPatchSchema = Joi.object({
   financeBlock: Joi.boolean(),
   allowClosedSupplier: Joi.boolean(),
   allowMinimumOrder: Joi.boolean(),
-  emailBilling: Joi.string().email().required(),
-  financeResponsibleName: Joi.string().required().max(255),
-  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).required().custom(removeSpecialCharacters, 'Remover caracteres especiais')
+  emailBilling: Joi.string().email().optional().allow(''),
+  financeResponsibleName: Joi.string().optional().allow('').max(255),
+  financeResponsiblePhoneNumber: Joi.string().max(15).min(11).optional().allow('').custom(removeSpecialCharacters, 'Remover caracteres especiais')
 }).messages({
   'any.required': 'O campo {#label} é obrigatório',
   'string.empty': 'O campo {#label} não pode estar vazio',
