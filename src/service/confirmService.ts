@@ -688,7 +688,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       cnpj_fornecedor: '',
       codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
       codigo_carteira: '109',
-      data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyy/MM/dd'),
+      data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd'),
       data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
       data_vencimento: getPaymentDate(req.restaurant.restaurant.paymentWay as string)?.replaceAll('-', '/'),
       id_beneficiario: '6030000983545',
@@ -726,10 +726,9 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename?.replaceAll('/', '')}`, requestOptions)
   const resultFile = await responseFile.json()
   */
-
-  const orderTotal = req.supplier.discount.orderValueFinish.toString().replaceAll('.', '')
-
-  const pdfKey = `receipts/${orderId}-${req.supplier.externalId}-${orderTotal}.pdf`
+  const dataPedido = DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd').toString().replaceAll('/', '')
+  const restaurant = req.restaurant.restaurant.name
+  const pdfKey = `receipts/${dataPedido}-${restaurant}-${orderId}-${req.supplier.externalId}.pdf`
 
   let pdfUrl = ''
   if (documintResponse) {
