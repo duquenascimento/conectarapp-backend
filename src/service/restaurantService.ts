@@ -2,7 +2,7 @@ import { decode } from 'jsonwebtoken'
 import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
-import { updateAddressRegisterAirtable, findRecordIdByClientId } from '../repository/airtableRegisterService'
+import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
 
 export interface ICreateRestaurantRequest {
   name: string
@@ -41,6 +41,19 @@ export interface IRestaurant {
 export const createRestaurant = async (req: IRestaurant): Promise<any> => {
   try {
     await registerRestaurant(req)
+
+    const airtableUserRecord = await updateUserAirtable({
+      'ID_Usuário': req.user[0],
+      'Restaurantes associados Novo': req.externalId
+    })
+
+    if (!airtableUserRecord || typeof airtableUserRecord !== 'object' || !('fields' in airtableUserRecord)) {
+      throw new Error('Falha ao cadastrar externalId no cadastro do Airtable ou estrutura do registro inválida')
+    }
+
+    if (!airtableUserRecord.fields || typeof airtableUserRecord.fields !== 'object' || !('ID_Usuário' in airtableUserRecord.fields)) {
+      throw new Error('ID_Usuário não encontrado no registro do Airtable')
+    }
 
     return true
   } catch (err) {
