@@ -7,6 +7,7 @@ const restaurantUpdateSchema = Joi.object({
   name: Joi.string().max(200).required(),
   legalName: Joi.string().required(),
   active: Joi.boolean(),
+  phone: Joi.string().max(15).min(11).custom(removeSpecialCharacters, 'Remover caracteres especiais').optional(),
   alternativePhone: Joi.string().max(15).min(11).custom(removeSpecialCharacters, 'Remover caracteres especiais'),
   email: Joi.string().email(),
   alternativeEmail: Joi.string().email().allow(''),
