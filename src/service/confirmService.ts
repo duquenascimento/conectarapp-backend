@@ -644,32 +644,34 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       api_key: process.env.DOCUMINT_KEY ?? ''
     },
     body: JSON.stringify({
-      id_cliente: [
-        {
-          bairro: req.restaurant.restaurant.addressInfos[0].neighborhood,
-          cep: req.restaurant.restaurant.addressInfos[0].zipCode,
-          cidade: req.restaurant.restaurant.addressInfos[0].city,
-          cnpj: req.restaurant.restaurant.companyRegistrationNumber,
-          informacao_de_entrega: req.restaurant.restaurant.addressInfos[0].deliveryInformation,
-          inscricao_estadual: req.restaurant.restaurant.stateRegistrationNumber ?? req.restaurant.restaurant.cityRegistrationNumber,
-          nome: req.restaurant.restaurant.name,
-          numero_e_complemento: `${req.restaurant.restaurant.addressInfos[0].localNumber}${req.restaurant.restaurant.addressInfos[0].complement == null ? ' - ' : ''}${req.restaurant.restaurant.addressInfos[0].complement}`,
-          razao_social: req.restaurant.restaurant.legalName,
-          resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingName,
-          rua: `${req.restaurant.restaurant.addressInfos[0].localType} ${req.restaurant.restaurant.addressInfos[0].address}`,
-          tel_resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingPhoneNumber
-        }
-      ],
+      codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
+      id_pedido: orderId,
+      restaurante: req.restaurant.restaurant.name,
+      nome: req.supplier.name,
+      razao_social: req.restaurant.restaurant.legalName,
+      cnpj: req.restaurant.restaurant.companyRegistrationNumber,
       data_entrega: deliveryDate.toFormat('yyyy/MM/dd'),
       horario_maximo: req.restaurant.restaurant.addressInfos[0].finalDeliveryTime.substring(11, 16),
       horario_minimo: req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.substring(11, 16),
-      id_pedido: orderId,
-      restaurante: req.restaurant.restaurant.name,
-      razao_social: req.restaurant.restaurant.legalName,
       total_conectar: req.supplier.discount.orderValueFinish.toString(),
-      nome: req.supplier.name,
       total_em_descontos: '0',
       total_sem_descontos: req.supplier.discount.orderValueFinish.toString(),
+      bairro: req.restaurant.restaurant.addressInfos[0].neighborhood,
+      cep: req.restaurant.restaurant.addressInfos[0].zipCode,
+      cidade: req.restaurant.restaurant.addressInfos[0].city,
+      informacao_de_entrega: req.restaurant.restaurant.addressInfos[0].deliveryInformation,
+      inscricao_estadual: req.restaurant.restaurant.stateRegistrationNumber ?? req.restaurant.restaurant.cityRegistrationNumber,
+      numero_e_complemento: `${req.restaurant.restaurant.addressInfos[0].localNumber}${req.restaurant.restaurant.addressInfos[0].complement == null ? ' - ' : ''}${req.restaurant.restaurant.addressInfos[0].complement}`,
+      resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingName,
+      rua: `${req.restaurant.restaurant.addressInfos[0].localType} ${req.restaurant.restaurant.addressInfos[0].address}`,
+      tel_resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingPhoneNumber,
+      id_cliente: [
+        {
+          cnpj: req.restaurant.restaurant.companyRegistrationNumber,
+          razao_social: req.restaurant.restaurant.legalName,
+          nome: req.restaurant.restaurant.name
+        }
+      ],
       detalhamento_pedido: detailing.map((item) => {
         return {
           aux_obs: item.obs,
@@ -684,9 +686,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
         }
       }),
       url_img_pix: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`,
-      cnpj: req.restaurant.restaurant.companyRegistrationNumber,
       cnpj_fornecedor: '',
-      codigo_barras: `https://cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-barcode.png`,
       codigo_carteira: '109',
       data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd'),
       data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
@@ -703,8 +703,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       cliente_com_boleto: getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário' ? '1' : '0',
       nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
       id_distribuidor: req.restaurant.restaurant.externalId === 'C757' || req.restaurant.restaurant.externalId === 'C939' || req.restaurant.restaurant.externalId === 'C940' || req.restaurant.restaurant.externalId === 'C941' ? 'F0' : req.supplier.externalId
-      // id_distribuidor: req.supplier.externalId
-    } satisfies Pedido)
+    })
   }).catch(async (err) => {
     await receiptErrorMessage(req.restaurant.restaurant.externalId as string)
     void logRegister(err)
