@@ -74,7 +74,7 @@ export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<fir
     const airtableUserRecord = await createUserAirtable({
       'ID_Usuário': request.id,
       'Nome usuário': request.name ?? '',
-      'Cargo': request.position ?? '',
+      'Cargo': request.position ?? 'Outros',
       'Telefone usuário': request.phone ?? '',
       'Email login': request.email
     })
