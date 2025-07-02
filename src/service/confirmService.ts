@@ -515,11 +515,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
               // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
               updateTransaction({ status_id: 11 }, transaction?.id!),
               updateBolecode({ status_id: 11 }, bolecode?.id!)
-              /* bolecodeAndPixErrorMessage({
-                externalId: req.restaurant.restaurant.externalId ?? '',
-                finalValue: req.supplier.discount.orderValueFinish,
-                paymentWay: paymentWayString
-              }) */
             ])
             throw new Error(`error generating bolecode, request used: ${JSON.stringify(interData)}`)
           }
@@ -535,15 +530,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
                 }, SECONDS)
               })
             ]).catch(async (error) => {
-              await Promise.all([
-                updateTransaction({ status_id: 11 }, transaction?.id!),
-                updateBolecode({ status_id: 11 }, bolecode?.id!)
-                /* bolecodeAndPixErrorMessage({
-                  externalId: req.restaurant.restaurant.externalId ?? '',
-                  finalValue: req.supplier.discount.orderValueFinish,
-                  paymentWay: paymentWayString
-                }) */
-              ])
+              await Promise.all([updateTransaction({ status_id: 11 }, transaction?.id!), updateBolecode({ status_id: 11 }, bolecode?.id!)])
               throw error
             }),
             updateBolecode({ transaction_gateway_id: bolecodeResponse.codigoSolicitacao }, bolecode?.id!)
@@ -619,16 +606,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
         }
       }
     } catch (err) {
-      await Promise.allSettled([
-        updateTransaction({ status_id: 11 }, transaction?.id!),
-        updateBolecode({ status_id: 11 }, bolecode?.id!),
-        /* bolecodeAndPixErrorMessage({
-          externalId: req.restaurant.restaurant.externalId ?? '',
-          finalValue: req.supplier.discount.orderValueFinish,
-          paymentWay: paymentWayString
-        }), */
-        logRegister(err)
-      ])
+      await Promise.allSettled([updateTransaction({ status_id: 11 }, transaction?.id!), updateBolecode({ status_id: 11 }, bolecode?.id!), logRegister(err)])
     }
 
     const qrCodePath = `C:/inetpub/wwwroot/cdn.conectarhortifruti.com.br/banco/${(process.env.BANK_CLIENT ?? 'INTER').toLowerCase()}/${orderId}-qrcode.png`
@@ -710,21 +688,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   })
 
   const documintResponse = await documintPromise?.json()
-  /*   const myHeaders = new Headers()
-  myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
-  myHeaders.append('external-id', 'F0')
-  myHeaders.append('username', 'contato@conectarhortifruti.com.br')
-  myHeaders.append('system-user-pass', 'd2NuOUVVNnJWbDR5dDE5Mnl0WFdaeGo2cjRGeEtycUMydzNaWEJ5enlub0FLQmdjdEU2anBVQ2RDbWxkM2xSMQo=')
-  myHeaders.append('Content-Type', 'application/json')
-  myHeaders.append('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA3LTI2VDEzOjI1OjE3IiwibmJmIjoxNzIxMTM2MzE3LCJleHAiOjE3MjIwMDAzMTcsImlhdCI6MTcyMTEzNjMxNywiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.Ge3ST_TCO4XLcSj-pjSFvU8Pr9H_Oeks3zTkDAhsVcE')
 
-  const requestOptions = {
-    method: 'GET',
-    headers: myHeaders
-  }
-  const responseFile = await fetch(`https://gateway.conectarhortifruti.com.br/api/v1/system/saveFile?url=${documintResponse.url}&fileName=${documintResponse.filename?.replaceAll('/', '')}`, requestOptions)
-  const resultFile = await responseFile.json()
-  */
   const dataPedido = DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd').toString().replaceAll('/', '')
   const restaurant = req.restaurant.restaurant.name
   const pdfKey = `receipts/${dataPedido}-${restaurant}-${orderId}-${req.supplier.externalId}.pdf`
