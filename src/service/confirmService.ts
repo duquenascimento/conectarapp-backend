@@ -661,7 +661,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       cidade: req.restaurant.restaurant.addressInfos[0].city,
       informacao_de_entrega: req.restaurant.restaurant.addressInfos[0].deliveryInformation,
       inscricao_estadual: req.restaurant.restaurant.stateRegistrationNumber ?? req.restaurant.restaurant.cityRegistrationNumber,
-      numero_e_complemento: `${req.restaurant.restaurant.addressInfos[0].localNumber}${req.restaurant.restaurant.addressInfos[0].complement == null ? ' - ' : ''}${req.restaurant.restaurant.addressInfos[0].complement}`,
+      complemento: `${req.restaurant.restaurant.addressInfos[0].localNumber} ${req.restaurant.restaurant.addressInfos[0].complement == null ? ' - ' : ''} ${req.restaurant.restaurant.addressInfos[0].complement}`,
       resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingName,
       rua: `${req.restaurant.restaurant.addressInfos[0].localType} ${req.restaurant.restaurant.addressInfos[0].address}`,
       tel_resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingPhoneNumber,
