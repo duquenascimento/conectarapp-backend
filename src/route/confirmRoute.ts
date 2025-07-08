@@ -1,6 +1,6 @@
 import { type FastifyInstance } from 'fastify'
-import { AgendamentoGuru, confirmOrder, confirmOrderPremium, type confirmOrderPremiumRequest, type confirmOrderRequest } from '../service/confirmService'
-import { type agendamentoPedido } from '../types/confirmTypes'
+import { AgendamentoGuru, confirmOrder, confirmOrderPremium } from '../service/confirmService'
+import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido } from '../types/confirmTypes'
 
 export const confirmRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/confirm', async (req, res): Promise<any> => {
