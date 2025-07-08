@@ -4,7 +4,7 @@ import JsBarcode from 'jsbarcode'
 import { DateTime } from 'luxon'
 import { type BoletoInter } from '../service/interService'
 import { type DadoBoleto } from '../service/itauService'
-import { type confirmOrderRequest } from '../types/confirmTypes'
+import { type PaymentDescriptions, type confirmOrderRequest } from '../types/confirmTypes'
 import QRCode from 'qrcode'
 
 export const getPaymentDate = (paymentWay: string): string => {
@@ -182,4 +182,31 @@ export async function generateQRCode(text: string, filePath: string): Promise<vo
   } catch (err) {
     console.error('Erro ao gerar o QR Code:', err)
   }
+}
+
+export const getPaymentDescription = (paymentWay: string): string => {
+  const paymentDescriptions: PaymentDescriptions = {
+    DI00: 'Diário',
+    DI01: 'Diário',
+    DI02: 'Diário',
+    DI07: 'Diário',
+    DI10: 'Diário',
+    DI14: 'Diário',
+    DI15: 'Diário',
+    DI28: 'Diário',
+    US08: 'Semanal',
+    UQ10: 'Semanal',
+    UX12: 'Semanal',
+    BX10: 'Bissemanal',
+    BX12: 'Bissemanal',
+    BX16: 'Bissemanal',
+    ME01: 'Mensal',
+    ME05: 'Mensal',
+    ME10: 'Mensal',
+    ME15: 'Mensal',
+    AV01: 'À Vista',
+    AV00: 'À Vista'
+  }
+
+  return paymentDescriptions[paymentWay] ?? ''
 }

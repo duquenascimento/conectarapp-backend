@@ -20,7 +20,7 @@ import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
-import { formatDataToBolecode, getPaymentDate, generateBarcode } from '../utils/confirmUtils'
+import { formatDataToBolecode, getPaymentDate, generateBarcode, getPaymentDescription } from '../utils/confirmUtils'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
@@ -31,35 +31,6 @@ export const confirmOrder = async (req: confirmOrderRequest): Promise<any> => {
   const deliveryDate = today.plus({ days: 1 })
 
   const orderId = await generateOrderId(false, req.restaurant.restaurant.externalId as string)
-
-  type PaymentDescriptions = Record<string, string>
-
-  const getPaymentDescription = (paymentWay: string): string => {
-    const paymentDescriptions: PaymentDescriptions = {
-      DI00: 'Diário',
-      DI01: 'Diário',
-      DI02: 'Diário',
-      DI07: 'Diário',
-      DI10: 'Diário',
-      DI14: 'Diário',
-      DI15: 'Diário',
-      DI28: 'Diário',
-      US08: 'Semanal',
-      UQ10: 'Semanal',
-      UX12: 'Semanal',
-      BX10: 'Bissemanal',
-      BX12: 'Bissemanal',
-      BX16: 'Bissemanal',
-      ME01: 'Mensal',
-      ME05: 'Mensal',
-      ME10: 'Mensal',
-      ME15: 'Mensal',
-      AV01: 'À Vista',
-      AV00: 'À Vista'
-    }
-
-    return paymentDescriptions[paymentWay] ?? ''
-  }
 
   const calcOrderAgain = await suppliersPrices({ token: req.token, selectedRestaurant: req.restaurant.restaurant })
   const allSuppliers = await suppliersCompletePrices({ token: req.token, selectedRestaurant: req.restaurant.restaurant })
@@ -172,7 +143,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
 
   await addOrder(order)
 
-  const bolecodeResponse = null
   const digitableBarCode = null
 
   const paymentWayString = getPaymentDescription(req.restaurant.restaurant.paymentWay as string)
@@ -188,7 +158,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       restaurant_id: req.restaurant.restaurant.id
     }
 
-    const transaction = await saveTransaction(transactionData)
+    await saveTransaction(transactionData)
   }
 
   const documintPromise = await fetch('https://api.documint.me/1/templates/66c89d6350bcff4eb423c34f/content?preview=true&active=true', {

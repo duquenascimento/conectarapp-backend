@@ -114,3 +114,5 @@ interface DetalhamentoPedido {
   custo_unidade_conectar: string
   preco_final_conectar: string
 }
+
+export type PaymentDescriptions = Record<string, string>
