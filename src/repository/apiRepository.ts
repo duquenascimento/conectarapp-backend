@@ -1,11 +1,11 @@
 export class ApiRepository {
   private readonly baseUrl: string
 
-  constructor (baseUrl: string) {
+  constructor(baseUrl: string) {
     this.baseUrl = baseUrl
   }
 
-  private createHeaders (): Headers {
+  private createHeaders(): Headers {
     const myHeaders = new Headers()
     myHeaders.append('secret-key', process.env.SECRET_KEY ?? '')
     myHeaders.append('external-id', process.env.EXTERNAL_ID ?? '')
@@ -16,7 +16,7 @@ export class ApiRepository {
     return myHeaders
   }
 
-  public async callApi (endpoint: string, method: string, body?: string): Promise<any> {
+  public async callApi(endpoint: string, method: string, body?: any): Promise<any> {
     try {
       const myHeaders = this.createHeaders()
 
