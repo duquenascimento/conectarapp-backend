@@ -107,10 +107,13 @@ model address {
 }
 
 model favorite {
-  id           String  @id @db.Uuid
-  productId    String  @db.Uuid
-  restaurantId String  @db.Uuid
-  obs          String? @db.VarChar(200)
+  id           String    @id @db.Uuid
+  productId    String    @db.Uuid
+  restaurantId String    @db.Uuid
+  obs          String?   @db.VarChar(200)
+  status       Int       @default(4)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime? @updatedAt @db.Timestamptz(3)
 }
 
 model cart {
