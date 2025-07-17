@@ -16,7 +16,7 @@ export class ApiRepository {
     return myHeaders
   }
 
-  public async callApi(endpoint: string, method: string, body?: any): Promise<any> {
+  public async callApi(endpoint: string, method: string, body?: string): Promise<any> {
     try {
       const myHeaders = this.createHeaders()
 
