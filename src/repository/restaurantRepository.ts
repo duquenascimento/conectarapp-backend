@@ -365,3 +365,15 @@ export const findRestaurantByExternalId = async (externalId: string): Promise<an
     await prisma.$disconnect()
   }
 }
+
+export const findRestaurantById = async (id: string): Promise<any> => {
+  try {
+    return await prisma.restaurant.findFirst({
+      where: { id }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
