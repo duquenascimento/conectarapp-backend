@@ -11,3 +11,7 @@ export const getCombination = async (restaurant_id: string): Promise<any> => {
 export const postCombination = async (body: CombinacaoInput) => {
   return await apiDbConectar.callApi('/system/combinacao', 'POST', JSON.stringify(body))
 }
+
+export const deleteCombination = async (id: string): Promise<any> => {
+  return await apiDbConectar.callApi(`/system/combinacao/${id}`, 'DELETE')
+}
