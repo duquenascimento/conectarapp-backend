@@ -1,12 +1,20 @@
 import { type FastifyInstance } from 'fastify'
-import { getCombination } from '../service/combinationService'
-import { type CombinacaoAPI, postCombinacaoCotacao, cestaProdutos } from '../service/QuotationEngine'
-import { findById } from '../service/restaurantService'
+import { quotationEngine } from '../service/QuotationEngine'
+import { type ICartList } from '../service/cartService'
 
 export const quotationEngineRoute = async (server: FastifyInstance): Promise<void> => {
-  server.post('/getQuotation/:restaurantId', async (req, res) => {
+  server.post('/getQuotation', async (req, res) => {
     try {
-      const { restaurantId } = req.params as { restaurantId: string }
+      /*   // Dados do restaurante
+      const restaurant = await findById(restaurantId)
+      if (!restaurant) {
+        throw new Error('Nenhum restaurante encontrado')
+      }
+
+      const tax = restaurant.tax.d
+      const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100
+
+      // Cesta de Produtos
       const carrinho = await cestaProdutos(restaurantId)
       const { cesta, cart } = carrinho
 
@@ -17,29 +25,21 @@ export const quotationEngineRoute = async (server: FastifyInstance): Promise<voi
         valorPorUnid: item.data.valorPorUnid
       }))
 
-      const restaurant = await findById(restaurantId)
-      if (!restaurant) {
-        throw new Error('Nenhum restaurante encontrado')
-      }
-
-      const tax = restaurant.tax.d
-      const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100
+      // Fornecedores
 
       if (!restaurantId || !Array.isArray(cestaCarrinho) || typeof taxa !== 'number') {
         return await res.status(400).send({ status: 400, msg: 'Parâmetros inválidos' })
       }
 
       const combinacoes = (await getCombination(restaurantId)) as CombinacaoAPI[]
-
-      // console.log('>>>>>>>', combinacoes)
-      // console.log('>>>>>>>', cestaCarrinho)
-      // console.log('>>>>>>>', taxa)
       const result = await postCombinacaoCotacao(combinacoes, cestaCarrinho, taxa)
 
       return await res.status(200).send({
         status: 200,
         return: result
-      })
+      }) */
+
+      return await quotationEngine(req.body as ICartList)
     } catch (err) {
       console.log('erro', err)
       const message = (err as Error).message
