@@ -1,6 +1,6 @@
 import { type FastifyInstance } from 'fastify'
 import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock } from '../service/restaurantService'
-import { type address, type restaurant } from '@prisma/client'
+import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
 
@@ -53,7 +53,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string, value: boolean })
+      await updateComercialBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -97,7 +97,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string, value: boolean })
+      await updateFinanceBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -119,7 +119,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number, value: boolean })
+      await AddClientCount(req.body as { count: number; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -227,25 +227,17 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.patch('/restaurants', async (req, res) => {
     try {
-      // Validação do corpo da requisição
       const { error } = restaurantPatchSchema.validate(req.body)
       if (error) {
         console.error('[ERROR] Erro de validação:', error.details[0].message)
         return await res.status(422).send({ error: error.details[0].message })
       }
 
-      // Extração dos dados do corpo da requisição
       const { externalId, ...restaurantData } = req.body as {
         externalId: string
         [key: string]: any
       }
 
-      /*// Se comercialBlock for true, seta blockNewApp como true
-      if (restaurantData.comercialBlock === false) {
-        restaurantData.blockNewApp = false
-      }*/
-
-      // Atualização dos dados do restaurante
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       const response = await patchRestaurant(externalId, restaurantData)
 
