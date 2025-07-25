@@ -3,6 +3,8 @@ import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAl
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
+import { findRestaurantByExternalId } from '../repository/restaurantRepository'
+import { HttpException } from '../errors/httpException'
 
 export const restaurantRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/restaurant/list', async (req, res): Promise<any> => {
@@ -255,6 +257,32 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         })
       } else {
         return await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.get('/restaurant/:externalId', async (req, res) => {
+    const { externalId } = req.params as { externalId: string }
+    try {
+      const result = await findRestaurantByExternalId(externalId)
+      console.log(result)
+
+      return await res.status(201).send({
+        status: 200,
+        data: result
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
           status: 404,
           msg: message
         })
