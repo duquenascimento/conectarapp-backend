@@ -320,7 +320,7 @@ model file_log {
 }
 
 model supplier {
-  id                  String                @id
+  id                  String                @id @db.Uuid
   externalId          String                @unique @db.VarChar(50)
   name                String                @db.VarChar(255)
   email               String                @db.VarChar(255)
