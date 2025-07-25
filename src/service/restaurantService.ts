@@ -1,8 +1,10 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
+import { HttpException } from '../errors/httpException'
+import { HttpStatusCode } from 'axios'
 
 export interface ICreateRestaurantRequest {
   name: string
@@ -43,7 +45,7 @@ export const createRestaurant = async (req: IRestaurant): Promise<any> => {
     await registerRestaurant(req)
 
     const airtableUserRecord = await updateUserAirtable({
-      'ID_Usuário': req.user[0],
+      ID_Usuário: req.user[0],
       'Restaurantes associados Novo': req.externalId
     })
 
@@ -56,6 +58,16 @@ export const createRestaurant = async (req: IRestaurant): Promise<any> => {
     }
 
     return true
+  } catch (err) {
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
+
+export const findByExternalId = async (externalId: string): Promise<any> => {
+  try {
+    const restaurant = await findRestaurantByExternalId(externalId)
+    return restaurant
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
@@ -115,13 +127,13 @@ export const updateAddressService = async (rest: any): Promise<void> => {
     if (!airtableRecordId) throw new Error('Registro do cliente não encontrado no Airtable')
 
     const updateAirtableRecord = await updateAddressRegisterAirtable({
-      'ID_Cliente': airtableRecordId,
-      'Número': data.localNumber ?? '',
-      'Rua': `${data.localType} ${data.address}`,
+      ID_Cliente: airtableRecordId,
+      Número: data.localNumber ?? '',
+      Rua: `${data.localType} ${data.address}`,
       'Resp. recebimento': data.responsibleReceivingName ?? '',
       'Tel resp. recebimento': data.responsibleReceivingPhoneNumber ?? '',
-      'Complemento': data.complement ?? '',
-      'CEP': data.zipCode,
+      Complemento: data.complement ?? '',
+      CEP: data.zipCode,
       'h_min seg': toHourMinute(initialDeliveryTime),
       'h_max seg': toHourMinute(finalDeliveryTime),
       'h_min ter': toHourMinute(initialDeliveryTime),

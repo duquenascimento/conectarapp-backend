@@ -1,9 +1,8 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId } from '../service/restaurantService'
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
-import { findRestaurantByExternalId } from '../repository/restaurantRepository'
 import { HttpException } from '../errors/httpException'
 
 export const restaurantRoute = async (server: FastifyInstance): Promise<void> => {
@@ -267,10 +266,13 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
   server.get('/restaurant/:externalId', async (req, res) => {
     const { externalId } = req.params as { externalId: string }
     try {
-      const result = await findRestaurantByExternalId(externalId)
-      console.log(result)
+      const result = await findByExternalId(externalId)
 
-      return await res.status(201).send({
+      if (!result) {
+        throw new HttpException('Restaurante não encontrado')
+      }
+
+      return await res.status(200).send({
         status: 200,
         data: result
       })
