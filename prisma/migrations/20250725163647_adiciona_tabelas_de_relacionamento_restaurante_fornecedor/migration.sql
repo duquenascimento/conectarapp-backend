@@ -2,7 +2,7 @@ ALTER TABLE "restaurant" ADD COLUMN "asaasCustomerId" TEXT;
 
 -- CreateTable
 CREATE TABLE "supplier" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "externalId" VARCHAR(50) NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     "email" VARCHAR(255) NOT NULL,
