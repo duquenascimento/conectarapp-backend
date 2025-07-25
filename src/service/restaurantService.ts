@@ -3,8 +3,6 @@ import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestau
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
-import { HttpException } from '../errors/httpException'
-import { HttpStatusCode } from 'axios'
 
 export interface ICreateRestaurantRequest {
   name: string

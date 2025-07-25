@@ -267,11 +267,6 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     const { externalId } = req.params as { externalId: string }
     try {
       const result = await findByExternalId(externalId)
-
-      if (!result) {
-        throw new HttpException('Restaurante não encontrado')
-      }
-
       return await res.status(200).send({
         status: 200,
         data: result

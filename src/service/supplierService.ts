@@ -1,18 +1,12 @@
-import { PrismaClient, type supplier } from '@prisma/client'
-import 'dotenv/config'
+import { findSupplierByExternalId } from '../repository/supplierRepository'
 import { logRegister } from '../utils/logUtils'
 
-const prisma = new PrismaClient()
-
-export const findSupplierByExternalId = async (externalId: string): Promise<supplier | undefined | null> => {
+export const findByExternalId = async (externalId: string): Promise<any> => {
   try {
-    const result = await prisma.supplier.findFirst({
-      where: { externalId }
-    })
-    return result
+    const restaurant = await findSupplierByExternalId(externalId)
+    return restaurant
   } catch (err) {
-    void logRegister(err)
-  } finally {
-    await prisma.$disconnect()
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
   }
 }
