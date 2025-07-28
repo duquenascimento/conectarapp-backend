@@ -22,10 +22,10 @@ model user {
 }
 
 model restaurant {
-  id                                  String         @id @db.Uuid
-  externalId                          String         @unique @db.VarChar(10)
-  name                                String         @db.VarChar(200)
-  legalName                           String         @db.VarChar()
+  id                                  String                @id @db.Uuid
+  externalId                          String                @unique @db.VarChar(10)
+  name                                String                @db.VarChar(200)
+  legalName                           String                @db.VarChar()
   active                              Boolean
   phone                               String?
   alternativePhone                    String
@@ -34,31 +34,33 @@ model restaurant {
   emailBilling                        String?
   financeResponsibleName              String?
   financeResponsiblePhoneNumber       String?
-  user                                String[]       @db.Uuid
-  address                             String[]       @db.Uuid
-  closeDoor                           Boolean        @db.Boolean
-  favorite                            String[]       @db.Uuid
-  weeklyOrderAmount                   Int            @db.SmallInt
-  orderValue                          Decimal        @db.Decimal(10, 2)
-  companyRegistrationNumber           String         @db.VarChar(14)
-  companyRegistrationNumberForBilling String         @db.VarChar(14)
-  stateRegistrationNumber             String?        @db.VarChar()
-  cityRegistrationNumber              String?        @db.VarChar()
-  createdAt                           DateTime       @db.Date
-  updatedAt                           DateTime?      @db.Date
-  tax                                 Decimal        @default(4.1666) @db.Decimal(10, 6)
-  paymentWay                          String         @db.VarChar(200)
-  verduraKg                           Boolean?       @db.Boolean
-  premium                             Boolean        @default(false) @db.Boolean
-  comercialBlock                      Boolean        @default(true) @db.Boolean
-  financeBlock                        Boolean        @default(false) @db.Boolean
+  user                                String[]              @db.Uuid
+  address                             String[]              @db.Uuid
+  closeDoor                           Boolean               @db.Boolean
+  favorite                            String[]              @db.Uuid
+  weeklyOrderAmount                   Int                   @db.SmallInt
+  orderValue                          Decimal               @db.Decimal(10, 2)
+  companyRegistrationNumber           String                @db.VarChar(14)
+  companyRegistrationNumberForBilling String                @db.VarChar(14)
+  stateRegistrationNumber             String?               @db.VarChar()
+  cityRegistrationNumber              String?               @db.VarChar()
+  createdAt                           DateTime              @db.Date
+  updatedAt                           DateTime?             @db.Date
+  tax                                 Decimal               @default(4.1666) @db.Decimal(10, 6)
+  paymentWay                          String                @db.VarChar(200)
+  verduraKg                           Boolean?              @db.Boolean
+  premium                             Boolean               @default(false) @db.Boolean
+  comercialBlock                      Boolean               @default(true) @db.Boolean
+  financeBlock                        Boolean               @default(false) @db.Boolean
   transactions                        transactions[]
-  allowClosedSupplier                 Boolean        @default(false)
-  allowMinimumOrder                   Boolean        @default(false)
-  registrationReleasedNewApp          Boolean        @default(true) @db.Boolean
+  allowClosedSupplier                 Boolean               @default(false)
+  allowMinimumOrder                   Boolean               @default(false)
+  registrationReleasedNewApp          Boolean               @default(true) @db.Boolean
   categories                          String[]
-  blockedBySuppliers                  String[]       @db.VarChar(10)
-  appVersion                          appVersion?    @relation("RestaurantAppVersion")
+  blockedBySuppliers                  String[]              @db.VarChar(10)
+  appVersion                          appVersion?           @relation("RestaurantAppVersion")
+  asaasCustomerId                     String?               @db.VarChar(50)
+  restaurant_supplier                 restaurant_supplier[]
 }
 
 model appVersion {
@@ -315,6 +317,32 @@ model file_log {
   httpStatus Int?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @default(now())
+}
+
+model supplier {
+  id                  String                @id @db.Uuid
+  externalId          String                @unique @db.VarChar(50)
+  name                String                @db.VarChar(255)
+  email               String                @db.VarChar(255)
+  phone               String?               @db.VarChar(50)
+  asaasApiToken       String                @db.VarChar(255)
+  asaasWalletId       String                @db.VarChar(255)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(3)
+  restaurant_supplier restaurant_supplier[]
+}
+
+model restaurant_supplier {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  supplierId   String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  restaurant restaurant @relation(fields: [restaurantId], references: [id])
+  supplier   supplier   @relation(fields: [supplierId], references: [id])
+
+  @@unique([restaurantId, supplierId])
 }
 
 enum LogStatus {
