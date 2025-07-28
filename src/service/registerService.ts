@@ -133,7 +133,10 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'E-mail para comunicados': req.email,
       'Código Promotor': req.inviteCode ?? '',
       'Quantas vezes em média na semana você faz pedidos?': req.weeklyOrderAmount,
-      'Cadastrado por': 'App'
+      'Cadastrado por': 'App',
+      'Nome responsável financeiro': req.financeResponsibleName,
+      'Telefone do responsável financeiro com DDD': req.financeResponsiblePhoneNumber,
+      'E-mail financeiro para envio de cobranças': req.emailBilling
     })
 
     if (!airtableRecord || typeof airtableRecord !== 'object' || !('fields' in airtableRecord)) {
