@@ -1,12 +1,16 @@
 import { type FastifyInstance } from 'fastify'
 import { findByExternalId } from '../service/supplierService'
+import { HttpException } from '../errors/httpException'
 
 export const supplierRoute = async (server: FastifyInstance): Promise<void> => {
-  server.get('/supplier/:externalId', async (req, res) => {
+  server.get('/supplier/account/:externalId', async (req, res) => {
     const { externalId } = req.params as { externalId: string }
     try {
       const result = await findByExternalId(externalId)
 
+      if (!result) {
+        throw new HttpException('Conta de fornecedor não encontrada!', 404)
+      }
       return await res.status(200).send({
         status: 200,
         data: result

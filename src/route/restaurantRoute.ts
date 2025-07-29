@@ -263,10 +263,13 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
-  server.get('/restaurant/:externalId', async (req, res) => {
+  server.get('/restaurant/account/:externalId', async (req, res) => {
     const { externalId } = req.params as { externalId: string }
     try {
       const result = await findByExternalId(externalId)
+      if (!result.asaasCustomerId) {
+        throw new HttpException('Carteira de cliente não encontrada!', 404)
+      }
       return await res.status(200).send({
         status: 200,
         data: result
