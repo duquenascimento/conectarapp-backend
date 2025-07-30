@@ -2,7 +2,7 @@ import { ApiRepository } from '../repository/apiRepository'
 import { listByUser } from '../repository/cartRepository'
 import { findRestaurantById } from '../repository/restaurantRepository'
 import { type CombinacaoAPI, type FornecedorPriceList } from '../types/quotationTypes'
-import { aplicarPreferencias, cestaProdutos, fornecedoresCotacaoPremium, mockRequisicaoMotor } from '../utils/premiumCestaProdutos'
+import { aplicarPreferencias, cestaProdutos, fornecedoresCotacaoPremium } from '../utils/premiumCestaProdutos'
 import { decode } from 'jsonwebtoken'
 import { suppliersPrices } from './priceService'
 import { type ICartList } from './cartService'
@@ -12,7 +12,7 @@ const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
 const apiMotorCotacao = new ApiRepository(process.env.API_MOTOR_COTACAO ?? '')
 
 export const quotationEngine = async (data: ICartList) => {
-  /* const restaurant = await findRestaurantById(data.selectedRestaurant?.id as string)
+  const restaurant = await findRestaurantById(data.selectedRestaurant?.id as string)
 
   if (!restaurant) {
     throw new HttpException('Restaurante não encontrado', 404)
@@ -59,7 +59,7 @@ export const quotationEngine = async (data: ICartList) => {
     taxa
   }
 
-  console.log('Requisição Motor:', requisicaoMotor)
+  // console.log('Requisição Motor:', requisicaoMotor)
   // const requisicaoMotor = mockRequisicaoMotor
 
   const result = await apiMotorCotacao.callApi('/bestPrice', 'POST', JSON.stringify(requisicaoMotor))
@@ -67,7 +67,4 @@ export const quotationEngine = async (data: ICartList) => {
   console.log('\n\n Resultado Cotação: ', result)
 
   return result
-  */
-
-  return mockRequisicaoMotor
 }

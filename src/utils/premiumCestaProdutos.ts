@@ -31,10 +31,12 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
 
   const fornecedoresCotacao: FornecedorMotor[] = []
   for (const item of fornecedores) {
-    /*  const produtoFaltante = item.discount.product.find((p) => p.price === 0)
-    if (produtoFaltante) {
+    console.log(item.name)
+    console.log(item.missingItens)
+    console.log('tamanho cesta', produtosCesta.length)
+    if (item.missingItens < produtosCesta.length) {
       continue
-    } */
+    }
 
     const fornecedor = await apiDbConectar.callApi(`/system/fornecedores/${item.externalId}`, 'GET')
     if (!fornecedor) {
@@ -152,136 +154,3 @@ export function aplicarPreferencias(cesta: ProdutoCesta[], fornecedores: Fornece
     cestaAtualizada
   }
 }
-
-export const mockRequisicaoMotor = [
-  {
-    id: 'idaleatorio',
-    nome: 'Nome Cotação',
-    resultado: {
-      total: 160.07151349999998,
-      cestas: [
-        {
-          fornecedor: 'c110abf9-623e-49f1-91a1-11b8e54ba44d',
-          total_fornecedor_bruto: 0,
-          total_conectar: 0,
-          desconto: 0,
-          itens: [
-            {
-              sku: '568',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 10,
-              valor_por_unidade_conectar: 10.526,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            },
-            {
-              sku: '657',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 142,
-              valor_por_unidade_conectar: 149.4692,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            },
-            {
-              sku: '54',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 6.5,
-              valor_por_unidade_conectar: 6.8419,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            },
-            {
-              sku: '37',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 4.75,
-              valor_por_unidade_conectar: 4.99985,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            }
-          ]
-        },
-        {
-          fornecedor: '3dbc8d4c-cada-4225-b0b2-aa713f4be14c',
-          total_fornecedor_bruto: 0,
-          total_conectar: 0,
-          desconto: 0,
-          itens: [
-            {
-              sku: '568',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 11,
-              valor_por_unidade_conectar: 11.5786,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            },
-            {
-              sku: '657',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 182,
-              valor_por_unidade_conectar: 191.57319999999999,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            },
-            {
-              sku: '54',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 5.5,
-              valor_por_unidade_conectar: 5.7893,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            },
-            {
-              sku: '37',
-              quantidade: 0,
-              valor_por_unidade_fornecedor: 5.8,
-              valor_por_unidade_conectar: 6.10508,
-              valor_fornecedor: 0,
-              valor_conectar: 0
-            }
-          ]
-        },
-        {
-          fornecedor: '6b7291c3-d0ac-4fdd-a9e9-4e50c3ffe80a',
-          total_fornecedor_bruto: 152.07250000000002,
-          total_conectar: 160.07151349999998,
-          desconto: 0,
-          itens: [
-            {
-              sku: '568',
-              quantidade: 2,
-              valor_por_unidade_fornecedor: 11.98,
-              valor_por_unidade_conectar: 12.610148,
-              valor_fornecedor: 23.96,
-              valor_conectar: 25.220296
-            },
-            {
-              sku: '657',
-              quantidade: 1,
-              valor_por_unidade_fornecedor: 120,
-              valor_por_unidade_conectar: 126.312,
-              valor_fornecedor: 120,
-              valor_conectar: 126.312
-            },
-            {
-              sku: '54',
-              quantidade: 1,
-              valor_por_unidade_fornecedor: 5.99,
-              valor_por_unidade_conectar: 6.305074,
-              valor_fornecedor: 5.99,
-              valor_conectar: 6.305074
-            },
-            {
-              sku: '37',
-              quantidade: 0.5,
-              valor_por_unidade_fornecedor: 4.245,
-              valor_por_unidade_conectar: 4.468287,
-              valor_fornecedor: 2.1225,
-              valor_conectar: 2.2341435
-            }
-          ]
-        }
-      ],
-      messages: []
-    }
-  }
-]
