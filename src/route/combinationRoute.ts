@@ -2,11 +2,11 @@ import { type FastifyInstance } from 'fastify'
 import { getCombination } from '../service/combinationService'
 
 export const combinationRoute = async (server: FastifyInstance): Promise<void> => {
-  server.get('/getCombination/:restaurant_id', async (req, res) => {
+  server.get('/getCombination/:restauranId', async (req, res) => {
     try {
-      const { restaurant_id } = req.params as { restaurant_id: string }
+      const { restaurantId } = req.params as { restaurantId: string }
 
-      const result = await getCombination(restaurant_id)
+      const result = await getCombination(restaurantId)
       await res.status(200).send({
         status: 200,
         return: result

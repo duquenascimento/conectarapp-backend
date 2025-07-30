@@ -47,3 +47,41 @@ export interface ProductPriceList {
   orderUnit: string
   priceUniqueWithTaxAndDiscount: number
 }
+
+export interface PreferenciaProduto {
+  sku: string
+  fornecedor: string
+}
+
+export interface PreferenciaClasse {
+  classe: string
+  fornecedores: string[]
+}
+
+export interface ResultadoPreferencias {
+  preferenciasProduto: PreferenciaProduto[]
+  preferenciasClasse: PreferenciaClasse[]
+  produtosIndisponiveis: ProdutoCesta[]
+  cestaAtualizada: ProdutoCesta[]
+}
+
+export interface CombinacaoAPI {
+  nome: string
+  bloquear_fornecedores: boolean
+  dividir_em_maximo: number
+  preferencia_fornecedor_tipo: string
+  definir_preferencia_produto: boolean
+  fornecedores_bloqueados: string[]
+  fornecedores_especificos: string[]
+  preferencias_hard: boolean
+  preferencias: Array<{
+    ordem: number
+    tipo: string
+    acao_na_falha: string
+    produtos: Array<{
+      produto_sku: string
+      classe: string
+      fornecedor_id: string
+    }>
+  }>
+}
