@@ -31,9 +31,6 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
 
   const fornecedoresCotacao: FornecedorMotor[] = []
   for (const item of fornecedores) {
-    console.log(item.name)
-    console.log(item.missingItens)
-    console.log('tamanho cesta', produtosCesta.length)
     if (item.missingItens < produtosCesta.length) {
       continue
     }
@@ -47,7 +44,7 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
 
       return {
         ...prodCesta,
-        valorPorUnid: produto?.price ?? 0
+        valorPorUnid: produto?.priceUnique ?? 0
       }
     })
 
@@ -111,11 +108,9 @@ export function aplicarPreferencias(cesta: ProdutoCesta[], fornecedores: Fornece
             const produtoOriginal = cesta.find((p) => p.sku === produto_sku)
             if (produtoOriginal) produtosIndisponiveis.push(produtoOriginal)
           }
-          // else ignorar
         }
       }
 
-      // Preferência por classe
       if (classe) {
         const fornecedoresDaClasse = getFornecedoresComClasse(classe)
 

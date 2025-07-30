@@ -42,7 +42,7 @@ export const quotationEngine = async (data: ICartList) => {
     throw new HttpException('Nenhuma combinação encontrada para o restaurante', 404)
   }
 
-  const combinacao = combinacoesCliente[0]
+  const combinacao = combinacoesCliente[11]
 
   const resultadoPreferencias = aplicarPreferencias(cestaDeProdutos, fornecedoresList, combinacao.preferencias)
 
@@ -66,5 +66,8 @@ export const quotationEngine = async (data: ICartList) => {
 
   console.log('\n\n Resultado Cotação: ', result)
 
-  return result
+  return {
+    requisicaoMotor,
+    calculoMotor: result
+  }
 }
