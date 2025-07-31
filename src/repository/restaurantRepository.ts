@@ -361,7 +361,5 @@ export const findRestaurantByExternalId = async (externalId: string): Promise<an
     })
   } catch (err) {
     void logRegister(err)
-  } finally {
-    await prisma.$disconnect()
   }
 }

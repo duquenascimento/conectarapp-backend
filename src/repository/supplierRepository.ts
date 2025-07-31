@@ -12,7 +12,6 @@ export const findSupplierByExternalId = async (externalId: string): Promise<supp
     return result
   } catch (err) {
     void logRegister(err)
-  } finally {
-    await prisma.$disconnect()
+    return null
   }
 }
