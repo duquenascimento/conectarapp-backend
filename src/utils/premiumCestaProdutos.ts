@@ -59,84 +59,52 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
   return fornecedoresCotacao
 }
 
-export function aplicarPreferencias(cesta: ProdutoCesta[], fornecedores: FornecedorPriceList[], preferencias: CombinacaoAPI['preferencias']): ResultadoPreferencias {
+// As preferencias, por enquanto, estão sendo aplicadas como 'fixar'
+export function aplicarPreferencias(cesta: ProdutoCesta[], fornecedores: FornecedorMotor[], preferencias: CombinacaoAPI['preferencias']): ResultadoPreferencias {
   const preferenciasProduto: PreferenciaProduto[] = []
   const preferenciasClasse: PreferenciaClasse[] = []
   const produtosIndisponiveis: ProdutoCesta[] = []
-  let cestaAtualizada = [...cesta]
 
-  const getFornecedoresComProduto = (sku: string): string[] => {
-    return fornecedores.filter((f) => f.discount.product.some((p) => p.sku === sku)).map((f) => f.externalId)
-  }
+  const cestaAtualizada = [...cesta]
 
-  const getFornecedoresComClasse = (classe: string): string[] => {
-    return fornecedores
-      .filter((f) =>
-        f.discount.product.some((p) => {
-          const itemCesta = cesta.find((c) => c.sku === p.sku)
-          return itemCesta?.classe === classe
-        })
-      )
-      .map((f) => f.externalId)
-  }
+  const hashClasses = new Map<string, Set<string>>()
+  const hashSku = new Map<string, { sku: string; fornecedor_id: string }>()
 
-  for (const preferencia of preferencias.sort((a, b) => a.ordem - b.ordem)) {
-    for (const item of preferencia.produtos) {
-      const { produto_sku, classe, fornecedor_id } = item
-      const tipo = preferencia.tipo
-      const acao = preferencia.acao_na_falha
+  for (const fornecedor of fornecedores) {
+    for (const produto of fornecedor.produtos) {
+      const classe = produto.classe
+      const chave = `${produto.sku}-${fornecedor.id}`
 
-      if (acao === 'ignorar') continue
-
-      // Preferência por produto específico
-      if (produto_sku) {
-        const fornecedoresDoProduto = getFornecedoresComProduto(produto_sku)
-
-        if (tipo === 'fixar') {
-          if (fornecedoresDoProduto.includes(fornecedor_id)) {
-            preferenciasProduto.push({ sku: produto_sku, fornecedor: fornecedor_id })
-          } else if (acao === 'indisponível') {
-            cestaAtualizada = cestaAtualizada.filter((p) => p.sku !== produto_sku)
-            const produtoOriginal = cesta.find((p) => p.sku === produto_sku)
-            if (produtoOriginal) produtosIndisponiveis.push(produtoOriginal)
-          }
-        }
-
-        if (tipo === 'remover') {
-          if (fornecedoresDoProduto.length === 1 && fornecedoresDoProduto[0] === fornecedor_id && acao === 'indisponível') {
-            cestaAtualizada = cestaAtualizada.filter((p) => p.sku !== produto_sku)
-            const produtoOriginal = cesta.find((p) => p.sku === produto_sku)
-            if (produtoOriginal) produtosIndisponiveis.push(produtoOriginal)
-          }
-        }
+      if (!hashClasses.has(classe)) {
+        hashClasses.set(classe, new Set())
       }
+      hashClasses.get(classe)?.add(fornecedor.id)
 
-      if (classe) {
-        const fornecedoresDaClasse = getFornecedoresComClasse(classe)
+      if (!hashSku.has(chave)) {
+        hashSku.set(chave, { sku: produto.sku, fornecedor_id: fornecedor.id })
+      }
+    }
+  }
 
-        if (tipo === 'fixar') {
-          if (fornecedoresDaClasse.includes(fornecedor_id)) {
-            let classePreferida = preferenciasClasse.find((p) => p.classe === classe)
-            if (!classePreferida) {
-              classePreferida = { classe, fornecedores: [] }
-              preferenciasClasse.push(classePreferida)
-            }
-            if (!classePreferida.fornecedores.includes(fornecedor_id)) {
-              classePreferida.fornecedores.push(fornecedor_id)
-            }
-          } else if (acao === 'indisponível') {
-            const removidos = cestaAtualizada.filter((p) => p.classe === classe)
-            cestaAtualizada = cestaAtualizada.filter((p) => p.classe !== classe)
-            produtosIndisponiveis.push(...removidos)
-          }
+  for (const preferencia of preferencias) {
+    for (const produto of preferencia.produtos) {
+      const { produto_sku, classe, fornecedor_id } = produto
+
+      if (produto_sku) {
+        const chave = `${produto_sku}-${fornecedor_id}`
+        if (hashSku.has(chave)) {
+          preferenciasProduto.push({
+            sku: produto_sku,
+            fornecedor: fornecedor_id
+          })
         }
-
-        if (tipo === 'remover') {
-          if (fornecedoresDaClasse.length === 1 && fornecedoresDaClasse[0] === fornecedor_id && acao === 'indisponível') {
-            const removidos = cestaAtualizada.filter((p) => p.classe === classe)
-            cestaAtualizada = cestaAtualizada.filter((p) => p.classe !== classe)
-            produtosIndisponiveis.push(...removidos)
-          }
+      } else if (classe) {
+        const fornecedoresDaClasse = hashClasses.get(classe)
+        if (fornecedoresDaClasse?.has(fornecedor_id)) {
+          preferenciasClasse.push({
+            classe,
+            fornecedores: [fornecedor_id]
+          })
         }
       }
     }

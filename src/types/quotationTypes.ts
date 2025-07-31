@@ -13,6 +13,7 @@ export interface FornecedorMotor {
 }
 
 export interface FornecedorPriceList {
+  id: string
   name: string
   externalId: string
   missingItens: number

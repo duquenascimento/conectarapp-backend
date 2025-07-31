@@ -24,12 +24,12 @@ export const quotationEngine = async (data: ICartList) => {
     throw new HttpException('Carrinho não encontrado', 404)
   }
 
-  const cestaDeProdutos = await cestaProdutos(cart) // monta cesta de produtos
+  const cestaDeProdutos = await cestaProdutos(cart)
 
-  const priceList = await suppliersPrices(data) // busca os precos dos fornecedores
+  const priceList = await suppliersPrices(data)
 
   const fornecedoresList = priceList.data.map((item: any) => item.supplier) as FornecedorPriceList[]
-  const fornecedores = await fornecedoresCotacaoPremium(fornecedoresList, cestaDeProdutos) // monta cesta baseado nos fornecedores e cesta
+  const fornecedores = await fornecedoresCotacaoPremium(fornecedoresList, cestaDeProdutos)
 
   if (!fornecedores || fornecedores.length === 0) {
     throw new HttpException('Nenhum fornecedor disponível', 404)
@@ -44,11 +44,10 @@ export const quotationEngine = async (data: ICartList) => {
 
   const combinacao = combinacoesCliente[11]
 
-  const resultadoPreferencias = aplicarPreferencias(cestaDeProdutos, fornecedoresList, combinacao.preferencias)
+  const resultadoPreferencias = aplicarPreferencias(cestaDeProdutos, fornecedores, combinacao.preferencias)
 
   const tax = restaurant.tax.d
-  const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100 // taxa dos restaurates
-
+  const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100
   const requisicaoMotor = {
     fornecedores,
     fornecedoresBloqueados: combinacao.fornecedores_bloqueados,
@@ -59,15 +58,7 @@ export const quotationEngine = async (data: ICartList) => {
     taxa
   }
 
-  // console.log('Requisição Motor:', requisicaoMotor)
-  // const requisicaoMotor = mockRequisicaoMotor
-
   const result = await apiMotorCotacao.callApi('/bestPrice', 'POST', JSON.stringify(requisicaoMotor))
 
-  console.log('\n\n Resultado Cotação: ', result)
-
-  return {
-    requisicaoMotor,
-    calculoMotor: result
-  }
+  return result
 }
