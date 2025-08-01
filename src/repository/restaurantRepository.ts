@@ -363,3 +363,30 @@ export const findRestaurantByExternalId = async (externalId: string): Promise<an
     void logRegister(err)
   }
 }
+
+export const findRestaurantByRestaurantIdAndSupplierId = async (restaurantExternalId: string, supplierExternalId: string): Promise<any> => {
+  try {
+    if (typeof restaurantExternalId !== 'string' || typeof supplierExternalId !== 'string') {
+      throw new Error('Parâmetros inválidos: ambos restaurantExternalId e supplierExternalId devem ser strings')
+    }
+
+    return await prisma.restaurant_supplier.findFirst({
+      where: {
+        restaurant: {
+          externalId: restaurantExternalId
+        },
+        supplier: {
+          externalId: supplierExternalId
+        }
+      },
+      include: {
+        restaurant: true,
+        supplier: true
+      }
+    })
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
