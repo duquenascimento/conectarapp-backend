@@ -290,14 +290,14 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
-  server.get('/restaurant-supplier/account/:restaurantId/:supplierId', async (req, res) => {
-    const { restaurantId, supplierId } = req.params as {
-      restaurantId: string
-      supplierId: string
+  server.get('/restaurant-supplier/account/:restaurantExternalId/:supplierExternalId', async (req, res) => {
+    const { restaurantExternalId, supplierExternalId } = req.params as {
+      restaurantExternalId: string
+      supplierExternalId: string
     }
 
     try {
-      const result = await findByRestaurantIdAndSupplierId(restaurantId, supplierId)
+      const result = await findByRestaurantIdAndSupplierId(restaurantExternalId, supplierExternalId)
 
       if (!result.asaasCustomerId) {
         throw new HttpException('Carteira de cliente não encontrada!', 404)
