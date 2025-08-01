@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
@@ -66,6 +66,16 @@ export const findByExternalId = async (externalId: string): Promise<any> => {
   try {
     const restaurant = await findRestaurantByExternalId(externalId)
     return restaurant
+  } catch (err) {
+    if ((err as any).cause !== 'visibleError') await logRegister(err)
+    throw Error((err as Error).message)
+  }
+}
+
+export const findByRestaurantIdAndSupplierId = async (restaurantExternalId: string, supplierExternalId: string): Promise<any> => {
+  try {
+    const restaurantSupplier = await findRestaurantByRestaurantIdAndSupplierId(restaurantExternalId, supplierExternalId)
+    return restaurantSupplier
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
