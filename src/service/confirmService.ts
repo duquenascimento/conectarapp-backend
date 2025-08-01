@@ -1,4 +1,4 @@
-import { addDetailing, addOrder, checkOrder, confirmPremium, updateOrder, type Detailing, type Order } from '../repository/confirmRepository'
+import { addDetailing, addOrder, confirmPremium, updateOrder, type Detailing, type Order } from '../repository/confirmRepository'
 import { DateTime } from 'luxon'
 import { v4 as uuidv4 } from 'uuid'
 import { suppliersCompletePrices, suppliersPrices } from './priceService'
@@ -7,26 +7,24 @@ import { deleteCartByUser } from './cartService'
 import { listByUser } from '../repository/cartRepository'
 import { decode } from 'jsonwebtoken'
 import { listProduct } from './productService'
-import { configure, base, type FieldSet, type Record as AirtableRecord, type Records } from 'airtable'
-import { type DadoBoleto, generateBolecode } from './itauService'
-import { type BoletoInter, generateBolecode as generateBolecodeInter, generatePix, type PixFineAndInterestResponse, type WebhookBolecodeResponse } from './interService'
-import { saveBolecode, saveTransaction, updateBolecode, updateTransaction } from '../repository/financeRepository'
+import { configure } from 'airtable'
+import { saveTransaction } from '../repository/financeRepository'
 import { Decimal } from '@prisma/client/runtime/library'
 import { logRegister } from '../utils/logUtils'
-import { addPendingRequest } from './promiseService'
-import { bolecodeAndPixErrorMessage, receiptErrorMessage } from '../utils/slackUtils'
+import { receiptErrorMessage } from '../utils/slackUtils'
 import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
-import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido } from '../types/confirmTypes'
+import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido, type confirmOrderPlusRequest } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
-import { formatDataToBolecode, getPaymentDate, generateBarcode, getPaymentDescription } from '../utils/confirmUtils'
+import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
 })
 
-export const confirmOrder = async (req: confirmOrderRequest): Promise<any> => {
+export const confirmOrder = async (req: confirmOrderRequest, deleteCart?: boolean): Promise<any> => {
+  const shouldDeleteCart = deleteCart ?? true
   const today = DateTime.now().setZone('America/Sao_Paulo')
   const deliveryDate = today.plus({ days: 1 })
 
@@ -72,7 +70,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
 
   req.supplier.discount.product.forEach((item) => {
     if (item.sku == null) {
-      console.log(item)
+      console.error('SKU não encontrado no item do pedido:', item)
     }
 
     const suppliersDetailing = allSuppliers.data
@@ -245,10 +243,12 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
 
   await Promise.all([updateOrder({ orderDocument: pdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText)])
 
-  await deleteCartByUser({
-    token: req.token,
-    selectedRestaurant: []
-  })
+  if (shouldDeleteCart) {
+    await deleteCartByUser({
+      token: req.token,
+      selectedRestaurant: []
+    })
+  }
 
   return {
     restName: req.restaurant.restaurant.name,
@@ -273,7 +273,7 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
-${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
+${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
 
 ---------------------------------------
 
@@ -340,7 +340,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     }
 
     // Codificar a mensagem
-    const msg = encodeURIComponent(req.message).replace('!', '%21').replace("'", '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
+    const msg = encodeURIComponent(req.message).replace('!', '%21').replace('\'', '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
 
     // Validar e formatar a data/hora agendada
     const [year, month, day] = req.sendDate.split('-').map(Number)
@@ -358,7 +358,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
 
     // Fazer a chamada à API usando `fetch`
     const response = await fetch(url, { method: 'POST' })
-    const result = await response.text()
+    await response.text()
 
     return { status: 201, message: 'Agendamento realizado com sucesso!' }
   } catch (err) {
@@ -366,4 +366,26 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     await logRegister(err)
     throw err
   }
+}
+
+export const handleConfirmPlus = async (
+  req: confirmOrderPlusRequest
+): Promise<any[]> => {
+  const { token, suppliers, restaurant } = req
+
+  const ordersRequest: confirmOrderRequest[] = suppliers.map((supplier) => ({
+    token,
+    supplier,
+    restaurant
+  }))
+
+  const ordersResult = []
+
+  for (const [index, order] of ordersRequest.entries()) {
+    const isLastOrderRequest = index === ordersRequest.length - 1
+    const orderConfirmed = await confirmOrder(order, isLastOrderRequest)
+    ordersResult.push(orderConfirmed)
+  }
+
+  return ordersResult
 }
