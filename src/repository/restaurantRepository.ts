@@ -386,7 +386,5 @@ export const findRestaurantByRestaurantIdAndSupplierId = async (restaurantExtern
     })
   } catch (err) {
     void logRegister(err)
-  } finally {
-    await prisma.$disconnect()
   }
 }
