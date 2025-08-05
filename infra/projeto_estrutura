@@ -1,0 +1,12 @@
+meu-projeto/
+├── infra/
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfvars
+│   └── scripts/
+│       └── setup.sh
+├── src/
+│   └── app.js          # Exemplo de API Node.js
+└── README.md
+
