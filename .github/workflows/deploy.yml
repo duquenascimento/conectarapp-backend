@@ -1,0 +1,74 @@
+# deploy.yml
+name: 🚀 Deploy Automático para EC2
+
+on:
+  push:
+    branches: [ "main", "feature/infraestrutura" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🔻 Checkout do código
+        uses: actions/checkout@v4
+
+      - name: 📤 Enviar arquivos para a EC2
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu  # ✅ Alterado de ec2-user para ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "."
+          target: "/home/ubuntu/app"  # ✅ Diretório do usuário ubuntu
+          rm: true
+
+      - name: 🛠️ Criar .env na EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu  # ✅
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app
+            cat > .env << EOF
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=5432
+            DB_USER=${{ secrets.DB_USER }}
+            DB_PASS=${{ secrets.DB_PASS }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            ASAAS_API_URL=${{ secrets.ASAAS_API_URL }}
+            ASAAS_API_KEY=${{ secrets.ASAAS_API_KEY }}
+            ASAAS_CONECTAR_WALLET_ID=${{ secrets.ASAAS_CONECTAR_WALLET_ID }}
+            VALOR_MULTA=${{ secrets.VALOR_MULTA }}
+            VALOR_JUROS=${{ secrets.VALOR_JUROS }}
+            PERCENTUAL_SPLIT=${{ secrets.PERCENTUAL_SPLIT }}
+            NODE_ENV=production
+            EOF
+            echo "✅ .env criado com DB_HOST=${{ secrets.DB_HOST }}"
+            cat .env
+
+      - name: 🐳 Deploy com Docker Compose
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu  # ✅
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app
+            echo "🛑 Parando container antigo..."
+            docker-compose down || true
+            echo "🛠️  Construindo e subindo API..."
+            docker-compose up -d --build
+            echo "📋 Logs do container:"
+            docker logs api-pagamentos
+
+      - name: 🌐 Testar conectividade com o RDS
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu  # ✅
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🔍 Testando conexão com o RDS..."
+            sudo apt update && sudo apt install -y ncdu --assume-yes
+            nc -zv ${{ secrets.DB_HOST }} 5432 || echo "⚠️ Falha na conexão com o banco"
