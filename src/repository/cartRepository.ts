@@ -100,8 +100,13 @@ export const deleteByUserIdAndProductId = async (id: string): Promise<void> => {
     })
     await prisma.$disconnect()
   } catch (err: any) {
-    await prisma.$disconnect()
+    if (err.code === 'P2025') {
+      console.warn(`Tentou deletar cart.id inexistente: ${id}`)
+      return
+    }
+
     await logRegister(err)
+    throw err
   }
 }
 

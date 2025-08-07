@@ -16,6 +16,7 @@ export interface ICartAddRequestArray {
   carts: ICartAddRequest[]
   cartToExclude: ICartAddRequest[]
   token: string
+  selectedRestaurant: { id: string }
 }
 
 export interface ICartList {
@@ -26,6 +27,7 @@ export interface ICartList {
 export interface ICartDeleteItem {
   token: string
   productId: string
+  selectedRestaurant: { id: string }
 }
 
 export interface ICartResponse {
@@ -60,58 +62,83 @@ interface Product {
   addOrder: number
 }
 
-const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
+const addToCart = async (req: ICartAddRequest, restaurantId: string): Promise<void> => {
+  if (!req.productId) throw new Error('Produto inválido.')
+  if (typeof restaurantId !== 'string') throw new Error('Restaurante inválido.')
+
   const request: ICartAdd = {
     ...req,
     id: uuidv4(),
-    restaurantId: id,
+    restaurantId,
     addOrder: req.addOrder
   }
+
   const result = await findByProductAndUser({
     productId: req.productId,
-    restaurantId: request.restaurantId
+    restaurantId
   })
+
   if (result != null) request.id = result.id
+
   if (request.amount === 0) {
     await deleteByUserIdAndProductId(request.id)
+    return
   }
+
   await addRepository(request)
 }
 
-const deleteItens = async (req: ICartAddRequest, id: string): Promise<void> => {
+const deleteItens = async (req: ICartAddRequest, restaurantId: string): Promise<void> => {
+  if (!req.productId || typeof restaurantId !== 'string') return
+
   const result = await findByProductAndUser({
     productId: req.productId,
-    restaurantId: id
+    restaurantId
   })
-  if (result == null) return
+
+  if (!result) return
+
   await deleteByUserIdAndProductId(result.id)
 }
 
 export const deleteItem = async (req: ICartDeleteItem): Promise<void> => {
-  const decoded = decode(req.token) as { id: string }
+  if (!req.selectedRestaurant?.id || !req.productId) {
+    throw new Error('selectedRestaurant.id ou productId ausente na requisição para delete')
+  }
+
   const result = await findByProductAndUser({
     productId: req.productId,
-    restaurantId: decoded.id
+    restaurantId: req.selectedRestaurant.id
   })
 
-  if (result == null) return
+  if (!result) {
+    console.warn(`Item não encontrado no carrinho para deletar: ${req.productId}`)
+    return
+  }
+
   await deleteByUserIdAndProductId(result.id)
 }
 
 export const addService = async (req: ICartAddRequestArray): Promise<void> => {
   try {
-    const decoded = decode(req.token) as { id: string }
-    const countItens = await countCartItens(decoded.id)
+    if (!req.token || !req.selectedRestaurant?.id) {
+      throw new Error('Token ou selectedRestaurant.id ausente na requisição.')
+    }
+
+    const countItens = await countCartItens(req.selectedRestaurant.id)
     let orderIndex = countItens
+
     for (const cart of req.carts) {
+      if (!cart.productId || cart.amount == null) continue
+
       orderIndex++
       cart.addOrder = orderIndex
-      await addToCart(cart, decoded.id)
+      await addToCart(cart, req.selectedRestaurant.id)
     }
 
     await Promise.all(
       req.cartToExclude.map(async (cartToDelete) => {
-        await deleteItens(cartToDelete, decoded.id)
+        await deleteItens(cartToDelete, req.selectedRestaurant.id)
       })
     )
   } catch (err) {
@@ -122,10 +149,10 @@ export const addService = async (req: ICartAddRequestArray): Promise<void> => {
 
 export const listCart = async (req: ICartList): Promise<ICartResponse[] | null> => {
   try {
-    const decoded = decode(req.token) as { id: string }
-    const result = await listByUser({ restaurantId: decoded.id })
-    if (result == null) return null
-    return result
+    if (!req.selectedRestaurant?.id) throw new Error('selectedRestaurant.id ausente')
+
+    const result = await listByUser({ restaurantId: req.selectedRestaurant.id })
+    return result ?? null
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
@@ -134,8 +161,9 @@ export const listCart = async (req: ICartList): Promise<ICartResponse[] | null> 
 
 export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] | null> => {
   try {
-    const decoded = decode(req.token) as { id: string }
-    const result = await listByUser({ restaurantId: decoded.id })
+    if (!req.selectedRestaurant?.id) throw new Error('selectedRestaurant.id ausente')
+
+    const result = await listByUser({ restaurantId: req.selectedRestaurant.id })
     if (result == null) return null
     const myHeaders = new Headers()
     myHeaders.append('secret-key', '9ba805b2-6c58-4adc-befc-aad30c6af23a')
@@ -192,8 +220,10 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
 
 export const deleteCartByUser = async (req: ICartList): Promise<void> => {
   try {
-    const decoded = decode(req.token) as { id: string }
-    await deleteByUserId(decoded.id)
+    if (typeof req.selectedRestaurant?.id !== 'string') {
+      throw new Error('selectedRestaurant.id está ausente na requisição')
+    }
+    await deleteByUserId(req.selectedRestaurant.id as string)
   } catch (err: any) {
     if (err.cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)

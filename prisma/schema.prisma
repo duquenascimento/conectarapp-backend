@@ -126,6 +126,8 @@ model cart {
   restaurantId String  @db.Uuid
   version      Int     @default(0)
   addOrder     Int?    @default(0)
+
+  @@unique([restaurantId, productId], name: "cart_restaurantId_productId_unique")
 }
 
 model order {
