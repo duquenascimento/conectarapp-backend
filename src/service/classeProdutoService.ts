@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const listClassesProduto = async (): Promise<any> => {
   try {
-    const dbConectarApiUrl = process.env.DBCONECTAR_API_URL ?? 'http://localhost:3333'
+    const dbConectarApiUrl = process.env.API_DB_CONECTAR ?? 'http://localhost:3333'
 
     const response = await axios.get(`${dbConectarApiUrl}/system/classes-produto`)
 
