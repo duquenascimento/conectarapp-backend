@@ -1,45 +1,22 @@
 import { type FastifyInstance } from 'fastify'
-import { quotationEngine } from '../service/QuotationEngine'
+import { type CotacaoData, newQuotationEngine, quotationEngine } from '../service/QuotationEngine'
 import { type ICartList } from '../service/cartService'
 
 export const quotationEngineRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/getQuotation', async (req, res) => {
     try {
-      /*   // Dados do restaurante
-      const restaurant = await findById(restaurantId)
-      if (!restaurant) {
-        throw new Error('Nenhum restaurante encontrado')
-      }
-
-      const tax = restaurant.tax.d
-      const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100
-
-      // Cesta de Produtos
-      const carrinho = await cestaProdutos(restaurantId)
-      const { cesta, cart } = carrinho
-
-      const cestaCarrinho = cesta.map((item, idx) => ({
-        sku: item.data.sku,
-        quantidade: cart?.[idx]?.amount ? Number(cart[idx].amount) : 0,
-        classe: item.data.classe,
-        valorPorUnid: item.data.valorPorUnid
-      }))
-
-      // Fornecedores
-
-      if (!restaurantId || !Array.isArray(cestaCarrinho) || typeof taxa !== 'number') {
-        return await res.status(400).send({ status: 400, msg: 'Parâmetros inválidos' })
-      }
-
-      const combinacoes = (await getCombination(restaurantId)) as CombinacaoAPI[]
-      const result = await postCombinacaoCotacao(combinacoes, cestaCarrinho, taxa)
-
-      return await res.status(200).send({
-        status: 200,
-        return: result
-      }) */
-
       return await quotationEngine(req.body as ICartList)
+    } catch (err) {
+      console.log('erro', err)
+      const message = (err as Error).message
+      const status = message === process.env.INTERNAL_ERROR_MSG ? 500 : 400
+      return await res.status(status).send({ status, msg: message })
+    }
+  })
+
+  server.post('/calcQuotation', async (req, res) => {
+    try {
+      return await newQuotationEngine(req.body as CotacaoData)
     } catch (err) {
       console.log('erro', err)
       const message = (err as Error).message

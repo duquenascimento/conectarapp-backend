@@ -1,15 +1,25 @@
 export interface ProdutoCesta {
-  sku: string
-  quantidade: number
-  classe: string
-  valorPorUnid?: number
+  id: string
+  quantity: number
+  class: string
+  // valorPorUnid?: number
+}
+
+interface ProdutoFornecedor {
+  productId?: string
+  price?: number
+}
+
+interface Discount {
+  threshold: number
+  rate: number
 }
 
 export interface FornecedorMotor {
   id: string
-  produtos: ProdutoCesta[]
-  descontos: any
-  pedidoMinimo: number
+  products: ProdutoFornecedor[]
+  discounts: Discount[]
+  minValue: number
 }
 
 export interface FornecedorPriceList {
@@ -50,13 +60,15 @@ export interface ProductPriceList {
 }
 
 export interface PreferenciaProduto {
-  sku: string
-  fornecedor: string
+  productId: string
+  supplierId: string
+  unavailableIfFailed: boolean
 }
 
 export interface PreferenciaClasse {
-  classe: string
-  fornecedores: string[]
+  class: string
+  supplierId: string
+  unavailableIfFailed: boolean
 }
 
 export interface ResultadoPreferencias {
@@ -67,6 +79,7 @@ export interface ResultadoPreferencias {
 }
 
 export interface CombinacaoAPI {
+  id: string
   nome: string
   bloquear_fornecedores: boolean
   dividir_em_maximo: number
@@ -85,4 +98,45 @@ export interface CombinacaoAPI {
       fornecedor_id: string
     }>
   }>
+}
+
+export interface MotorCombinacaoRequest {
+  suppliers: FornecedorMotor[]
+  favoriteProducts: PreferenciaProduto[]
+  favoriteCategories: PreferenciaClasse[]
+  products: ProdutoCesta[]
+  fee: number
+  zeroFee: string[]
+  maxSupplier: number
+}
+
+interface CartItem {
+  productId: string
+  amount: number
+  value: number
+  valueWithoutFee: number
+  unitValue: number
+  unitValueWithoutFee: number
+}
+
+interface SupplierMotor {
+  id: string
+  orderValue: number
+  orderValueWithoutFee: number
+  feeUsed: number
+  discountUsed: number
+  cart: CartItem[]
+}
+
+export interface MotorCombinacaoResponse {
+  totalOrderValue: number
+  supplier: SupplierMotor[]
+  status: string
+  terminationCondition: string
+}
+
+export interface CombinationResponse {
+  id: string
+  nome: string
+  resultadoCotacao: MotorCombinacaoResponse
 }
