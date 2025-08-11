@@ -4,7 +4,7 @@ import { combinacaoSchema } from '../validators/combinationValidator'
 import { type CombinacaoInput } from '../types/combinationType'
 
 export const combinationRoute = async (server: FastifyInstance): Promise<void> => {
-  server.get('/getCombination/:restaurantId', async (req, res) => {
+  server.get('/combination/:restaurantId', async (req, res) => {
     try {
       const { restaurantId } = req.params as { restaurantId: string }
 
@@ -22,7 +22,7 @@ export const combinationRoute = async (server: FastifyInstance): Promise<void> =
     }
   })
 
-  server.post('/setCombination', async (req, res) => {
+  server.post('/combination', async (req, res) => {
     try {
       const { value, error } = combinacaoSchema.validate(req.body, {
         abortEarly: false,
@@ -69,7 +69,7 @@ export const combinationRoute = async (server: FastifyInstance): Promise<void> =
     }
   })
 
-  server.delete('/delete-combination/:id', async (req, res) => {
+  server.delete('/combination/:id/delete', async (req, res) => {
     try {
       const { id } = req.params as { id: string }
       const result = await deleteCombination(id)
