@@ -15,8 +15,8 @@ const apiMotorCotacao = new ApiRepository(process.env.API_MOTOR_COTACAO ?? '')
 export interface CotacaoData {
   token: string
   selectedRestaurant: any
-  cart: ICartResponse[]
-  prices: any
+  cart: any[]
+  prices: any[]
 }
 
 export const quotationEngine = async (data: ICartList) => {
@@ -105,14 +105,20 @@ export const newQuotationEngine = async (data: CotacaoData) => {
   if (!restaurant) {
     throw new HttpException('Restaurante não encontrado', 404)
   }
-  const cart = await cestaProdutos(data.cart)
-  const suppliers = await getSuppliersFromPriceList(data.prices, cart)
 
-  if (!suppliers) {
+  const iCart = data.cart.map(([_, dados]) => ({
+    ...dados,
+    amount: Number(dados.amount)
+  })) as ICartResponse[]
+
+  const cart = await cestaProdutos(iCart)
+  // const suppliers = await getSuppliersFromPriceList(data.prices, cart)
+
+  /* if (!suppliers) {
     throw new HttpException('Não há fornecedores disponíveis', 404)
-  }
+  } */
 
-  const combinations = await solveCombinations(suppliers, cart, restaurant)
+  const combinations = await solveCombinations(data.prices, cart, restaurant)
 
   return combinations
 }

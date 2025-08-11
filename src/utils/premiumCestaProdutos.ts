@@ -1,7 +1,8 @@
 import axios from 'axios'
 import { ApiRepository } from '../repository/apiRepository'
 import { type ICartResponse } from '../service/cartService'
-import { type PreferenciaClasse, type PreferenciaProduto, type ResultadoPreferencias, type FornecedorMotor, type FornecedorPriceList, type ProdutoCesta, type CombinacaoAPI, type CombinationResponse, type MotorCombinacaoRequest, type MotorCombinacaoResponse } from '../types/quotationTypes'
+import { type PreferenciaClasse, type PreferenciaProduto, type ResultadoPreferencias, type FornecedorMotor, type FornecedorPriceList, type ProdutoCesta, type CombinacaoAPI, type CombinationResponse, type MotorCombinacaoRequest, type MotorCombinacaoResponse, type MotorCombinacaoWithSupplierNames } from '../types/quotationTypes'
+import { HttpException } from '../errors/httpException'
 
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
 
@@ -25,8 +26,8 @@ export async function cestaProdutos(cart: ICartResponse[]): Promise<ProdutoCesta
   return cesta
 }
 
-export async function getSuppliersFromPriceList(prices: any, cart: ProdutoCesta[]): Promise<FornecedorMotor[] | null> {
-  const supplierList = prices.data.map((item: any) => item.supplier) as FornecedorPriceList[]
+export async function getSuppliersFromPriceList(prices: any[], cart: ProdutoCesta[]): Promise<FornecedorMotor[] | null> {
+  const supplierList = prices.map((item: any) => item.supplier) as FornecedorPriceList[]
   const result = await fornecedoresCotacaoPremium(supplierList, cart)
 
   return result
@@ -58,9 +59,14 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
   return fornecedoresCotacao
 }
 
-export async function solveCombinations(suppliers: FornecedorMotor[], products: ProdutoCesta[], restaurant: any): Promise<CombinationResponse[]> {
+export async function solveCombinations(/* suppliers: FornecedorMotor[] */ prices: any[], products: ProdutoCesta[], restaurant: any): Promise<CombinationResponse[]> {
   const combinationsResult = await apiDbConectar.callApi(`/system/combinacao/${restaurant.id}`, 'GET')
   const combinations = combinationsResult.data as CombinacaoAPI[]
+
+  const suppliers = await getSuppliersFromPriceList(prices, products)
+  if (!suppliers) {
+    throw new HttpException('Não há fornecedores disponíveis', 404)
+  }
 
   const solvedCombinations: CombinationResponse[] = []
   const tax = restaurant.tax.d
@@ -78,12 +84,23 @@ export async function solveCombinations(suppliers: FornecedorMotor[], products: 
       maxSupplier: combination.dividir_em_maximo
     }
 
-    const resultadoCotacao = await combinationSolverEngine(reqMotor)
+    const rawResultadoCotacao = await combinationSolverEngine(reqMotor)
+    const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices)
 
     solvedCombinations.push({ id: combination.id, nome: combination.nome, resultadoCotacao })
   }
 
   return solvedCombinations
+}
+
+function addSupplierNames(motorResponse: MotorCombinacaoResponse, supplierList: any[]): MotorCombinacaoWithSupplierNames {
+  return {
+    ...motorResponse,
+    supplier: motorResponse.supplier.map((sup) => ({
+      ...sup,
+      name: supplierList.find((s) => s.supplier.externalId === sup.id)?.supplier.name ?? 'Nome não encontrado'
+    }))
+  }
 }
 
 function preferencesResolver(combinacao: CombinacaoAPI) {

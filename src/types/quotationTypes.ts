@@ -127,12 +127,18 @@ interface SupplierMotor {
   discountUsed: number
   cart: CartItem[]
 }
-
+export interface SupplierWithName extends SupplierMotor {
+  name: string
+}
 export interface MotorCombinacaoResponse {
   totalOrderValue: number
   supplier: SupplierMotor[]
   status: string
   terminationCondition: string
+}
+
+export interface MotorCombinacaoWithSupplierNames extends Omit<MotorCombinacaoResponse, 'supplier'> {
+  supplier: SupplierWithName[]
 }
 
 export interface CombinationResponse {
