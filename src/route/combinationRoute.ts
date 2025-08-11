@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { getCombination, postCombination, putCombination } from '../service/combinationService'
+import { deleteCombination, getCombination, postCombination, putCombination } from '../service/combinationService'
 import { combinacaoSchema } from '../validators/combinationValidator'
 import { type CombinacaoInput } from '../types/combinationType'
 
@@ -60,6 +60,20 @@ export const combinationRoute = async (server: FastifyInstance): Promise<void> =
       const body: CombinacaoInput = value
 
       await putCombination(id, body)
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        return await res.status(500).send({ status: 500, msg: message })
+      }
+      return await res.status(400).send({ status: 400, msg: message })
+    }
+  })
+
+  server.delete('/delete-combination/:id', async (req, res) => {
+    try {
+      const { id } = req.params as { id: string }
+      const result = await deleteCombination(id)
+      return await res.status(result.status).send(result.data)
     } catch (err) {
       const message = (err as Error).message
       if (message === process.env.INTERNAL_ERROR_MSG) {
