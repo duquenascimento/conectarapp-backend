@@ -45,14 +45,11 @@ export const combinationRoute = async (server: FastifyInstance): Promise<void> =
     }
   })
 
-  server.delete('/deleteCombination/:id', async (req, res) => {
+  server.delete('/delete-combination/:id', async (req, res) => {
     try {
       const { id } = req.params as { id: string }
       const result = await deleteCombination(id)
-
-      return await res.status(result.status).send({
-        message: result.message
-      })
+      return await res.status(result.status).send(result.data)
     } catch (err) {
       const message = (err as Error).message
       if (message === process.env.INTERNAL_ERROR_MSG) {
