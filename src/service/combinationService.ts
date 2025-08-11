@@ -29,6 +29,4 @@ export const deleteCombination = async (id: string): Promise<any> => {
     }
     throw new HttpException('Falha ao deletar combinação: erro desconhecido', 500)
   }
-  /*   const response = await apiDbConectar.callApi(`/system/combinacao/${id}`, 'DELETE')
-  return response.data */
 }
