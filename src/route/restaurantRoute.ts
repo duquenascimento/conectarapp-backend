@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId } from '../service/restaurantService'
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -270,6 +270,39 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
       if (!result.asaasCustomerId) {
         throw new HttpException('Carteira de cliente não encontrada!', 404)
       }
+      return await res.status(200).send({
+        status: 200,
+        data: result
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.get('/restaurant-supplier/account/:restaurantExternalId/:supplierExternalId', async (req, res) => {
+    const { restaurantExternalId, supplierExternalId } = req.params as {
+      restaurantExternalId: string
+      supplierExternalId: string
+    }
+
+    try {
+      const result = await findByRestaurantIdAndSupplierId(restaurantExternalId, supplierExternalId)
+
+      if (!result.asaasCustomerId) {
+        throw new HttpException('Carteira de cliente não encontrada!', 404)
+      }
+
       return await res.status(200).send({
         status: 200,
         data: result

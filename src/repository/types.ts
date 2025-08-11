@@ -106,6 +106,9 @@ export interface CreateRegisterAirtable {
   'Código Promotor': string
   'Quantas vezes em média na semana você faz pedidos?': string
   'Cadastrado por': string
+  'Nome responsável financeiro': string
+  'Telefone do responsável financeiro com DDD': string
+  'E-mail financeiro para envio de cobranças': string
 }
 
 export interface UpdateAddressRegisterAirtable {
