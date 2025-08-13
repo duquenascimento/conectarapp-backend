@@ -54,7 +54,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string; value: boolean })
+      await updateComercialBlock(req.body as { restId: string, value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -76,7 +76,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateRegistrationReleasedNewApp', async (req, res): Promise<void> => {
     try {
-      await updateRegistrationReleasedNewApp(req.body as { externalId: string; registrationReleasedNewApp: boolean })
+      await updateRegistrationReleasedNewApp(req.body as { externalId: string, registrationReleasedNewApp: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -98,7 +98,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string; value: boolean })
+      await updateFinanceBlock(req.body as { restId: string, value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -120,7 +120,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number; value: boolean })
+      await AddClientCount(req.body as { count: number, value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -299,7 +299,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     try {
       const result = await findByRestaurantIdAndSupplierId(restaurantExternalId, supplierExternalId)
 
-      if (!result.asaasCustomerId) {
+      if (!result) {
         throw new HttpException('Carteira de cliente não encontrada!', 404)
       }
 
