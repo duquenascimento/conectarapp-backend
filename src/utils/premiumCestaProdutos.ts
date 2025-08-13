@@ -6,7 +6,7 @@ import { HttpException } from '../errors/httpException'
 
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
 
-export async function cestaProdutos (cart: ICartResponse[]): Promise<ProdutoCesta[]> {
+export async function cestaProdutos(cart: ICartResponse[]): Promise<ProdutoCesta[]> {
   const cesta: ProdutoCesta[] = []
 
   for (const item of cart) {
@@ -26,14 +26,14 @@ export async function cestaProdutos (cart: ICartResponse[]): Promise<ProdutoCest
   return cesta
 }
 
-export async function getSuppliersFromPriceList (prices: any[], cart: ProdutoCesta[]): Promise<FornecedorMotor[] | null> {
+export async function getSuppliersFromPriceList(prices: any[], cart: ProdutoCesta[]): Promise<FornecedorMotor[] | null> {
   const supplierList = prices.map((item: any) => item.supplier) as FornecedorPriceList[]
   const result = await fornecedoresCotacaoPremium(supplierList, cart)
 
   return result
 }
 
-export async function fornecedoresCotacaoPremium (fornecedores: FornecedorPriceList[], produtosCesta: ProdutoCesta[]): Promise<FornecedorMotor[] | null> {
+export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceList[], produtosCesta: ProdutoCesta[]): Promise<FornecedorMotor[] | null> {
   if (fornecedores.length === 0) {
     return null
   }
@@ -43,7 +43,7 @@ export async function fornecedoresCotacaoPremium (fornecedores: FornecedorPriceL
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id)
       return {
-        price: produto?.priceWithoutTax,
+        price: produto?.priceUnique,
         productId: produto?.sku
       }
     })
@@ -59,7 +59,7 @@ export async function fornecedoresCotacaoPremium (fornecedores: FornecedorPriceL
   return fornecedoresCotacao
 }
 
-export async function solveCombinations (prices: any[], products: ProdutoCesta[], restaurant: any): Promise<CombinationResponse[]> {
+export async function solveCombinations(prices: any[], products: ProdutoCesta[], restaurant: any): Promise<CombinationResponse[]> {
   const combinationsResult = await apiDbConectar.callApi(`/system/combinacao/${restaurant.id}`, 'GET')
   const combinations = combinationsResult.data as CombinacaoAPI[]
 
@@ -98,7 +98,7 @@ export async function solveCombinations (prices: any[], products: ProdutoCesta[]
   return solvedCombinations
 }
 
-function addSupplierNames (motorResponse: MotorCombinacaoResponse, supplierList: any[]): MotorCombinacaoWithSupplierNames {
+function addSupplierNames(motorResponse: MotorCombinacaoResponse, supplierList: any[]): MotorCombinacaoWithSupplierNames {
   return {
     ...motorResponse,
     supplier: motorResponse.supplier.map((sup) => ({
@@ -108,7 +108,7 @@ function addSupplierNames (motorResponse: MotorCombinacaoResponse, supplierList:
   }
 }
 
-function preferencesResolver (combinacao: CombinacaoAPI) {
+function preferencesResolver(combinacao: CombinacaoAPI) {
   const favoriteProducts = combinacao.preferencias.flatMap((preferencia) =>
     preferencia.produtos
       .filter((prod) => prod.produto_sku !== null)
@@ -132,7 +132,7 @@ function preferencesResolver (combinacao: CombinacaoAPI) {
   return { favoriteCategories, favoriteProducts }
 }
 
-async function combinationSolverEngine (req: MotorCombinacaoRequest): Promise<MotorCombinacaoResponse> {
+async function combinationSolverEngine(req: MotorCombinacaoRequest): Promise<MotorCombinacaoResponse> {
   const result = await axios.post(`${process.env.API_MOTOR_COTACAO}/solve`, req)
   return result.data
 }
