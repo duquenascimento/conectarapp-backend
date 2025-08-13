@@ -43,8 +43,8 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id)
       return {
-        productId: produto?.sku,
-        price: produto?.priceUnique
+        price: produto?.priceUnique,
+        productId: produto?.sku
       }
     })
 
@@ -73,9 +73,7 @@ export async function solveCombinations(prices: any[], products: ProdutoCesta[],
     suppliers = reqSuppliers.slice(0, 6)
   }
 
-  console.log('Fornecedores:', suppliers)
-
-  const solvedCombinations: CombinationResponse[] = []
+  const solvedCombinations = [] // : CombinationResponse[] = []
   const tax = restaurant.tax.d
   const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100
 
@@ -83,9 +81,9 @@ export async function solveCombinations(prices: any[], products: ProdutoCesta[],
     const { favoriteCategories, favoriteProducts } = preferencesResolver(combination)
     const reqMotor: MotorCombinacaoRequest = {
       suppliers,
-      products,
       favoriteCategories,
       favoriteProducts,
+      products,
       fee: taxa,
       zeroFee: [],
       maxSupplier: combination.dividir_em_maximo
