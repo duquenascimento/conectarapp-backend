@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { ApiRepository } from '../repository/apiRepository'
 import { type ICartResponse } from '../service/cartService'
-import { type PreferenciaClasse, type PreferenciaProduto, type ResultadoPreferencias, type FornecedorMotor, type FornecedorPriceList, type ProdutoCesta, type CombinacaoAPI, type CombinationResponse, type MotorCombinacaoRequest, type MotorCombinacaoResponse, type MotorCombinacaoWithSupplierNames } from '../types/quotationTypes'
+import { type FornecedorMotor, type FornecedorPriceList, type ProdutoCesta, type CombinacaoAPI, type CombinationResponse, type MotorCombinacaoRequest, type MotorCombinacaoResponse, type MotorCombinacaoWithSupplierNames } from '../types/quotationTypes'
 import { HttpException } from '../errors/httpException'
 
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
@@ -51,7 +51,7 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
     fornecedoresCotacao.push({
       id: item.externalId,
       products: produtosComPrecoFornecedor,
-      discounts: [], // faixa de descontos por preço do fornecedor, se houver. ex.: 100: 3,  // 3% se pedido ≥ 100
+      discounts: [],
       minValue: item.minimumOrder
     })
   }
@@ -59,14 +59,21 @@ export async function fornecedoresCotacaoPremium(fornecedores: FornecedorPriceLi
   return fornecedoresCotacao
 }
 
-export async function solveCombinations(/* suppliers: FornecedorMotor[] */ prices: any[], products: ProdutoCesta[], restaurant: any): Promise<CombinationResponse[]> {
+export async function solveCombinations(prices: any[], products: ProdutoCesta[], restaurant: any): Promise<CombinationResponse[]> {
   const combinationsResult = await apiDbConectar.callApi(`/system/combinacao/${restaurant.id}`, 'GET')
   const combinations = combinationsResult.data as CombinacaoAPI[]
 
-  const suppliers = await getSuppliersFromPriceList(prices, products)
-  if (!suppliers) {
+  const reqSuppliers = await getSuppliersFromPriceList(prices, products)
+  if (!reqSuppliers) {
     throw new HttpException('Não há fornecedores disponíveis', 404)
   }
+
+  let suppliers: FornecedorMotor[] = reqSuppliers
+  if (reqSuppliers.length >= 6) {
+    suppliers = reqSuppliers.slice(0, 6)
+  }
+
+  console.log('Fornecedores:', suppliers)
 
   const solvedCombinations: CombinationResponse[] = []
   const tax = restaurant.tax.d
@@ -128,68 +135,6 @@ function preferencesResolver(combinacao: CombinacaoAPI) {
 }
 
 async function combinationSolverEngine(req: MotorCombinacaoRequest): Promise<MotorCombinacaoResponse> {
-  const result = await axios.post('http://localhost:8001/solve', req)
-
+  const result = await axios.post(`${process.env.API_MOTOR_COTACAO}/solve`, req)
   return result.data
-}
-
-// As preferencias, por enquanto, estão sendo aplicadas como 'fixar'
-export function aplicarPreferencias(cesta: ProdutoCesta[], fornecedores: FornecedorMotor[], preferencias: CombinacaoAPI['preferencias']): ResultadoPreferencias {
-  const preferenciasProduto: PreferenciaProduto[] = []
-  const preferenciasClasse: PreferenciaClasse[] = []
-  const produtosIndisponiveis: ProdutoCesta[] = []
-
-  const cestaAtualizada = [...cesta]
-
-  const hashClasses = new Map<string, Set<string>>()
-  const hashSku = new Map<string, { sku: string; fornecedor_id: string }>()
-
-  /*   for (const fornecedor of fornecedores) {
-    for (const produto of fornecedor.products) {
-      const classe = produto.class
-      const chave = `${produto.id}-${fornecedor.id}`
-
-      if (!hashClasses.has(classe)) {
-        hashClasses.set(classe, new Set())
-      }
-      hashClasses.get(classe)?.add(fornecedor.id)
-
-      if (!hashSku.has(chave)) {
-        hashSku.set(chave, { sku: produto.id, fornecedor_id: fornecedor.id })
-      }
-    }
-  }
-
-  for (const preferencia of preferencias) {
-    for (const produto of preferencia.produtos) {
-      const { produto_sku, classe, fornecedor_id } = produto
-
-      if (produto_sku) {
-        const chave = `${produto_sku}-${fornecedor_id}`
-        if (hashSku.has(chave)) {
-          preferenciasProduto.push({
-            productId: produto_sku,
-            supplierId: fornecedor_id,
-            unavailableIfFailed: preferencia.acao_na_falha !== 'ignorar'
-          })
-        }
-      } else if (classe) {
-        const fornecedoresDaClasse = hashClasses.get(classe)
-        if (fornecedoresDaClasse?.has(fornecedor_id)) {
-          preferenciasClasse.push({
-            class: classe,
-            supplierId: fornecedor_id,
-            unavailableIfFailed: preferencia.acao_na_falha !== 'ignorar'
-          })
-        }
-      }
-    }
-  } */
-
-  return {
-    preferenciasProduto,
-    preferenciasClasse,
-    produtosIndisponiveis,
-    cestaAtualizada
-  }
 }
