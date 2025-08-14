@@ -50,8 +50,8 @@ jobs:
       - name: 🐳 Deploy com Docker Compose
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ubuntu  # ✅
+          username: ubuntu
+          target: /home/ubuntu/app-prod  # ou /home/ubuntu/app-dev
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/app
