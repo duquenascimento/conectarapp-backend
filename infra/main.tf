@@ -77,8 +77,9 @@ resource "aws_instance" "app" {
              ${file("${path.module}/scripts/setup.sh")}
               EOF
 
-  lifecycle {
-    prevent_destroy = false
+   lifecycle {
+    create_before_destroy = true
+    # prevent_destroy = true  # Descomente se quiser bloquear exclusão
   }
 }
 

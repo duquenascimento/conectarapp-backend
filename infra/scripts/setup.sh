@@ -1,9 +1,11 @@
+# infra/scripts/setup.sh
 #!/bin/bash
 set -e
 
+echo "🔧 Iniciando setup no Ubuntu..."
+
 # Atualiza sistema
-apt update
-apt upgrade -y
+apt update && apt upgrade -y
 
 # Instala Docker
 apt install -y docker.io
@@ -20,33 +22,46 @@ apt install -y nodejs
 
 # Instala Nginx
 apt install -y nginx
-systemctl enable nginx
 
-# Configura Nginx como proxy
+# Configura Nginx para os dois subdomínios
 cat > /etc/nginx/sites-available/default << 'EOF'
 server {
     listen 80;
-    server_name ${DOMAIN};
+    server_name dev-api-appconectar.conectarhortifruti.com.br;
 
     location / {
-        proxy_pass http://127.0.0.1:${API_PORT};
+        proxy_pass http://127.0.0.1:3333;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+
+server {
+    listen 80;
+    server_name api-appconectar.conectarhortifruti.com.br;
+
+    location / {
+        proxy_pass http://127.0.0.1:3334;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 EOF
 
-# Remove link simbólico padrão e ativa nossa config
-rm -f /etc/nginx/sites-enabled/default
-ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
-
-# Reinicia Nginx
+# Ativa configuração
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 systemctl restart nginx
 
 # Cria diretório .ssh
@@ -66,4 +81,7 @@ mkdir -p /home/ubuntu/app-prod
 chown -R ubuntu:ubuntu /home/ubuntu/app-dev
 chown -R ubuntu:ubuntu /home/ubuntu/app-prod
 
-echo "✅ Setup do Ubuntu concluído!"
+# (Opcional) Política de criptografia (se usar Amazon Linux 2023)
+# update-crypto-policies --set FUTURE
+
+echo "✅ Setup concluído!"

@@ -1,6 +1,26 @@
+provider "aws" {
+  region = var.aws_region
+}
+
+data "aws_vpc" "default" {
+  default = true
+}
+
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
+}
+
+# ✅ Security Group com nome fixo baseado no projeto, não na instância
 resource "aws_security_group" "web" {
-  name_prefix = "${var.instance_name}-sg-"
-  description = "Permite SSH, HTTP, HTTPS"
+   name_prefix = "api-appconectar-sg-"
+  description = "Permite SSH, HTTP e HTTPS"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -32,12 +52,18 @@ resource "aws_security_group" "web" {
   }
 
   tags = {
-    Name = "${var.instance_name}-security-group"
+    Name = "api-appconectar-security-group"
+  }
+
+  # ✅ Garante que o novo SG seja criado antes do antigo ser destruído (futuro)
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
+# ✅ Instância com nome variável
 resource "aws_instance" "app" {
-  ami                    = "ami-053b0d53c279acc90"  # ubuntu
+  ami                    = "ami-085925f297f852dac"  # Ubuntu 22.04 LTS
   instance_type          = var.instance_type
   key_name               = var.key_name
   subnet_id              = data.aws_subnets.public.ids[0]
@@ -45,27 +71,37 @@ resource "aws_instance" "app" {
   associate_public_ip_address = true
 
   tags = {
-    Name = var.instance_name
+    Name = var.instance_name  # ← Único campo que muda
   }
 
-  user_data = <<-EOF
-              #!/bin/bash
-              export DOMAIN="${var.domain}"
-              export EMAIL="${var.email}"
-              export PUBLIC_SSH_KEY="${var.public_ssh_key}"
-              export PERSONAL_SSH_KEY="${var.personal_ssh_key}"
-              ${file("${path.module}/../../scripts/setup.sh")}
-              EOF
+user_data = <<-EOF
+            #!/bin/bash
+            export DOMAIN="${var.domain}"
+            export API_PORT="${var.api_port}"
+            export EMAIL="${var.email}"
+            export PUBLIC_SSH_KEY="${var.public_ssh_key}"
+            export PERSONAL_SSH_KEY="${var.personal_ssh_key}"
+            ${file("${path.module}/scripts/setup.sh")}
+            EOF
 
   lifecycle {
     prevent_destroy = false
   }
 }
 
+# Saídas
 output "public_ip" {
   value = aws_instance.app.public_ip
 }
 
 output "ssh_command" {
-  value = "ssh -i ~/.ssh/aws-global.pem ec2-user@${aws_instance.app.public_ip}"
+  value = "ssh -i ~/.ssh/aws-global.pem ubuntu@${aws_instance.app.public_ip}"
+}
+
+output "app_url_http" {
+  value = "http://${var.domain}"
+}
+
+output "app_url_https" {
+  value = "https://${var.domain}"
 }
