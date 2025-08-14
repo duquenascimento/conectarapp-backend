@@ -2,7 +2,7 @@ provider "aws" {
   region = var.aws_region
 }
 
-module "api" {
+module "app" {
   source = "../../modules/ec2-web-server"
 
   aws_region         = var.aws_region
@@ -11,7 +11,6 @@ module "api" {
   key_name           = var.key_name
   domain             = var.domain
   email              = var.email
-  api_port           = var.api_port
   public_ssh_key     = var.public_ssh_key
   personal_ssh_key   = var.personal_ssh_key
 }

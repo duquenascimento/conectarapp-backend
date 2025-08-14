@@ -49,3 +49,5 @@ variable "personal_ssh_key" {
   description = "Sua chave pública pessoal (ex: aws-global)"
   type        = string
 }
+
+

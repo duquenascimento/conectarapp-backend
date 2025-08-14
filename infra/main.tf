@@ -56,8 +56,7 @@ resource "aws_security_group" "web" {
 }
 
 resource "aws_instance" "app" {
-  # Use a AMI do Ubuntu Server 22.04 LTS na região us-east-1
-  ami                    = "ami-053b0d53c279acc90"  # Ubuntu 22.04 LTS (us-east-1)
+  ami                    = "ami-085925f297f852dac"  # Ubuntu 22.04 LTS
   instance_type          = var.instance_type
   key_name               = var.key_name
   subnet_id              = data.aws_subnets.public.ids[0]
@@ -75,7 +74,7 @@ resource "aws_instance" "app" {
               export EMAIL="${var.email}"
               export PUBLIC_SSH_KEY="${var.public_ssh_key}"
               export PERSONAL_SSH_KEY="${var.personal_ssh_key}"
-              ${file("${path.module}/scripts/setup.sh")}
+              ${file("${path.module}/../../scripts/setup.sh")}
               EOF
 
   lifecycle {

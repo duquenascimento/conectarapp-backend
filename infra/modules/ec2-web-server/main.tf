@@ -1,25 +1,6 @@
-provider "aws" {
-  region = var.aws_region
-}
-
-data "aws_vpc" "default" {
-  default = true
-}
-
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
-}
-
 resource "aws_security_group" "web" {
   name_prefix = "${var.instance_name}-sg-"
-  description = "Permite SSH, HTTP e HTTPS"
+  description = "Permite SSH, HTTP, HTTPS"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
@@ -56,8 +37,7 @@ resource "aws_security_group" "web" {
 }
 
 resource "aws_instance" "app" {
-  # Use a AMI do Ubuntu Server 22.04 LTS na região us-east-1
-  ami                    = "ami-053b0d53c279acc90"  # Ubuntu 22.04 LTS (us-east-1)
+  ami                    = "ami-053b0d53c279acc90"  # ubuntu
   instance_type          = var.instance_type
   key_name               = var.key_name
   subnet_id              = data.aws_subnets.public.ids[0]
@@ -71,11 +51,10 @@ resource "aws_instance" "app" {
   user_data = <<-EOF
               #!/bin/bash
               export DOMAIN="${var.domain}"
-              export API_PORT="${var.api_port}"
               export EMAIL="${var.email}"
               export PUBLIC_SSH_KEY="${var.public_ssh_key}"
               export PERSONAL_SSH_KEY="${var.personal_ssh_key}"
-              ${file("${path.module}/scripts/setup.sh")}
+              ${file("${path.module}/../../scripts/setup.sh")}
               EOF
 
   lifecycle {
@@ -88,14 +67,5 @@ output "public_ip" {
 }
 
 output "ssh_command" {
-  value = "ssh -i ~/.ssh/aws-global.pem ubuntu@${aws_instance.app.public_ip}"
+  value = "ssh -i ~/.ssh/aws-global.pem ec2-user@${aws_instance.app.public_ip}"
 }
-
-output "app_url_http" {
-  value = "http://${var.domain}"
-}
-
-output "app_url_https" {
-  value = "https://${var.domain}"
-}
-

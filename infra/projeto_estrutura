@@ -2,13 +2,9 @@ conectarapp-backend/
 ├── infra/
 │   ├── environments/
 │   │   ├── dev/
-│   │   │   ├── main.tf          ← Faltou
 │   │   │   ├── terraform.tfvars
-│   │   │   └── backend.tf (opcional)
 │   │   └── prod/
-│   │       ├── main.tf          ← Faltou
 │   │       ├── terraform.tfvars
-│   │       └── backend.tf (opcional)
 │   ├── modules/
 │   │   └── ec2-web-server/
 │   │       ├── main.tf
