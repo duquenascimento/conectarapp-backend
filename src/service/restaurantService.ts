@@ -255,3 +255,15 @@ export const patchRestaurant = async (externalId: string, restaurantData: Partia
 export const findById = async (restaurantId: string) => {
   return await findRestaurantById(restaurantId)
 }
+
+export const checkPremiumAccess = async (externalId: string): Promise<any> => {
+  const authorizedIds = (process.env.CONECTAR_PLUS_AUTH_IDS ?? '').split(',').map((id) => id.trim())
+  if (authorizedIds.includes(externalId)) {
+    return {
+      authorized: true
+    }
+  }
+  return {
+    authorized: false
+  }
+}

@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, checkPremiumAccess } from '../service/restaurantService'
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -54,7 +54,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string, value: boolean })
+      await updateComercialBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -76,7 +76,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateRegistrationReleasedNewApp', async (req, res): Promise<void> => {
     try {
-      await updateRegistrationReleasedNewApp(req.body as { externalId: string, registrationReleasedNewApp: boolean })
+      await updateRegistrationReleasedNewApp(req.body as { externalId: string; registrationReleasedNewApp: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -98,7 +98,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string, value: boolean })
+      await updateFinanceBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -120,7 +120,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number, value: boolean })
+      await AddClientCount(req.body as { count: number; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -321,5 +321,11 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         })
       }
     }
+  })
+
+  server.get('/restaurant/premium-access/:externalId', async (req, res): Promise<any> => {
+    const { externalId } = req.params as { externalId: string }
+
+    return await checkPremiumAccess(externalId)
   })
 }
