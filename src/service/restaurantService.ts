@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findAuthorizedPremiumRestaurant } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
@@ -257,13 +257,5 @@ export const findById = async (restaurantId: string) => {
 }
 
 export const checkPremiumAccess = async (externalId: string): Promise<any> => {
-  const authorizedIds = (process.env.CONECTAR_PLUS_AUTH_IDS ?? '').split(',').map((id) => id.trim())
-  if (authorizedIds.includes(externalId)) {
-    return {
-      authorized: true
-    }
-  }
-  return {
-    authorized: false
-  }
+  return await findAuthorizedPremiumRestaurant(externalId)
 }

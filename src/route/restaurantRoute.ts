@@ -325,7 +325,13 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.get('/restaurant/premium-access/:externalId', async (req, res): Promise<any> => {
     const { externalId } = req.params as { externalId: string }
-
-    return await checkPremiumAccess(externalId)
+    try {
+      return await checkPremiumAccess(externalId)
+    } catch (error) {
+      await res.status(500).send({
+        status: 500,
+        msg: 'Falha ao verificar acesso conectar plus'
+      })
+    }
   })
 }
