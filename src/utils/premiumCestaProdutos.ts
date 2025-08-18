@@ -81,11 +81,7 @@ export async function solveCombinations(
       suppliers = suppliers.filter((sup) =>
         combination.fornecedores_especificos.includes(sup.id)
       )
-    } /* else {
-      if (suppliers.length >= 5) {
-        suppliers = suppliers.slice(0, 5)
-      }
-    } */
+    }
 
     const reqMotor: MotorCombinacaoRequest = {
       suppliers,
