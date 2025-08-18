@@ -95,7 +95,7 @@ output "ssh_command" {
 }
 
 output "app_url_dev" {
-  value = "http://dev-api-appconectar.conectarhortifruti.com.br"
+  value = "http://dev.api-appconectar.conectarhortifruti.com.br"
 }
 
 output "app_url_prod" {

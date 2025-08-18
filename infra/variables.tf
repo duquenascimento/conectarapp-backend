@@ -40,6 +40,12 @@ variable "api_port" {
   default     = 3333
 }
 
+variable "api_port_dev" {
+  description = "Porta interna da API"
+  type        = number
+  default     = 3334
+}
+
 variable "public_ssh_key" {
   description = "Chave pública do CI/CD (GitHub Actions)"
   type        = string
