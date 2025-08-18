@@ -1,4 +1,3 @@
-# infra/scripts/setup.sh
 #!/bin/bash
 set -e
 
@@ -80,8 +79,5 @@ mkdir -p /home/ubuntu/app-dev
 mkdir -p /home/ubuntu/app-prod
 chown -R ubuntu:ubuntu /home/ubuntu/app-dev
 chown -R ubuntu:ubuntu /home/ubuntu/app-prod
-
-# (Opcional) Política de criptografia (se usar Amazon Linux 2023)
-# update-crypto-policies --set FUTURE
 
 echo "✅ Setup concluído!"

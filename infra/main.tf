@@ -51,7 +51,11 @@ resource "aws_security_group" "web" {
   }
 
   tags = {
-    Name = "${var.instance_name}-security-group"
+    Name = "api-appconectar-security-group"
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
@@ -74,12 +78,11 @@ resource "aws_instance" "app" {
               export EMAIL="${var.email}"
               export PUBLIC_SSH_KEY="${var.public_ssh_key}"
               export PERSONAL_SSH_KEY="${var.personal_ssh_key}"
-             ${file("${path.module}/scripts/setup.sh")}
+              ${file("${path.module}/scripts/setup.sh")}
               EOF
 
-   lifecycle {
-    create_before_destroy = true
-    # prevent_destroy = true  # Descomente se quiser bloquear exclusão
+  lifecycle {
+    prevent_destroy = false
   }
 }
 
@@ -91,11 +94,10 @@ output "ssh_command" {
   value = "ssh -i ~/.ssh/aws-global.pem ubuntu@${aws_instance.app.public_ip}"
 }
 
-output "app_url_http" {
-  value = "http://${var.domain}"
+output "app_url_dev" {
+  value = "http://dev-api-appconectar.conectarhortifruti.com.br"
 }
 
-output "app_url_https" {
-  value = "https://${var.domain}"
+output "app_url_prod" {
+  value = "http://api-appconectar.conectarhortifruti.com.br"
 }
-

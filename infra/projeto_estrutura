@@ -1,19 +1,17 @@
 conectarapp-backend/
 ├── infra/
-│   ├── environments/
-│   │   ├── dev/
-│   │   │   ├── terraform.tfvars
-│   │   └── prod/
-│   │       ├── terraform.tfvars
-│   ├── modules/
-│   │   └── ec2-web-server/
-│   │       ├── main.tf
-│   │       ├── variables.tf
-│   │       └── outputs.tf
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   ├── terraform.tfvars
 │   └── scripts/
 │       └── setup.sh
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml
-├── readme.md
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
+├── .env.dev.template
+├── .env.prod.template
+└── README.md
 └── src/
