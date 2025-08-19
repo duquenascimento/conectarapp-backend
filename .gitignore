@@ -7,3 +7,29 @@ debug.log
 yarn.lock
 logs
 .env
+.env.development
+.env.test
+.env.production
+
+# temp directory
+.temp
+.tmp
+
+# Terraform
+/infra/.terraform
+/.terraform
+/infra.terraform/*
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfplan
+.terraform.lock.hcl
+
+# Binários de provedores
+*terraform-provider-*.exe
+*terraform-provider-*_x*.exe
+*terraform-provider-*_x*
+
+# Sistema
+.DS_Store
+Thumbs.db
