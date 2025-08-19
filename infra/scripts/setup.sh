@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+DOMAIN="${DOMAIN}"
+API_PORT="${API_PORT}"
+PUBLIC_SSH_KEY="${PUBLIC_SSH_KEY}"
+PERSONAL_SSH_KEY="${PERSONAL_SSH_KEY}"
+
 # Atualiza sistema
 apt update
 apt upgrade -y
@@ -76,6 +81,8 @@ chmod 600 /home/ubuntu/.ssh/authorized_keys
 chown -R ubuntu:ubuntu /home/ubuntu/.ssh
 
 # Instala Certbot
+apt update
+apt install certbot
 apt install -y certbot python3-certbot-nginx
 
 # Cria diretório para app
