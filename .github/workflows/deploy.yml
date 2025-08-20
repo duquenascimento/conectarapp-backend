@@ -44,15 +44,15 @@ jobs:
             cd /home/ubuntu/app-dev
             echo "🔧 Criando .env para DEV..."
 
-            # Função para escrever certificados com quebras de linha
+            # Função para converter \n para quebra de linha real
             write_cert() {
-              echo "$1" | sed 's/\\n/\n/g'
+              printf '%b' "$1"
             }
 
             # Cria o .env do zero
             > .env
 
-            # Variáveis simples
+            # === Banco de dados ===
             echo "DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}" >> .env
             echo "HOST=localhost" >> .env
             echo "PORT=9841" >> .env
@@ -60,7 +60,7 @@ jobs:
             echo "SALT=12" >> .env
             echo "INTERNAL_ERROR_MSG=internal error, try later." >> .env
 
-            # Integrações
+            # === Integrações ===
             echo "API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}" >> .env
             echo "API_MOTOR_COTACAO=${{ secrets.API_MOTOR_COTACAO }}" >> .env
             echo "URL_API_ANTIGA=${{ secrets.URL_API_ANTIGA }}" >> .env
@@ -70,48 +70,39 @@ jobs:
             echo "SYSTEM_USER_PASS=${{ secrets.SYSTEM_USER_PASS }}" >> .env
             echo "AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}" >> .env
 
-            # ChatGuru
+            # === ChatGuru ===
             echo "CG_API_KEY=${{ secrets.CG_API_KEY }}" >> .env
             echo "CG_ACCOUNT_ID=${{ secrets.CG_ACCOUNT_ID }}" >> .env
             echo "CG_PHONE_ID=${{ secrets.CG_PHONE_ID }}" >> .env
 
-            # CPFCNPJ
+            # === CPFCNPJ ===
             echo "API_TOKEN_CPFCNPJ=${{ secrets.API_TOKEN_CPFCNPJ }}" >> .env
             echo "API_URL_CPFCNPJ=${{ secrets.API_URL_CPFCNPJ }}" >> .env
 
-            # JWT
+            # === JWT ===
             echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
 
-            # Documentos
+            # === Documentos ===
             echo "DOCUMINT_KEY=${{ secrets.DOCUMINT_KEY }}" >> .env
 
-            # Email
+            # === Email ===
             echo "SENDGRID_KEY=${{ secrets.SENDGRID_KEY }}" >> .env
             echo "SENDGRID_TEMPLATE_PASSWORD_RECOVERY=${{ secrets.SENDGRID_TEMPLATE_PASSWORD_RECOVERY }}" >> .env
 
-            # OAuth
+            # === OAuth ===
             echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
             echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
             echo "GRANT_TYPE=${{ secrets.GRANT_TYPE }}" >> .env
             echo "SCOPE=${{ secrets.SCOPE }}" >> .env
             echo "ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}" >> .env
 
-            # Pix Itaú
-            echo "ITAU_PIX_KEY=${{ secrets.ITAU_PIX_KEY }}" >> .env
-            echo "ITAU_CLIENT_ID=${{ secrets.ITAU_CLIENT_ID }}" >> .env
-            echo "ITAU_AGENCY_ID=${{ secrets.ITAU_AGENCY_ID }}" >> .env
-            echo "ITAU_ACCOUNT_ID=${{ secrets.ITAU_ACCOUNT_ID }}" >> .env
-            echo "ITAU_TOKEN=${{ secrets.ITAU_TOKEN }}" >> .env
-            echo "ITAU_SECRET=${{ secrets.ITAU_SECRET }}" >> .env
-            echo "ITAU_ETAPA=${{ secrets.ITAU_ETAPA }}" >> .env
-
-            # AWS S3
+            # === AWS S3 ===
             echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
             echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
             echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
 
-            # Airtable
+            # === Airtable ===
             echo "AIRTABLE_TOKEN=${{ secrets.AIRTABLE_TOKEN }}" >> .env
             echo "AIRTABLE_BASE_ORDER_ID=${{ secrets.AIRTABLE_BASE_ORDER_ID }}" >> .env
             echo "AIRTABLE_BASE_ORDERTEXT_ID=${{ secrets.AIRTABLE_BASE_ORDERTEXT_ID }}" >> .env
@@ -131,50 +122,22 @@ jobs:
             echo "AIRTABLE_TABLE_DBCLIENTE_NAME=${{ secrets.AIRTABLE_TABLE_DBCLIENTE_NAME }}" >> .env
             echo "AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}" >> .env
 
-            # Inter
-            echo "INTER_CLIENT_ID=${{ secrets.INTER_CLIENT_ID }}" >> .env
-            echo "INTER_CLIENT_SECRET=${{ secrets.INTER_CLIENT_SECRET }}" >> .env
-            echo "INTER_GRANT_TYPE=${{ secrets.INTER_GRANT_TYPE }}" >> .env
-            echo "INTER_SCOPE=${{ secrets.INTER_SCOPE }}" >> .env
-            echo "INTER_ACCOUNT_NUMBER=${{ secrets.INTER_ACCOUNT_NUMBER }}" >> .env
-            echo "INTER_PIX_KEY=${{ secrets.INTER_PIX_KEY }}" >> .env
-            echo "INTER_HOST=${{ secrets.INTER_HOST }}" >> .env
-            echo "INTER_PATH_AUTH=${{ secrets.INTER_PATH_AUTH }}" >> .env
-            echo "INTER_PATH_GENERATE_BOLECODE=${{ secrets.INTER_PATH_GENERATE_BOLECODE }}" >> .env
-            echo "INTER_PATH_GENERATE_SIMPLE_PIX=${{ secrets.INTER_PATH_GENERATE_SIMPLE_PIX }}" >> .env
-            echo "INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX=${{ secrets.INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX }}" >> .env
-            echo "INTER_PATH_WEBHOOK=${{ secrets.INTER_PATH_WEBHOOK }}" >> .env
-            echo "INTER_PIX_TIMEOUT=${{ secrets.INTER_PIX_TIMEOUT }}" >> .env
-            echo "SECONDS_TO_REJECT_BOLECODE_PROMISE=${{ secrets.SECONDS_TO_REJECT_BOLECODE_PROMISE }}" >> .env
-            echo "BANK_CLIENT=${{ secrets.BANK_CLIENT }}" >> .env
-
-            # Slack
+            # === Slack ===
             echo "SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}" >> .env
             echo "SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}" >> .env
 
-            # Outros
+            # === Outros ===
             echo "MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}" >> .env
             echo "MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}" >> .env
 
-            # Certificados (com função write_cert)
-            # echo "CERT=" >> .env
-            # write_cert "${{ secrets.CERT }}" >> .env
+            # === Certificados (reconstruídos com \n → quebra de linha) ===
+            echo "CERT=" >> .env
+            write_cert "${{ secrets.CERT }}" >> .env
 
-            # echo "KEY=" >> .env
-            # write_cert "${{ secrets.KEY }}" >> .env
+            echo "KEY=" >> .env
+            write_cert "${{ secrets.KEY }}" >> .env
 
-            # echo "ITAU_CRT=" >> .env
-            # write_cert "${{ secrets.ITAU_CRT }}" >> .env
-
-            # echo "ITAU_KEY=" >> .env
-            # write_cert "${{ secrets.ITAU_KEY }}" >> .env
-
-            # echo "INTER_CERT=" >> .env
-            # write_cert "${{ secrets.INTER_CERT }}" >> .env
-
-            # echo "INTER_KEY=" >> .env
-            # write_cert "${{ secrets.INTER_KEY }}" >> .env
-
+            # === Ambiente ===
             echo "NODE_ENV=development" >> .env
 
             echo "✅ .env DEV criado com sucesso"
@@ -196,33 +159,98 @@ jobs:
             echo "🔧 Criando .env para PROD..."
 
             write_cert() {
-              echo "$1" | sed 's/\\n/\n/g'
+              printf '%b' "$1"
             }
 
             > .env
 
-            # (Repita todas as variáveis, mudando apenas DATABASE_URL_PROD e NODE_ENV=production)
+            # === Banco de dados ===
             echo "DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}" >> .env
-            # ... (todas as outras variáveis iguais)
+            echo "HOST=localhost" >> .env
+            echo "PORT=9841" >> .env
+            echo "LOG_PATH=../log.txt" >> .env
+            echo "SALT=12" >> .env
+            echo "INTERNAL_ERROR_MSG=internal error, try later." >> .env
+
+            # === Integrações ===
+            echo "API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}" >> .env
+            echo "API_MOTOR_COTACAO=${{ secrets.API_MOTOR_COTACAO }}" >> .env
+            echo "URL_API_ANTIGA=${{ secrets.URL_API_ANTIGA }}" >> .env
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+            echo "EXTERNAL_ID=${{ secrets.EXTERNAL_ID }}" >> .env
+            echo "USERNAME=${{ secrets.USERNAME }}" >> .env
+            echo "SYSTEM_USER_PASS=${{ secrets.SYSTEM_USER_PASS }}" >> .env
+            echo "AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}" >> .env
+
+            # === ChatGuru ===
+            echo "CG_API_KEY=${{ secrets.CG_API_KEY }}" >> .env
+            echo "CG_ACCOUNT_ID=${{ secrets.CG_ACCOUNT_ID }}" >> .env
+            echo "CG_PHONE_ID=${{ secrets.CG_PHONE_ID }}" >> .env
+
+            # === CPFCNPJ ===
+            echo "API_TOKEN_CPFCNPJ=${{ secrets.API_TOKEN_CPFCNPJ }}" >> .env
+            echo "API_URL_CPFCNPJ=${{ secrets.API_URL_CPFCNPJ }}" >> .env
+
+            # === JWT ===
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+
+            # === Documentos ===
+            echo "DOCUMINT_KEY=${{ secrets.DOCUMINT_KEY }}" >> .env
+
+            # === Email ===
+            echo "SENDGRID_KEY=${{ secrets.SENDGRID_KEY }}" >> .env
+            echo "SENDGRID_TEMPLATE_PASSWORD_RECOVERY=${{ secrets.SENDGRID_TEMPLATE_PASSWORD_RECOVERY }}" >> .env
+
+            # === OAuth ===
+            echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> .env
+            echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> .env
+            echo "GRANT_TYPE=${{ secrets.GRANT_TYPE }}" >> .env
+            echo "SCOPE=${{ secrets.SCOPE }}" >> .env
+            echo "ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}" >> .env
+
+            # === AWS S3 ===
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+            echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+            echo "BUCKET_NAME=${{ secrets.BUCKET_NAME }}" >> .env
+
+            # === Airtable ===
+            echo "AIRTABLE_TOKEN=${{ secrets.AIRTABLE_TOKEN }}" >> .env
+            echo "AIRTABLE_BASE_ORDER_ID=${{ secrets.AIRTABLE_BASE_ORDER_ID }}" >> .env
+            echo "AIRTABLE_BASE_ORDERTEXT_ID=${{ secrets.AIRTABLE_BASE_ORDERTEXT_ID }}" >> .env
+            echo "AIRTABLE_BASE_SUPPLIERAPP_ID=${{ secrets.AIRTABLE_BASE_SUPPLIERAPP_ID }}" >> .env
+            echo "AIRTABLE_BASE_REGISTER_ID=${{ secrets.AIRTABLE_BASE_REGISTER_ID }}" >> .env
+            echo "AIRTABLE_TABLE_ORDERTEXT_NAME=${{ secrets.AIRTABLE_TABLE_ORDERTEXT_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_ORDERSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_ORDERSUPPLIERAPP_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_RESTSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_RESTSUPPLIERAPP_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_SUPPLIERSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIERSUPPLIERAPP_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_REGISTER_NAME=${{ secrets.AIRTABLE_TABLE_REGISTER_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_ORDER_NAME=${{ secrets.AIRTABLE_TABLE_ORDER_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_DETAILING_NAME=${{ secrets.AIRTABLE_TABLE_DETAILING_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_SUPPLIER_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIER_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_REST_NAME=${{ secrets.AIRTABLE_TABLE_REST_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_PRODUCT_NAME=${{ secrets.AIRTABLE_TABLE_PRODUCT_NAME }}" >> .env
+            echo "AIRTABLE_BASE_DBCLIENTE_ID=${{ secrets.AIRTABLE_BASE_DBCLIENTE_ID }}" >> .env
+            echo "AIRTABLE_TABLE_DBCLIENTE_NAME=${{ secrets.AIRTABLE_TABLE_DBCLIENTE_NAME }}" >> .env
+            echo "AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}" >> .env
+
+            # === Slack ===
+            echo "SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}" >> .env
+            echo "SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}" >> .env
+
+            # === Outros ===
+            echo "MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}" >> .env
+            echo "MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}" >> .env
+
+            # === Certificados ===
+            echo "CERT=" >> .env
+            write_cert "${{ secrets.CERT }}" >> .env
+
+            echo "KEY=" >> .env
+            write_cert "${{ secrets.KEY }}" >> .env
+
+            # === Ambiente ===
             echo "NODE_ENV=production" >> .env
-
-            # echo "CERT=" >> .env
-            # write_cert "${{ secrets.CERT }}" >> .env
-
-            # echo "KEY=" >> .env
-            # write_cert "${{ secrets.KEY }}" >> .env
-
-            # echo "ITAU_CRT=" >> .env
-            # write_cert "${{ secrets.ITAU_CRT }}" >> .env
-
-            # echo "ITAU_KEY=" >> .env
-            # write_cert "${{ secrets.ITAU_KEY }}" >> .env
-
-            # echo "INTER_CERT=" >> .env
-            # write_cert "${{ secrets.INTER_CERT }}" >> .env
-
-            # echo "INTER_KEY=" >> .env
-            # write_cert "${{ secrets.INTER_KEY }}" >> .env
 
             echo "✅ .env PROD criado com sucesso"
             echo "🐳 Subindo container PROD..."
