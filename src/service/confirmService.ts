@@ -243,10 +243,14 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
 
   await Promise.all([updateOrder({ orderDocument: pdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText)])
 
+  console.log('objeto delete', {
+    token: req.token,
+    selectedRestaurant: []
+  })
   if (shouldDeleteCart) {
     await deleteCartByUser({
       token: req.token,
-      selectedRestaurant: []
+      selectedRestaurant: req.restaurant.restaurant
     })
   }
 
@@ -273,7 +277,7 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 
-${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined, name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
+${cart?.map((cart) => `*${String(cart.amount).replace('.', ',')}x ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).name}* cód. ${items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId).sku}${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`).join(', \n')}
 
 ---------------------------------------
 
@@ -310,7 +314,7 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
 
     await deleteCartByUser({
       token: req.token,
-      selectedRestaurant: []
+      selectedRestaurant: req.restaurant.restaurant
     })
   } catch (err) {
     void logRegister(err)
@@ -340,7 +344,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     }
 
     // Codificar a mensagem
-    const msg = encodeURIComponent(req.message).replace('!', '%21').replace('\'', '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
+    const msg = encodeURIComponent(req.message).replace('!', '%21').replace("'", '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
 
     // Validar e formatar a data/hora agendada
     const [year, month, day] = req.sendDate.split('-').map(Number)
@@ -368,9 +372,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
   }
 }
 
-export const handleConfirmPlus = async (
-  req: confirmOrderPlusRequest
-): Promise<any[]> => {
+export const handleConfirmPlus = async (req: confirmOrderPlusRequest): Promise<any[]> => {
   const { token, suppliers, restaurant } = req
 
   const ordersRequest: confirmOrderRequest[] = suppliers.map((supplier) => ({
