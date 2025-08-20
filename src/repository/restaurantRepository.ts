@@ -388,3 +388,32 @@ export const findRestaurantByRestaurantIdAndSupplierId = async (restaurantExtern
     void logRegister(err)
   }
 }
+
+export const findRestaurantById = async (id: string): Promise<any> => {
+  try {
+    const restaurant = await prisma.restaurant.findFirst({
+      where: { id }
+    })
+
+    if (!restaurant) return null
+
+    const [user, address] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: restaurant.user } }
+      }),
+      prisma.address.findMany({
+        where: { id: { in: restaurant.address } }
+      })
+    ])
+
+    return {
+      ...restaurant,
+      user,
+      address
+    }
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}

@@ -115,4 +115,10 @@ interface DetalhamentoPedido {
   preco_final_conectar: string
 }
 
+export interface confirmOrderPlusRequest {
+  token: string
+  suppliers: Supplier[]
+  restaurant: any
+}
+
 export type PaymentDescriptions = Record<string, string>
