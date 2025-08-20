@@ -157,23 +157,23 @@ jobs:
             echo "MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}" >> .env
 
             # Certificados (com função write_cert)
-            echo "CERT=" >> .env
-            write_cert "${{ secrets.CERT }}" >> .env
+            # echo "CERT=" >> .env
+            # write_cert "${{ secrets.CERT }}" >> .env
 
-            echo "KEY=" >> .env
-            write_cert "${{ secrets.KEY }}" >> .env
+            # echo "KEY=" >> .env
+            # write_cert "${{ secrets.KEY }}" >> .env
 
-            echo "ITAU_CRT=" >> .env
-            write_cert "${{ secrets.ITAU_CRT }}" >> .env
+            # echo "ITAU_CRT=" >> .env
+            # write_cert "${{ secrets.ITAU_CRT }}" >> .env
 
-            echo "ITAU_KEY=" >> .env
-            write_cert "${{ secrets.ITAU_KEY }}" >> .env
+            # echo "ITAU_KEY=" >> .env
+            # write_cert "${{ secrets.ITAU_KEY }}" >> .env
 
-            echo "INTER_CERT=" >> .env
-            write_cert "${{ secrets.INTER_CERT }}" >> .env
+            # echo "INTER_CERT=" >> .env
+            # write_cert "${{ secrets.INTER_CERT }}" >> .env
 
-            echo "INTER_KEY=" >> .env
-            write_cert "${{ secrets.INTER_KEY }}" >> .env
+            # echo "INTER_KEY=" >> .env
+            # write_cert "${{ secrets.INTER_KEY }}" >> .env
 
             echo "NODE_ENV=development" >> .env
 
@@ -206,23 +206,23 @@ jobs:
             # ... (todas as outras variáveis iguais)
             echo "NODE_ENV=production" >> .env
 
-            echo "CERT=" >> .env
-            write_cert "${{ secrets.CERT }}" >> .env
+            # echo "CERT=" >> .env
+            # write_cert "${{ secrets.CERT }}" >> .env
 
-            echo "KEY=" >> .env
-            write_cert "${{ secrets.KEY }}" >> .env
+            # echo "KEY=" >> .env
+            # write_cert "${{ secrets.KEY }}" >> .env
 
-            echo "ITAU_CRT=" >> .env
-            write_cert "${{ secrets.ITAU_CRT }}" >> .env
+            # echo "ITAU_CRT=" >> .env
+            # write_cert "${{ secrets.ITAU_CRT }}" >> .env
 
-            echo "ITAU_KEY=" >> .env
-            write_cert "${{ secrets.ITAU_KEY }}" >> .env
+            # echo "ITAU_KEY=" >> .env
+            # write_cert "${{ secrets.ITAU_KEY }}" >> .env
 
-            echo "INTER_CERT=" >> .env
-            write_cert "${{ secrets.INTER_CERT }}" >> .env
+            # echo "INTER_CERT=" >> .env
+            # write_cert "${{ secrets.INTER_CERT }}" >> .env
 
-            echo "INTER_KEY=" >> .env
-            write_cert "${{ secrets.INTER_KEY }}" >> .env
+            # echo "INTER_KEY=" >> .env
+            # write_cert "${{ secrets.INTER_KEY }}" >> .env
 
             echo "✅ .env PROD criado com sucesso"
             echo "🐳 Subindo container PROD..."
