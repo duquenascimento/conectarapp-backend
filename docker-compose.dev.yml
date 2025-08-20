@@ -8,7 +8,7 @@ services:
     ports:
       - "3334:3334"
     env_file:
-      - .env # Passa as variáveis de ambiente do .env para o container
+      - .env.development # Passa as variáveis de ambiente do .env para o container
     volumes:
       - .:/app # Sincroniza o diretório atual com o container
       - /app/node_modules # Garante que node_modules do container não sobrescreva o host

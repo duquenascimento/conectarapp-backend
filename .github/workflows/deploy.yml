@@ -1,9 +1,8 @@
-# deploy.yml
 name: 🚀 Deploy Automático para EC2
 
 on:
   push:
-    branches: [ "main", "feature/infraestrutura" ]
+    branches: [ "develop", "main" ]
 
 jobs:
   deploy:
@@ -12,63 +11,238 @@ jobs:
       - name: 🔻 Checkout do código
         uses: actions/checkout@v4
 
-      - name: 📤 Enviar arquivos para a EC2
+      - name: 📤 Enviar arquivos para a EC2 (DEV)
+        if: github.ref == 'refs/heads/develop'
         uses: appleboy/scp-action@v0.1.5
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ubuntu  # ✅ Alterado de ec2-user para ubuntu
+          username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/home/ubuntu/app"  # ✅ Diretório do usuário ubuntu
+          target: "/home/ubuntu/app-dev"
           rm: true
 
-      - name: 🛠️ Criar .env na EC2
-        uses: appleboy/ssh-action@v0.1.10
+      - name: 📤 Enviar arquivos para a EC2 (PROD)
+        if: github.ref == 'refs/heads/main'
+        uses: appleboy/scp-action@v0.1.5
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ubuntu  # ✅
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu/app
-            cat > .env << EOF
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=5432
-            DB_USER=${{ secrets.DB_USER }}
-            DB_PASS=${{ secrets.DB_PASS }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            ASAAS_API_URL=${{ secrets.ASAAS_API_URL }}
-            ASAAS_API_KEY=${{ secrets.ASAAS_API_KEY }}
-            ASAAS_CONECTAR_WALLET_ID=${{ secrets.ASAAS_CONECTAR_WALLET_ID }}
-            VALOR_MULTA=${{ secrets.VALOR_MULTA }}
-            VALOR_JUROS=${{ secrets.VALOR_JUROS }}
-            PERCENTUAL_SPLIT=${{ secrets.PERCENTUAL_SPLIT }}
-            NODE_ENV=production
-            EOF
-            echo "✅ .env criado com DB_HOST=${{ secrets.DB_HOST }}"
-            cat .env
-
-      - name: 🐳 Deploy com Docker Compose
-        uses: appleboy/ssh-action@v0.1.10
-        with:
           username: ubuntu
-          target: /home/ubuntu/app-prod  # ou /home/ubuntu/app-dev
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /home/ubuntu/app
-            echo "🛑 Parando container antigo..."
-            docker-compose down || true
-            echo "🛠️  Construindo e subindo API..."
-            docker-compose up -d --build
-            echo "📋 Logs do container:"
-            docker logs api-pagamentos
+          source: "."
+          target: "/home/ubuntu/app-prod"
+          rm: true
 
-      - name: 🌐 Testar conectividade com o RDS
+      - name: 🛠️ Criar .env na EC2 (DEV)
+        if: github.ref == 'refs/heads/develop'
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.SSH_HOST }}
-          username: ubuntu  # ✅
+          username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            echo "🔍 Testando conexão com o RDS..."
-            sudo apt update && sudo apt install -y ncdu --assume-yes
-            nc -zv ${{ secrets.DB_HOST }} 5432 || echo "⚠️ Falha na conexão com o banco"
+            cd /home/ubuntu/app-dev
+            echo "🔧 Criando .env para DEV..."
+            cat > .env << EOF
+            # Banco de dados
+            DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
+            HOST=localhost
+            PORT=3334
+
+            # Integrações
+            API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
+            API_MOTOR_COTACAO=${{ secrets.API_MOTOR_COTACAO }}
+            URL_API_ANTIGA=${{ secrets.URL_API_ANTIGA }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            EXTERNAL_ID=${{ secrets.EXTERNAL_ID }}
+            USERNAME=${{ secrets.USERNAME }}
+            SYSTEM_USER_PASS=${{ secrets.SYSTEM_USER_PASS }}
+            AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}
+
+            # ChatGuru
+            CG_API_KEY=${{ secrets.CG_API_KEY }}
+            CG_ACCOUNT_ID=${{ secrets.CG_ACCOUNT_ID }}
+            CG_PHONE_ID=${{ secrets.CG_PHONE_ID }}
+
+            # CPFCNPJ
+            API_TOKEN_CPFCNPJ=${{ secrets.API_TOKEN_CPFCNPJ }}
+            API_URL_CPFCNPJ=${{ secrets.API_URL_CPFCNPJ }}
+
+            # JWT
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+
+            # Documentos
+            DOCUMINT_KEY=${{ secrets.DOCUMINT_KEY }}
+
+            # Email
+            SENDGRID_KEY=${{ secrets.SENDGRID_KEY }}
+            SENDGRID_TEMPLATE_PASSWORD_RECOVERY=${{ secrets.SENDGRID_TEMPLATE_PASSWORD_RECOVERY }}
+
+            # OAuth
+            CLIENT_ID=${{ secrets.CLIENT_ID }}
+            CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+            GRANT_TYPE=${{ secrets.GRANT_TYPE }}
+            SCOPE=${{ secrets.SCOPE }}
+            ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}
+
+            # Pix Itaú
+            ITAU_PIX_KEY=${{ secrets.ITAU_PIX_KEY }}
+            ITAU_CLIENT_ID=${{ secrets.ITAU_CLIENT_ID }}
+            ITAU_AGENCY_ID=${{ secrets.ITAU_AGENCY_ID }}
+            ITAU_ACCOUNT_ID=${{ secrets.ITAU_ACCOUNT_ID }}
+            ITAU_TOKEN=${{ secrets.ITAU_TOKEN }}
+            ITAU_SECRET=${{ secrets.ITAU_SECRET }}
+            ITAU_ETAPA=${{ secrets.ITAU_ETAPA }}
+
+            # AWS S3
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            BUCKET_NAME=${{ secrets.BUCKET_NAME }}
+
+            # Airtable
+            AIRTABLE_TOKEN=${{ secrets.AIRTABLE_TOKEN }}
+            AIRTABLE_BASE_ORDER_ID=${{ secrets.AIRTABLE_BASE_ORDER_ID }}
+            AIRTABLE_BASE_ORDERTEXT_ID=${{ secrets.AIRTABLE_BASE_ORDERTEXT_ID }}
+            AIRTABLE_BASE_SUPPLIERAPP_ID=${{ secrets.AIRTABLE_BASE_SUPPLIERAPP_ID }}
+            AIRTABLE_BASE_REGISTER_ID=${{ secrets.AIRTABLE_BASE_REGISTER_ID }}
+            AIRTABLE_TABLE_ORDERTEXT_NAME=${{ secrets.AIRTABLE_TABLE_ORDERTEXT_NAME }}
+            AIRTABLE_TABLE_ORDERSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_ORDERSUPPLIERAPP_NAME }}
+            AIRTABLE_TABLE_RESTSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_RESTSUPPLIERAPP_NAME }}
+            AIRTABLE_TABLE_SUPPLIERSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIERSUPPLIERAPP_NAME }}
+            AIRTABLE_TABLE_REGISTER_NAME=${{ secrets.AIRTABLE_TABLE_REGISTER_NAME }}
+            AIRTABLE_TABLE_ORDER_NAME=${{ secrets.AIRTABLE_TABLE_ORDER_NAME }}
+            AIRTABLE_TABLE_DETAILING_NAME=${{ secrets.AIRTABLE_TABLE_DETAILING_NAME }}
+            AIRTABLE_TABLE_SUPPLIER_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIER_NAME }}
+            AIRTABLE_TABLE_REST_NAME=${{ secrets.AIRTABLE_TABLE_REST_NAME }}
+            AIRTABLE_TABLE_PRODUCT_NAME=${{ secrets.AIRTABLE_TABLE_PRODUCT_NAME }}
+            AIRTABLE_BASE_DBCLIENTE_ID=${{ secrets.AIRTABLE_BASE_DBCLIENTE_ID }}
+            AIRTABLE_TABLE_DBCLIENTE_NAME=${{ secrets.AIRTABLE_TABLE_DBCLIENTE_NAME }}
+            AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}
+
+            # Inter
+            INTER_CLIENT_ID=${{ secrets.INTER_CLIENT_ID }}
+            INTER_CLIENT_SECRET=${{ secrets.INTER_CLIENT_SECRET }}
+            INTER_GRANT_TYPE=${{ secrets.INTER_GRANT_TYPE }}
+            INTER_SCOPE=${{ secrets.INTER_SCOPE }}
+            INTER_ACCOUNT_NUMBER=${{ secrets.INTER_ACCOUNT_NUMBER }}
+            INTER_PIX_KEY=${{ secrets.INTER_PIX_KEY }}
+            INTER_HOST=${{ secrets.INTER_HOST }}
+            INTER_PATH_AUTH=${{ secrets.INTER_PATH_AUTH }}
+            INTER_PATH_GENERATE_BOLECODE=${{ secrets.INTER_PATH_GENERATE_BOLECODE }}
+            INTER_PATH_GENERATE_SIMPLE_PIX=${{ secrets.INTER_PATH_GENERATE_SIMPLE_PIX }}
+            INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX=${{ secrets.INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX }}
+            INTER_PATH_WEBHOOK=${{ secrets.INTER_PATH_WEBHOOK }}
+            INTER_PIX_TIMEOUT=${{ secrets.INTER_PIX_TIMEOUT }}
+            SECONDS_TO_REJECT_BOLECODE_PROMISE=${{ secrets.SECONDS_TO_REJECT_BOLECODE_PROMISE }}
+            BANK_CLIENT=${{ secrets.BANK_CLIENT }}
+
+            # Slack
+            SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}
+            SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}
+
+            # Outros
+            MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}
+            MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}
+
+            # Certificados (reconstruídos com \n → quebra de linha)
+            CERT='$(echo "${{ secrets.CERT }}" | sed 's/\\n/\n/g')'
+            KEY='$(echo "${{ secrets.KEY }}" | sed 's/\\n/\n/g')'
+            ITAU_CRT='$(echo "${{ secrets.ITAU_CRT }}" | sed 's/\\n/\n/g')'
+            ITAU_KEY='$(echo "${{ secrets.ITAU_KEY }}" | sed 's/\\n/\n/g')'
+            INTER_CERT='$(echo "${{ secrets.INTER_CERT }}" | sed 's/\\n/\n/g')'
+            INTER_KEY='$(echo "${{ secrets.INTER_KEY }}" | sed 's/\\n/\n/g')'
+
+            # Ambiente
+            NODE_ENV=development
+            EOF
+
+            echo "✅ .env DEV criado"
+            echo "🐳 Subindo container DEV..."
+            docker-compose -f docker-compose.dev.yml down || true
+            docker-compose -f docker-compose.dev.yml up -d --build
+            echo "📋 Logs do container DEV:"
+            docker logs api-dev
+
+      - name: 🛠️ Criar .env na EC2 (PROD)
+        if: github.ref == 'refs/heads/main'
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app-prod
+            echo "🔧 Criando .env para PROD..."
+            cat > .env << EOF
+            # Banco de dados
+            DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}
+            HOST=localhost
+            PORT=3333
+
+            # Integrações
+            API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
+            API_MOTOR_COTACAO=${{ secrets.API_MOTOR_COTACAO }}
+            URL_API_ANTIGA=${{ secrets.URL_API_ANTIGA }}
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            EXTERNAL_ID=${{ secrets.EXTERNAL_ID }}
+            USERNAME=${{ secrets.USERNAME }}
+            SYSTEM_USER_PASS=${{ secrets.SYSTEM_USER_PASS }}
+            AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}
+
+            # ChatGuru
+            CG_API_KEY=${{ secrets.CG_API_KEY }}
+            CG_ACCOUNT_ID=${{ secrets.CG_ACCOUNT_ID }}
+            CG_PHONE_ID=${{ secrets.CG_PHONE_ID }}
+
+            # CPFCNPJ
+            API_TOKEN_CPFCNPJ=${{ secrets.API_TOKEN_CPFCNPJ }}
+            API_URL_CPFCNPJ=${{ secrets.API_URL_CPFCNPJ }}
+
+            # JWT
+            JWT_SECRET=${{ secrets.JWT_SECRET }}
+
+            # Documentos
+            DOCUMINT_KEY=${{ secrets.DOCUMINT_KEY }}
+
+            # Email
+            SENDGRID_KEY=${{ secrets.SENDGRID_KEY }}
+            SENDGRID_TEMPLATE_PASSWORD_RECOVERY=${{ secrets.SENDGRID_TEMPLATE_PASSWORD_RECOVERY }}
+
+            # OAuth
+            CLIENT_ID=${{ secrets.CLIENT_ID }}
+            CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
+            GRANT_TYPE=${{ secrets.GRANT_TYPE }}
+            SCOPE=${{ secrets.SCOPE }}
+            ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}
+
+            # Pix Itaú
+            ITAU_PIX_KEY=${{ secrets.ITAU_PIX_KEY }}
+            ITAU_CLIENT_ID=${{ secrets.ITAU_CLIENT_ID }}
+            ITAU_AGENCY_ID=${{ secrets.ITAU_AGENCY_ID }}
+            ITAU_ACCOUNT_ID=${{ secrets.ITAU_ACCOUNT_ID }}
+            ITAU_TOKEN=${{ secrets.ITAU_TOKEN }}
+            ITAU_SECRET=${{ secrets.ITAU_SECRET }}
+            ITAU_ETAPA=${{ secrets.ITAU_ETAPA }}
+
+            # AWS S3
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            BUCKET_NAME=${{ secrets.BUCKET_NAME }}
+
+            # Airtable
+            AIRTABLE_TOKEN=${{ secrets.AIRTABLE_TOKEN }}
+            AIRTABLE_BASE_ORDER_ID=${{ secrets.AIRTABLE_BASE_ORDER_ID }}
+            AIRTABLE_BASE_ORDERTEXT_ID=${{ secrets.AIRTABLE_BASE_ORDERTEXT_ID }}
+            AIRTABLE_BASE_SUPPLIERAPP_ID=${{ secrets.AIRTABLE_BASE_SUPPLIERAPP_ID }}
+            AIRTABLE_BASE_REGISTER_ID=${{ secrets.AIRTABLE_BASE_REGISTER_ID }}
+            AIRTABLE_TABLE_ORDERTEXT_NAME=${{ secrets.AIRTABLE_TABLE_ORDERTEXT_NAME }}
+            AIRTABLE_TABLE_ORDERSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_ORDERSUPPLIERAPP_NAME }}
+            AIRTABLE_TABLE_RESTSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_RESTSUPPLIERAPP_NAME }}
+            AIRTABLE_TABLE_SUPPLIERSUPPLIERAPP_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIERSUPPLIERAPP_NAME }}
+            AIRTABLE_TABLE_REGISTER_NAME=${{ secrets.AIRTABLE_TABLE_REGISTER_NAME }}
+            AIRTABLE_TABLE_ORDER_NAME=${{ secrets.AIRTABLE_TABLE_ORDER_NAME }}
+            AIRTABLE_TABLE_DETAILING_NAME=${{ secrets.AIRTABLE_TABLE_DETAILING_NAME }}
+            AIRTABLE_TABLE_SUPPLIER_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIER_NAME }}
+            AIRTABLE_TABLE_REST_NAME=${{ secrets.AIRTABLE

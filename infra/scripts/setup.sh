@@ -31,7 +31,7 @@ systemctl enable nginx
 cat > /etc/nginx/sites-available/default << 'EOF'
 server {
     listen 80;
-    server_name dev-api-appconectar.conectarhortifruti.com.br;
+    server_name api-appconectar.conectarhortifruti.com.br;
 
     location / {
         proxy_pass http://127.0.0.1:3333;
@@ -48,7 +48,7 @@ server {
 
 server {
     listen 80;
-    server_name api-appconectar.conectarhortifruti.com.br;
+    server_name dev.api-appconectar.conectarhortifruti.com.br;
 
     location / {
         proxy_pass http://127.0.0.1:3334;
