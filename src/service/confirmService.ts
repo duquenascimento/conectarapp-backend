@@ -243,10 +243,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
 
   await Promise.all([updateOrder({ orderDocument: pdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText)])
 
-  console.log('objeto delete', {
-    token: req.token,
-    selectedRestaurant: []
-  })
   if (shouldDeleteCart) {
     await deleteCartByUser({
       token: req.token,
