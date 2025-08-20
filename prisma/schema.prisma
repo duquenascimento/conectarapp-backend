@@ -150,6 +150,7 @@ model order {
   status              status         @relation(fields: [status_id], references: [id])
   transactions        transactions[]
   orderInvoices       order_invoice?
+  orderTextGuru       String?        @db.VarChar(2000)
 }
 
 model detailing {
