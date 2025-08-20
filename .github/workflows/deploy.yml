@@ -47,7 +47,7 @@ jobs:
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
             HOST=localhost
-            PORT=3334
+            PORT=9841
 
             # Integrações
             API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
@@ -178,7 +178,7 @@ jobs:
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}
             HOST=localhost
-            PORT=3333
+            PORT=9841
 
             # Integrações
             API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
@@ -245,4 +245,52 @@ jobs:
             AIRTABLE_TABLE_ORDER_NAME=${{ secrets.AIRTABLE_TABLE_ORDER_NAME }}
             AIRTABLE_TABLE_DETAILING_NAME=${{ secrets.AIRTABLE_TABLE_DETAILING_NAME }}
             AIRTABLE_TABLE_SUPPLIER_NAME=${{ secrets.AIRTABLE_TABLE_SUPPLIER_NAME }}
-            AIRTABLE_TABLE_REST_NAME=${{ secrets.AIRTABLE
+            AIRTABLE_TABLE_REST_NAME=${{ secrets.AIRTABLE_TABLE_REST_NAME }}
+            AIRTABLE_TABLE_PRODUCT_NAME=${{ secrets.AIRTABLE_TABLE_PRODUCT_NAME }}
+            AIRTABLE_BASE_DBCLIENTE_ID=${{ secrets.AIRTABLE_BASE_DBCLIENTE_ID }}
+            AIRTABLE_TABLE_DBCLIENTE_NAME=${{ secrets.AIRTABLE_TABLE_DBCLIENTE_NAME }}
+            AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}
+
+            # Inter
+            INTER_CLIENT_ID=${{ secrets.INTER_CLIENT_ID }}
+            INTER_CLIENT_SECRET=${{ secrets.INTER_CLIENT_SECRET }}
+            INTER_GRANT_TYPE=${{ secrets.INTER_GRANT_TYPE }}
+            INTER_SCOPE=${{ secrets.INTER_SCOPE }}
+            INTER_ACCOUNT_NUMBER=${{ secrets.INTER_ACCOUNT_NUMBER }}
+            INTER_PIX_KEY=${{ secrets.INTER_PIX_KEY }}
+            INTER_HOST=${{ secrets.INTER_HOST }}
+            INTER_PATH_AUTH=${{ secrets.INTER_PATH_AUTH }}
+            INTER_PATH_GENERATE_BOLECODE=${{ secrets.INTER_PATH_GENERATE_BOLECODE }}
+            INTER_PATH_GENERATE_SIMPLE_PIX=${{ secrets.INTER_PATH_GENERATE_SIMPLE_PIX }}
+            INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX=${{ secrets.INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX }}
+            INTER_PATH_WEBHOOK=${{ secrets.INTER_PATH_WEBHOOK }}
+            INTER_PIX_TIMEOUT=${{ secrets.INTER_PIX_TIMEOUT }}
+            SECONDS_TO_REJECT_BOLECODE_PROMISE=${{ secrets.SECONDS_TO_REJECT_BOLECODE_PROMISE }}
+            BANK_CLIENT=${{ secrets.BANK_CLIENT }}
+
+            # Slack
+            SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}
+            SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}
+
+            # Outros
+            MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}
+            MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}
+
+            # Certificados
+            CERT='$(echo "${{ secrets.CERT }}" | sed 's/\\n/\n/g')'
+            KEY='$(echo "${{ secrets.KEY }}" | sed 's/\\n/\n/g')'
+            ITAU_CRT='$(echo "${{ secrets.ITAU_CRT }}" | sed 's/\\n/\n/g')'
+            ITAU_KEY='$(echo "${{ secrets.ITAU_KEY }}" | sed 's/\\n/\n/g')'
+            INTER_CERT='$(echo "${{ secrets.INTER_CERT }}" | sed 's/\\n/\n/g')'
+            INTER_KEY='$(echo "${{ secrets.INTER_KEY }}" | sed 's/\\n/\n/g')'
+
+            # Ambiente
+            NODE_ENV=production
+            EOF
+
+            echo "✅ .env PROD criado"
+            echo "🐳 Subindo container PROD..."
+            docker-compose -f docker-compose.prod.yml down || true
+            docker-compose -f docker-compose.prod.yml up -d --build
+            echo "📋 Logs do container PROD:"
+            docker logs api-prod
