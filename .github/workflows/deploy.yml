@@ -42,7 +42,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/app-dev
-            cat > .env << EOF
+            cat > .env.development << EOF
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
             HOST=0.0.0.0
@@ -124,8 +124,8 @@ jobs:
             # Ambiente
             NODE_ENV=development
             EOF
-            echo "✅ .env DEV criado com sucesso"
-            cat .env
+            echo "✅ .env.development DEV criado com sucesso"
+            cat .env.development
 
       - name: 🛠️ Criar .env na EC2 (PROD)
         if: github.ref == 'refs/heads/main'
