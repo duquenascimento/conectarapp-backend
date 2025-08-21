@@ -2,7 +2,7 @@ import Joi from 'joi'
 
 const acaoNaFalhaEnum = Joi.string().valid('ignorar', 'indisponivel')
 const tipoProdutoEnum = Joi.string().valid('fixar', 'remover')
-const tipoFornecedorEnum = Joi.string().valid('qualquer', 'melhor_avaliado', 'especifico')
+const tipoFornecedorEnum = Joi.string().valid('qualquer', 'especifico')
 
 const produtoPreferenciaSchema = Joi.object({
   produto_sku: Joi.string().min(1).optional(),

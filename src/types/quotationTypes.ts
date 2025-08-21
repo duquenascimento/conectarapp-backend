@@ -6,8 +6,8 @@ export interface ProdutoCesta {
 }
 
 interface ProdutoFornecedor {
-  productId?: string
   price?: number
+  productId?: string
 }
 
 interface Discount {
