@@ -241,7 +241,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     order.orderDocument = pdfUrl
   }
 
-  await Promise.all([updateOrder({ orderDocument: pdfUrl }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText)])
+  await Promise.all([updateOrder({ orderDocument: pdfUrl, orderTextGuru: orderText }, orderId), addDetailing(detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)), airtableHandler(order, detailing, yourNumber, orderText)])
 
   if (shouldDeleteCart) {
     await deleteCartByUser({
@@ -308,6 +308,8 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
       orderId
     })
 
+    await updateOrder({ orderTextGuru: orderText }, orderId)
+
     await deleteCartByUser({
       token: req.token,
       selectedRestaurant: []
@@ -368,9 +370,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
   }
 }
 
-export const handleConfirmPlus = async (
-  req: confirmOrderPlusRequest
-): Promise<any[]> => {
+export const handleConfirmPlus = async (req: confirmOrderPlusRequest): Promise<any[]> => {
   const { token, suppliers, restaurant } = req
 
   const ordersRequest: confirmOrderRequest[] = suppliers.map((supplier) => ({
