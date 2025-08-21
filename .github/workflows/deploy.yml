@@ -44,7 +44,7 @@ jobs:
             cd /home/ubuntu/app-dev
             cat > .env.development << EOF
             # Banco de dados
-            DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
             HOST=0.0.0.0
             PORT=3334
             LOG_PATH=../log.txt
@@ -138,7 +138,7 @@ jobs:
             cd /home/ubuntu/app-prod
             cat > .env << EOF
             # Banco de dados
-            DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
             HOST=0.0.0.0
             PORT=3333
             LOG_PATH=../log.txt
