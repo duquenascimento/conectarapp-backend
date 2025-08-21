@@ -5,6 +5,7 @@ import { type IRestaurant } from '../service/restaurantService'
 import { type addressFormData } from '../service/registerService'
 import { v4 as uuidv4 } from 'uuid'
 import { HttpException } from '../errors/httpException'
+import { authorizedPremiumRestautants } from '../utils/restaurantUtils'
 
 const prisma = new PrismaClient()
 
@@ -416,4 +417,12 @@ export const findRestaurantById = async (id: string): Promise<any> => {
   } finally {
     await prisma.$disconnect()
   }
+}
+
+export const findAuthorizedPremiumRestaurant = async (externalId: string): Promise<{ authorized: boolean }> => {
+  const authorizedRestaurants = authorizedPremiumRestautants()
+  if (authorizedRestaurants.includes(externalId)) {
+    return { authorized: true }
+  }
+  return { authorized: false }
 }

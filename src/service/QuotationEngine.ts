@@ -1,5 +1,5 @@
 import { findRestaurantById } from '../repository/restaurantRepository'
-import { cestaProdutos, fornecedoresCotacaoPremium, solveCombinations } from '../utils/premiumCestaProdutos'
+import { cestaProdutos, solveCombinations } from '../utils/premiumCestaProdutos'
 import { type ICartResponse } from './cartService'
 import { HttpException } from '../errors/httpException'
 export interface CotacaoData {
