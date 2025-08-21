@@ -13,7 +13,7 @@ services:
     #  - .:/app # Sincroniza o diretório atual com o container
     #  - /app/node_modules # Garante que node_modules do container não sobrescreva o host
  
-    command: npm run dev # Usa o script "dev" do package.json para iniciar
+    command: npm start # Usa o script "dev" do package.json para iniciar
     stdin_open: true # Mantém o terminal ativo para testes e logs
     tty: true # Permite executar interativamente
  
