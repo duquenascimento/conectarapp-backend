@@ -68,6 +68,9 @@ export interface RestaurantFormData {
   localType: string
   city: string
   inviteCode?: string
+  emailBilling: string
+  financeResponsibleName: string
+  financeResponsiblePhoneNumber: string
 }
 
 export interface addressFormData {
@@ -130,7 +133,10 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'E-mail para comunicados': req.email,
       'Código Promotor': req.inviteCode ?? '',
       'Quantas vezes em média na semana você faz pedidos?': req.weeklyOrderAmount,
-      'Cadastrado por': 'App'
+      'Cadastrado por': 'App',
+      'Nome responsável financeiro': req.financeResponsibleName,
+      'Telefone do responsável financeiro com DDD': req.financeResponsiblePhoneNumber,
+      'E-mail financeiro para envio de cobranças': req.emailBilling
     })
 
     if (!airtableRecord || typeof airtableRecord !== 'object' || !('fields' in airtableRecord)) {
@@ -156,7 +162,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       neigh: req.neigh,
       street: req.street,
       zipcode: req.zipcode,
-      restaurantId: [restaurantId], 
+      restaurantId: [restaurantId],
       responsibleReceivingName: req.responsibleReceivingName,
       responsibleReceivingPhoneNumber: req.responsibleReceivingPhoneNumber,
       localType: req.localType,
@@ -187,7 +193,11 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       address: [addressId],
       favorite: [],
       paymentWay: req.paymentWay,
-      premium: Number(req.orderValue) >= 400
+      premium: Number(req.orderValue) >= 400,
+      registrationReleasedNewApp: true,
+      emailBilling: req.emailBilling,
+      financeResponsibleName: req.financeResponsibleName,
+      financeResponsiblePhoneNumber: req.financeResponsiblePhoneNumber
     }
 
     await createRestaurant(restData)
@@ -195,11 +205,11 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
 
     await updateUserWithRestaurant(decoded.id, restaurantId, DateTime.now().setZone('America/Sao_Paulo').toJSDate())
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
 
-function capitalizeWithExceptions (text: string): string {
+function capitalizeWithExceptions(text: string): string {
   const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
 
   return text

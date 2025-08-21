@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -17,6 +11,9 @@ model user {
   id         String    @id @db.Uuid
   email      String    @unique @db.VarChar(256)
   password   String?   @db.VarChar(60)
+  name       String?   @db.VarChar(60)
+  phone      String?
+  position   String?
   active     Boolean
   restaurant String[]  @db.Uuid
   role       String[]  @db.VarChar(500)
@@ -25,37 +22,57 @@ model user {
 }
 
 model restaurant {
-  id                                  String         @id @db.Uuid
-  externalId                          String         @db.VarChar(10)
-  name                                String         @db.VarChar(200)
-  legalName                           String         @db.VarChar()
+  id                                  String                @id @db.Uuid
+  externalId                          String                @unique @db.VarChar(10)
+  name                                String                @db.VarChar(200)
+  legalName                           String                @db.VarChar()
   active                              Boolean
-  phone                               String
+  phone                               String?
   alternativePhone                    String
   email                               String
   alternativeEmail                    String
-  user                                String[]       @db.Uuid
-  address                             String[]       @db.Uuid
-  closeDoor                           Boolean        @db.Boolean
-  favorite                            String[]       @db.Uuid
-  weeklyOrderAmount                   Int            @db.SmallInt
-  orderValue                          Decimal        @db.Decimal(10, 2)
-  companyRegistrationNumber           String         @db.VarChar(14)
-  companyRegistrationNumberForBilling String         @db.VarChar(14)
-  stateRegistrationNumber             String?        @db.VarChar()
-  cityRegistrationNumber              String?        @db.VarChar()
-  createdAt                           DateTime       @db.Date
-  updatedAt                           DateTime?      @db.Date
-  tax                                 Decimal        @default(4.1666) @db.Decimal(10, 6)
-  paymentWay                          String         @db.VarChar(200)
-  verduraKg                           Boolean?       @db.Boolean
-  premium                             Boolean        @default(false) @db.Boolean
-  comercialBlock                      Boolean        @default(true) @db.Boolean
-  financeBlock                        Boolean        @default(false) @db.Boolean
+  emailBilling                        String?
+  financeResponsibleName              String?
+  financeResponsiblePhoneNumber       String?
+  user                                String[]              @db.Uuid
+  address                             String[]              @db.Uuid
+  closeDoor                           Boolean               @db.Boolean
+  favorite                            String[]              @db.Uuid
+  weeklyOrderAmount                   Int                   @db.SmallInt
+  orderValue                          Decimal               @db.Decimal(10, 2)
+  companyRegistrationNumber           String                @db.VarChar(14)
+  companyRegistrationNumberForBilling String                @db.VarChar(14)
+  stateRegistrationNumber             String?               @db.VarChar()
+  cityRegistrationNumber              String?               @db.VarChar()
+  createdAt                           DateTime              @db.Date
+  updatedAt                           DateTime?             @db.Date
+  tax                                 Decimal               @default(4.1666) @db.Decimal(10, 6)
+  paymentWay                          String                @db.VarChar(200)
+  verduraKg                           Boolean?              @db.Boolean
+  premium                             Boolean               @default(false) @db.Boolean
+  comercialBlock                      Boolean               @default(true) @db.Boolean
+  financeBlock                        Boolean               @default(false) @db.Boolean
   transactions                        transactions[]
-  allowClosedSupplier                 Boolean        @default(false)
-  allowMinimumOrder                   Boolean        @default(false)
+  allowClosedSupplier                 Boolean               @default(false)
+  allowMinimumOrder                   Boolean               @default(false)
+  registrationReleasedNewApp          Boolean               @default(true) @db.Boolean
   categories                          String[]
+  blockedBySuppliers                  String[]              @db.VarChar(10)
+  appVersion                          appVersion?           @relation("RestaurantAppVersion")
+  asaasCustomerId                     String?               @db.VarChar(50)
+  restaurant_supplier                 restaurant_supplier[]
+}
+
+model appVersion {
+  id                String     @id @default(uuid()) @db.Uuid
+  externalId        String     @unique @db.VarChar(10)
+  OperationalSystem String
+  version           String     @db.VarChar(10)
+  statusId          Int?
+  createdAt         DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime   @updatedAt @db.Timestamptz(3)
+  restaurant        restaurant @relation("RestaurantAppVersion", fields: [externalId], references: [externalId])
+  status            status?    @relation(fields: [statusId], references: [id])
 }
 
 model Categories {
@@ -79,23 +96,26 @@ model address {
   finalDeliveryTime               DateTime  @db.Time(6)
   deliveryInformation             String    @db.VarChar(500)
   closedDoorDelivery              Boolean
-  responsibleReceivingName        String    @db.VarChar(200)
-  responsibleReceivingPhoneNumber String    @db.VarChar(50)
+  responsibleReceivingName        String?   @db.VarChar(200)
+  responsibleReceivingPhoneNumber String?   @db.VarChar(50)
   zipCode                         String    @db.VarChar(10)
   deliveryReference               String    @db.VarChar(500)
   createdAt                       DateTime  @db.Date
   updatedAt                       DateTime? @db.Date
-  localType                       String?   @db.VarChar(200)
-  localNumber                     String?   @db.VarChar(25)
   city                            String?   @db.VarChar(200)
   complement                      String?   @db.VarChar(200)
+  localNumber                     String?   @db.VarChar(25)
+  localType                       String?   @db.VarChar(200)
 }
 
 model favorite {
-  id           String  @id @db.Uuid
-  obs          String? @db.VarChar(200)
-  productId    String  @db.Uuid
-  restaurantId String  @db.Uuid
+  id           String    @id @db.Uuid
+  productId    String    @db.Uuid
+  restaurantId String    @db.Uuid
+  obs          String?   @db.VarChar(200)
+  status       Int       @default(4)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime? @updatedAt @db.Timestamptz(3)
 }
 
 model cart {
@@ -105,6 +125,7 @@ model cart {
   amount       Decimal @db.Decimal(10, 3)
   restaurantId String  @db.Uuid
   version      Int     @default(0)
+  addOrder     Int?    @default(0)
 }
 
 model order {
@@ -120,13 +141,13 @@ model order {
   finalDeliveryTime   DateTime       @db.Time(6)
   totalSupplier       Decimal        @db.Decimal(10, 2)
   totalConectar       Decimal        @db.Decimal(10, 2)
-  status_id           Int            @default(4)
-  status              status         @relation(fields: [status_id], references: [id])
   detailing           String[]       @db.VarChar(50)
   tax                 Decimal        @db.Decimal(10, 5)
   supplierId          String         @db.VarChar(50)
   calcOrderAgain      Json           @db.Json
   orderDocument       String?        @db.VarChar(1000)
+  status_id           Int            @default(4)
+  status              status         @relation(fields: [status_id], references: [id])
   transactions        transactions[]
   orderInvoices       order_invoice?
 }
@@ -161,64 +182,62 @@ model premiumOrder {
   orderText    String
   cart         Json     @db.Json
   restaurantId String   @db.Uuid
+  orderId      String?  @db.VarChar(50)
 }
 
 model transactions {
   id                   Int               @id @default(autoincrement())
   restaurant_id        String            @db.Uuid
-  restaurant           restaurant        @relation(fields: [restaurant_id], references: [id])
   transactions_type_id Int
-  transactions_type    transactions_type @relation(fields: [transactions_type_id], references: [id])
   order_id             String
-  order                order             @relation(fields: [order_id], references: [id])
   payment_ways_id      Int
-  payment_ways         payment_ways      @relation(fields: [payment_ways_id], references: [id])
   value                Decimal           @db.Decimal(10, 2)
   value_paid           Decimal?          @db.Decimal(10, 2)
   payment_date         DateTime?         @db.Timestamptz(3)
   status_id            Int
-  status               status            @relation(fields: [status_id], references: [id])
   createdAt            DateTime          @default(now()) @db.Timestamptz(3)
   updatedAt            DateTime?         @updatedAt @db.Timestamptz(3)
   bolecode             bolecode[]
+  order                order             @relation(fields: [order_id], references: [id])
+  payment_ways         payment_ways      @relation(fields: [payment_ways_id], references: [id])
+  restaurant           restaurant        @relation(fields: [restaurant_id], references: [id])
+  status               status            @relation(fields: [status_id], references: [id])
+  transactions_type    transactions_type @relation(fields: [transactions_type_id], references: [id])
 }
 
 model transactions_type {
   id           Int            @id @default(autoincrement())
   description  String
-  transactions transactions[]
   createdAt    DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
+  transactions transactions[]
 }
 
 model payment_ways {
   id           Int            @id @default(autoincrement())
   description  String
-  transactions transactions[]
   createdAt    DateTime       @default(now()) @db.Timestamptz(3)
   updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
+  transactions transactions[]
 }
 
 model status {
-  id           Int            @id @default(autoincrement())
-  description  String
-  transactions transactions[]
-  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
-  bolecode     bolecode[]
-
-  order order[]
-
+  id            Int             @id @default(autoincrement())
+  description   String
+  createdAt     DateTime        @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime?       @updatedAt @db.Timestamptz(3)
+  bolecode      bolecode[]
+  order         order[]
   order_invoice order_invoice[]
+  transactions  transactions[]
+  appVersion    appVersion[]
 }
 
 model bolecode {
   id                     Int          @id @default(autoincrement())
   transactions_id        Int
-  transactions           transactions @relation(fields: [transactions_id], references: [id])
   public_id              String?      @db.VarChar(10)
   status_id              Int
-  status                 status       @relation(fields: [status_id], references: [id])
   status_updatedAt       DateTime?    @db.Timestamptz(3)
   codebar                String?
   digitable_line         String?
@@ -229,9 +248,11 @@ model bolecode {
   payer_gateway_id       String?
   store_gateway_id       String?
   application_gateway_id String?
-  bolecode_id            String?
   createdAt              DateTime     @default(now()) @db.Timestamptz(3)
   updatedAt              DateTime?    @updatedAt @db.Timestamptz(3)
+  bolecode_id            String?
+  status                 status       @relation(fields: [status_id], references: [id])
+  transactions           transactions @relation(fields: [transactions_id], references: [id])
 }
 
 model companies {
@@ -276,11 +297,55 @@ model companies {
 
 model order_invoice {
   id        String   @id @default(cuid()) @db.VarChar(50)
-  orderId   String   @unique
-  filePath  String[] @db.VarChar(255)
-  status_id Int
-  status    status   @relation(fields: [status_id], references: [id])
+  orderId   String   @unique @db.VarChar(50)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  filePath  String[] @db.VarChar(255)
+  status_id Int
+  premium   Boolean  @default(false)
+  status    status   @relation(fields: [status_id], references: [id])
   order     order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model file_log {
+  id         String    @id @db.VarChar(50)
+  fileUrl    String    @db.VarChar(255)
+  entity     String    @db.VarChar(100)
+  entityId   String?   @db.VarChar(100)
+  message    String?
+  status     LogStatus @default(SUCCESS)
+  httpStatus Int?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+}
+
+model supplier {
+  id                  String                @id @db.Uuid
+  externalId          String                @unique @db.VarChar(50)
+  name                String                @db.VarChar(255)
+  email               String                @db.VarChar(255)
+  phone               String?               @db.VarChar(50)
+  asaasApiToken       String                @db.VarChar(255)
+  asaasWalletId       String                @db.VarChar(255)
+  createdAt           DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime              @updatedAt @db.Timestamptz(3)
+  restaurant_supplier restaurant_supplier[]
+}
+
+model restaurant_supplier {
+  id           String   @id @default(uuid()) @db.Uuid
+  restaurantId String   @db.Uuid
+  supplierId   String   @db.Uuid
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  asaasCustomerId       String    @db.VarChar(50)
+  restaurant restaurant @relation(fields: [restaurantId], references: [id])
+  supplier   supplier   @relation(fields: [supplierId], references: [id])
+
+  @@unique([restaurantId, supplierId])
+}
+
+enum LogStatus {
+  SUCCESS
+  FAIL
 }

@@ -3,11 +3,13 @@ import { addRepository, deleteByUserId, deleteByUserIdAndProductId, findByProduc
 import { logRegister } from '../utils/logUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { Decimal } from '@prisma/client/runtime/library'
+import { countCartItens } from '../repository/cartRepository'
 
 export interface ICartAddRequest {
   amount: number
   obs: string
   productId: string
+  addOrder: number
 }
 
 export interface ICartAddRequestArray {
@@ -31,6 +33,7 @@ export interface ICartResponse {
   amount: Decimal
   obs: string | null
   sku?: string
+  addOrder: number | null
 }
 
 interface Product {
@@ -54,15 +57,20 @@ interface Product {
   firstUnit: number
   secondUnit: number
   thirdUnit: number
-};
+  addOrder: number
+}
 
 const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
   const request: ICartAdd = {
     ...req,
     id: uuidv4(),
-    restaurantId: id
+    restaurantId: id,
+    addOrder: req.addOrder
   }
-  const result = await findByProductAndUser({ productId: req.productId, restaurantId: request.restaurantId })
+  const result = await findByProductAndUser({
+    productId: req.productId,
+    restaurantId: request.restaurantId
+  })
   if (result != null) request.id = result.id
   if (request.amount === 0) {
     await deleteByUserIdAndProductId(request.id)
@@ -71,14 +79,21 @@ const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
 }
 
 const deleteItens = async (req: ICartAddRequest, id: string): Promise<void> => {
-  const result = await findByProductAndUser({ productId: req.productId, restaurantId: id })
+  const result = await findByProductAndUser({
+    productId: req.productId,
+    restaurantId: id
+  })
   if (result == null) return
   await deleteByUserIdAndProductId(result.id)
 }
 
 export const deleteItem = async (req: ICartDeleteItem): Promise<void> => {
   const decoded = decode(req.token) as { id: string }
-  const result = await findByProductAndUser({ productId: req.productId, restaurantId: decoded.id })
+  const result = await findByProductAndUser({
+    productId: req.productId,
+    restaurantId: decoded.id
+  })
+
   if (result == null) return
   await deleteByUserIdAndProductId(result.id)
 }
@@ -86,10 +101,19 @@ export const deleteItem = async (req: ICartDeleteItem): Promise<void> => {
 export const addService = async (req: ICartAddRequestArray): Promise<void> => {
   try {
     const decoded = decode(req.token) as { id: string }
-    await Promise.all(req.carts.map(async (cart) => {
+    const countItens = await countCartItens(decoded.id)
+    let orderIndex = countItens
+    for (const cart of req.carts) {
+      orderIndex++
+      cart.addOrder = orderIndex
       await addToCart(cart, decoded.id)
-    }))
-    await Promise.all(req.cartToExclude.map(async (cartToDelete) => { await deleteItens(cartToDelete, decoded.id) }))
+    }
+
+    await Promise.all(
+      req.cartToExclude.map(async (cartToDelete) => {
+        await deleteItens(cartToDelete, decoded.id)
+      })
+    )
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
@@ -122,7 +146,7 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
     myHeaders.append('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA2LTIwVDAzOjQwOjM3IiwibmJmIjoxNzE3OTkwODM3LCJleHAiOjE3MTg4NTQ4MzcsImlhdCI6MTcxNzk5MDgzNywiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.RBX5whQIqwtRJOnjTX622qvwCFQJxcgVXQKTyUoVFys')
 
     const raw = JSON.stringify({
-      ids: result?.map(item => item.productId)
+      ids: result?.map((item) => item.productId)
     })
 
     const requestOptions = {
@@ -133,8 +157,8 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
 
     const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listFavoriteProductToApp', requestOptions)
     let data = await res.json()
-    data = (data.data).map((item: Product) => {
-      const produto = result.find(x => x.productId === item.id)
+    data = data.data.map((item: Product) => {
+      const produto = result.find((x) => x.productId === item.id)
       return {
         id: item.id,
         image: item.image,
@@ -154,7 +178,8 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
         sku: item.sku,
         updatedAt: item.updatedAt,
         amount: produto?.amount ?? new Decimal(0),
-        obs: produto?.obs ?? ''
+        obs: produto?.obs ?? '',
+        addOrder: produto?.addOrder ?? 0
       } satisfies Product
     })
 
@@ -170,7 +195,7 @@ export const deleteCartByUser = async (req: ICartList): Promise<void> => {
     const decoded = decode(req.token) as { id: string }
     await deleteByUserId(decoded.id)
   } catch (err: any) {
-    if ((err).cause !== 'visibleError') await logRegister(err)
+    if (err.cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
   }
 }

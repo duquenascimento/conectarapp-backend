@@ -1,5 +1,4 @@
 export const mapCnpjData = (data: any): any => {
-  console.log('data CHECK CNPJ', data)
   try {
     if (!data?.cnpj || !data.razao) {
       console.error('Dados insuficientes para mapear o CNPJ:', data)
@@ -30,6 +29,8 @@ export const mapCnpjData = (data: any): any => {
 
     // Mapeia as Inscrições Estaduais do pacote 16 (H)
     const inscricoesEstaduais = complementares?.inscricoesEstaduais || []
+    const primeiraIE = inscricoesEstaduais.find((ie: any) => ie.ativo) || inscricoesEstaduais[0] || null
+    const inscricaoMunicipal = complementares?.inscricaoMunicipal || null
 
     // Define um valor padrão para o QSA caso ele não esteja presente
     const qsa = socios || [
@@ -80,6 +81,8 @@ export const mapCnpjData = (data: any): any => {
         opcao_pelo_simples: simplesNacional?.optante || null,
         data_opcao_pelo_simples: simplesNacional?.inicio || null,
         data_exclusao_do_simples: simplesNacional?.fim || null,
+        inscricao_estadual: primeiraIE?.inscricao_estadual || null,
+        inscricao_municipal: inscricaoMunicipal,
         inscricoes_estaduais: inscricoesEstaduais.map((inscricao: any) => ({
           inscricao_estadual: inscricao.inscricao_estadual || '',
           ativo: inscricao.ativo || false,

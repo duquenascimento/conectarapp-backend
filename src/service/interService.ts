@@ -271,8 +271,6 @@ export const generateBolecode = async (req: BoletoInter): Promise<InterInitialBo
       },
       httpsAgent
     })
-
-    console.log(response.data)
     return response.data
   } catch (err) {
     console.error(err)
@@ -291,8 +289,6 @@ export const generatePix = async (req: PixRequest): Promise<any> => {
       },
       httpsAgent
     })
-
-    console.log(responseFineAndInterestPix.data)
     return responseFineAndInterestPix.data
   } catch (err: any) {
     console.error(err.response.data)
@@ -313,7 +309,6 @@ const createOrEditWebhook = async () => {
   }
 
   const response = await put(`${process.env.INTER_HOST}/${process.env.INTER_PATH_WEBHOOK}`, data, options)
-  console.log(response)
 }
 
 const getWebhooks = async () => {
@@ -322,22 +317,17 @@ const getWebhooks = async () => {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${await getToken()}`
-    },
+    }
   }
 
   const response = await get(`${process.env.INTER_HOST}/${process.env.INTER_PATH_WEBHOOK}`, options)
-  console.log(response.data)
 }
 
 export const webhookInterHandler = async (req: WebhookBolecodeResponse[]) => {
   const { codigoSolicitacao, ...bolecodeData } = req[0]
-
-  console.log('Webhook receveid with requestId:', codigoSolicitacao)
-
   if (codigoSolicitacao) {
     resolvePendingRequest(codigoSolicitacao, bolecodeData)
   }
-
   return
 }
 

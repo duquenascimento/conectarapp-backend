@@ -5,16 +5,23 @@ import { logRegister } from '../utils/logUtils'
 import { sign, verify } from 'jsonwebtoken'
 import { DateTime } from 'luxon'
 import { generateRandomSequenceObject, sendEmail } from '../utils/utils'
+import { createUserAirtable } from '../repository/airtableRegisterService'
 
 export interface IFirstStepSignUpRequest {
   email: string
   password?: string
+  name?: string
+  phone?: string
+  position?: string
 }
 
 export interface IFirstStepSignUp {
   email: string
   password?: string
   id: string
+  name?: string
+  phone?: string
+  position?: string
   role?: string[]
   restaurant?: string[]
   active: boolean
@@ -52,14 +59,33 @@ export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<fir
     }
 
     await signInFirstStepUser(request)
-    const jwt = sign({
-      role: request.role,
-      id: request.id,
-      email: request.email,
-      restaurant: request.restaurant,
-      active: request.active,
-      createdAt: request.createdAt
-    }, process.env.JWT_SECRET)
+    const jwt = sign(
+      {
+        role: request.role,
+        id: request.id,
+        email: request.email,
+        restaurant: request.restaurant,
+        active: request.active,
+        createdAt: request.createdAt
+      },
+      process.env.JWT_SECRET
+    )
+
+    const airtableUserRecord = await createUserAirtable({
+      ID_Usuário: request.id,
+      'Nome usuário': request.name ?? '',
+      Cargo: request.position ?? 'Outros',
+      'Telefone usuário': request.phone ?? '',
+      'Email login': request.email
+    })
+
+    if (!airtableUserRecord || typeof airtableUserRecord !== 'object' || !('fields' in airtableUserRecord)) {
+      throw new Error('Falha ao criar registro de cadastro no Airtable ou estrutura do registro inválida')
+    }
+
+    if (!airtableUserRecord.fields || typeof airtableUserRecord.fields !== 'object' || !('ID_Usuário' in airtableUserRecord.fields)) {
+      throw new Error('ID_Usuário não encontrado no registro do Airtable')
+    }
 
     return { token: jwt, role: request.role ?? [] }
   } catch (err) {
@@ -79,14 +105,17 @@ export const signIn = async (req: IFirstStepSignUpRequest): Promise<firstStepSig
     const valid = await verifyPassword(req.password, user.password ?? '')
     if (!valid) throw Error('invalid password', { cause: 'visibleError' })
 
-    const jwt = sign({
-      role: user.role,
-      id: user.id,
-      email: user.email,
-      restaurant: user.restaurant,
-      active: user.active,
-      createdAt: user.createdAt
-    }, process.env.JWT_SECRET)
+    const jwt = sign(
+      {
+        role: user.role,
+        id: user.id,
+        email: user.email,
+        restaurant: user.restaurant,
+        active: user.active,
+        createdAt: user.createdAt
+      },
+      process.env.JWT_SECRET
+    )
 
     return { token: jwt, role: user.role ?? [] }
   } catch (err) {
@@ -116,7 +145,7 @@ export const PwRecoveryCreateService = async (req: { email: string }): Promise<v
   }
 }
 
-export const PwRecoveryCheckService = async (req: { email: string, codeSent: string }): Promise<void> => {
+export const PwRecoveryCheckService = async (req: { email: string; codeSent: string }): Promise<void> => {
   try {
     const code = await checkCode({ identifier: req.email })
     if ((code?.code ?? '') !== req.codeSent) throw Error('invalid code', { cause: 'visibleError' })
@@ -126,7 +155,7 @@ export const PwRecoveryCheckService = async (req: { email: string, codeSent: str
   }
 }
 
-export const PwChange = async (req: { email: string, codeSent: string, newPW: string }): Promise<void> => {
+export const PwChange = async (req: { email: string; codeSent: string; newPW: string }): Promise<void> => {
   try {
     await PwRecoveryCheckService(req)
     const hashPassword = await encryptPassword(req.newPW)
@@ -138,16 +167,14 @@ export const PwChange = async (req: { email: string, codeSent: string, newPW: st
   }
 }
 
-// const _temp = async (): Promise<void> => {
-//   const jwt = sign({
-//     role: ['registered'],
-//     id: '19aa9a74-2584-41d2-905c-3b182094c3fa',
-//     email: 'm.cristinasampaioo@gmail.com',
-//     restaurant: ['54920725-cf20-40c1-a8a7-b27d28b96628'],
-//     active: true,
-//     createdAt: '2024-09-20T00:00:00.000Z'
-//   }, process.env.JWT_SECRET ?? '')
-//   console.log(jwt)
-// }
-
-// void _temp()
+export const checkPremiumAccess = async (externalId: string): Promise<any> => {
+  const authorizedIds = (process.env.CONECTAR_PLUS_AUTH_IDS ?? '').split(',').map((id) => id.trim())
+  if (authorizedIds.includes(externalId)) {
+    return {
+      authorized: true
+    }
+  }
+  return {
+    authorized: false
+  }
+}

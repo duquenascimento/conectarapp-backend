@@ -1,8 +1,9 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateComercialBlock, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant } from '../service/restaurantService'
-import { type address, type restaurant } from '@prisma/client'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, checkPremiumAccess } from '../service/restaurantService'
+import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
+import { HttpException } from '../errors/httpException'
 
 export const restaurantRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/restaurant/list', async (req, res): Promise<any> => {
@@ -53,7 +54,29 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string, value: boolean })
+      await updateComercialBlock(req.body as { restId: string; value: boolean })
+      return await res.status(200).send({
+        status: 200
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.post('/rest/updateRegistrationReleasedNewApp', async (req, res): Promise<void> => {
+    try {
+      await updateRegistrationReleasedNewApp(req.body as { externalId: string; registrationReleasedNewApp: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -75,7 +98,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string, value: boolean })
+      await updateFinanceBlock(req.body as { restId: string; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -97,7 +120,7 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number, value: boolean })
+      await AddClientCount(req.body as { count: number; value: boolean })
       return await res.status(200).send({
         status: 200
       })
@@ -205,33 +228,19 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
 
   server.patch('/restaurants', async (req, res) => {
     try {
-      // Log: Início da requisição
-      console.log('[DEBUG] Requisição recebida para atualizar restaurante:', req.body)
-
-      // Validação do corpo da requisição
       const { error } = restaurantPatchSchema.validate(req.body)
       if (error) {
         console.error('[ERROR] Erro de validação:', error.details[0].message)
         return await res.status(422).send({ error: error.details[0].message })
       }
 
-      // Extração dos dados do corpo da requisição
       const { externalId, ...restaurantData } = req.body as {
         externalId: string
         [key: string]: any
       }
 
-      // Log: Dados extraídos
-      console.log('[DEBUG] External ID:', externalId)
-      console.log('[DEBUG] Dados a serem atualizados:', restaurantData)
-
-      // Atualização dos dados do restaurante
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
       const response = await patchRestaurant(externalId, restaurantData)
-      console.log('>>>>>>>>>dados recebidos', response)
-
-      // Log: Atualização bem-sucedida
-      console.log('[DEBUG] Restaurante atualizado com sucesso.')
 
       // Resposta de sucesso
       return await res.status(200).send({
@@ -239,25 +248,90 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
         msg: 'Restaurante atualizado com sucesso.'
       })
     } catch (err) {
-      // Log: Captura de erro geral
-      console.error('[ERROR] Erro ao processar a requisição:', err)
-
       const message = (err as Error).message
       if (message === process.env.INTERNAL_ERROR_MSG) {
-        // Log: Erro interno do servidor
-        console.error('[ERROR] Erro interno do servidor:', message)
         return await res.status(500).send({
           status: 500,
           msg: message
         })
       } else {
-        // Log: Recurso não encontrado ou outro erro
-        console.error('[ERROR] Recurso não encontrado ou erro desconhecido:', message)
         return await res.status(404).send({
           status: 404,
           msg: message
         })
       }
+    }
+  })
+
+  server.get('/restaurant/account/:externalId', async (req, res) => {
+    const { externalId } = req.params as { externalId: string }
+    try {
+      const result = await findByExternalId(externalId)
+      if (!result.asaasCustomerId) {
+        throw new HttpException('Carteira de cliente não encontrada!', 404)
+      }
+      return await res.status(200).send({
+        status: 200,
+        data: result
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.get('/restaurant-supplier/account/:restaurantExternalId/:supplierExternalId', async (req, res) => {
+    const { restaurantExternalId, supplierExternalId } = req.params as {
+      restaurantExternalId: string
+      supplierExternalId: string
+    }
+
+    try {
+      const result = await findByRestaurantIdAndSupplierId(restaurantExternalId, supplierExternalId)
+
+      if (!result) {
+        throw new HttpException('Carteira de cliente não encontrada!', 404)
+      }
+
+      return await res.status(200).send({
+        status: 200,
+        data: result
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.get('/restaurant/premium-access/:externalId', async (req, res): Promise<any> => {
+    const { externalId } = req.params as { externalId: string }
+    try {
+      return await checkPremiumAccess(externalId)
+    } catch (error) {
+      await res.status(500).send({
+        status: 500,
+        msg: 'Falha ao verificar acesso conectar plus'
+      })
     }
   })
 }

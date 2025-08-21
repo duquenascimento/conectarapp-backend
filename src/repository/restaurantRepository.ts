@@ -4,6 +4,8 @@ import { logRegister } from '../utils/logUtils'
 import { type IRestaurant } from '../service/restaurantService'
 import { type addressFormData } from '../service/registerService'
 import { v4 as uuidv4 } from 'uuid'
+import { HttpException } from '../errors/httpException'
+import { authorizedPremiumRestautants } from '../utils/restaurantUtils'
 
 const prisma = new PrismaClient()
 
@@ -203,6 +205,24 @@ export const updateAddress = async (addressId: string, data: any): Promise<any> 
   }
 }
 
+export const updateRegistrationReleasedNewAppRepository = async (externalId: string, registrationReleasedNewApp: boolean): Promise<void> => {
+  try {
+    await prisma.restaurant.updateMany({
+      where: {
+        externalId
+      },
+      data: {
+        registrationReleasedNewApp
+      }
+    })
+  } catch (err: any) {
+    await prisma.$disconnect()
+    await logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
 export const updateComercialBlockRepository = async (restId: string, value: boolean): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
@@ -254,10 +274,7 @@ export const updateAllowCloseSupplierAndMinimumOrderRepository = async (req: Pic
   }
 }
 
-export const updateRestaurantRepository = async (
-  externalId: string,
-  restaurantData: Partial<restaurant>
-): Promise<void> => {
+export const updateRestaurantRepository = async (externalId: string, restaurantData: Partial<restaurant>): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,
@@ -272,10 +289,7 @@ export const updateRestaurantRepository = async (
   }
 }
 
-export const updateAddressByExternalIdRepository = async (
-  externalId: string,
-  addressData: Partial<address>
-): Promise<void> => {
+export const updateAddressByExternalIdRepository = async (externalId: string, addressData: Partial<address>): Promise<void> => {
   try {
     const restaurant = await prisma.restaurant.findFirst({
       where: {
@@ -304,11 +318,7 @@ export const updateAddressByExternalIdRepository = async (
   }
 }
 
-export const patchRestaurantRepository = async (
-  externalId: string,
-  restaurantData: Partial<restaurant>
-): Promise<void> => {
-  console.log('>>>>>>>repository', externalId, restaurantData)
+export const patchRestaurantRepository = async (externalId: string, restaurantData: Partial<restaurant>): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,
@@ -321,4 +331,98 @@ export const patchRestaurantRepository = async (
   } finally {
     await prisma.$disconnect()
   }
+}
+
+export const getBlockingSuppliers = async (externalId: string): Promise<string[] | undefined> => {
+  try {
+    if (!externalId) {
+      throw new HttpException('externalId é obrigatório', 422)
+    }
+    const restaurant = await prisma.restaurant.findFirst({
+      where: {
+        externalId
+      }
+    })
+    if (restaurant && restaurant?.blockedBySuppliers.length > 0) {
+      return restaurant.blockedBySuppliers
+    }
+    return []
+  } catch (err) {
+    void logRegister(err)
+    throw new HttpException('Erro ao buscar fornecedores que bloqueiam o cliente', 500)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const findRestaurantByExternalId = async (externalId: string): Promise<any> => {
+  try {
+    return await prisma.restaurant.findFirst({
+      where: { externalId }
+    })
+  } catch (err) {
+    void logRegister(err)
+  }
+}
+
+export const findRestaurantByRestaurantIdAndSupplierId = async (restaurantExternalId: string, supplierExternalId: string): Promise<any> => {
+  try {
+    if (typeof restaurantExternalId !== 'string' || typeof supplierExternalId !== 'string') {
+      throw new Error('Parâmetros inválidos: ambos restaurantExternalId e supplierExternalId devem ser strings')
+    }
+
+    return await prisma.restaurant_supplier.findFirst({
+      where: {
+        restaurant: {
+          externalId: restaurantExternalId
+        },
+        supplier: {
+          externalId: supplierExternalId
+        }
+      },
+      include: {
+        restaurant: true,
+        supplier: true
+      }
+    })
+  } catch (err) {
+    void logRegister(err)
+  }
+}
+
+export const findRestaurantById = async (id: string): Promise<any> => {
+  try {
+    const restaurant = await prisma.restaurant.findFirst({
+      where: { id }
+    })
+
+    if (!restaurant) return null
+
+    const [user, address] = await Promise.all([
+      prisma.user.findMany({
+        where: { id: { in: restaurant.user } }
+      }),
+      prisma.address.findMany({
+        where: { id: { in: restaurant.address } }
+      })
+    ])
+
+    return {
+      ...restaurant,
+      user,
+      address
+    }
+  } catch (err) {
+    void logRegister(err)
+  } finally {
+    await prisma.$disconnect()
+  }
+}
+
+export const findAuthorizedPremiumRestaurant = async (externalId: string): Promise<{ authorized: boolean }> => {
+  const authorizedRestaurants = authorizedPremiumRestautants()
+  if (authorizedRestaurants.includes(externalId)) {
+    return { authorized: true }
+  }
+  return { authorized: false }
 }

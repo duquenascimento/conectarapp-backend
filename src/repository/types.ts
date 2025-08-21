@@ -14,7 +14,7 @@ export interface CreateOrderAirtable {
   'ID Distribuidor': string[]
   'Presentes na cotação': string[]
   'Recibo original': Array<{ url: string }>
-  'ID_Cliente': string[]
+  ID_Cliente: string[]
   'Pedido Bubble': boolean
   Identificador: string
 }
@@ -31,8 +31,8 @@ export interface CreateOrderSupplierAppAirtable {
   'Data Entrega': string
   'ID Cliente': string[]
   'ID fornecedor': string[]
-  'Status': 'Confirmado' | 'Cancelado' | 'Recusado'
-  'Recibo': Array<{ url: string }>
+  Status: 'Confirmado' | 'Cancelado' | 'Recusado'
+  Recibo: Array<{ url: string }>
   'Exibir pedido': true
   'Tipo de pedido': string
   'Valor auto': number
@@ -51,8 +51,8 @@ export interface CreateDetailingAirtable {
   'Preço Final Distribuidor': number
   'Preço Final Conéctar': number
   'Status Detalhamento Pedido': 'Confirmado' | 'Teste' | 'Produto não disponível'
-  'OBS': string
-  'Aux_OBS': string
+  OBS: string
+  Aux_OBS: string
   'Custo Estimado': number
   'Custo / Unid Fornecedor BD': number
   'Custo / Unidade Conéctar BD': number
@@ -65,6 +65,23 @@ export interface ProductAirtable {
   airtableId: string
 }
 
+export interface CreateUserAirtable {
+  'ID_Usuário': string
+  'Nome usuário': string
+  'Cargo': string
+  'Telefone usuário': string
+  'Email login': string
+}
+
+export interface UpdateUserAirtable {
+  'ID_Usuário': string
+  'Nome usuário'?: string
+  'Cargo'?: string
+  'Telefone usuário'?: string
+  'Email login'?: string
+  'Restaurantes associados Novo': string
+}
+
 export interface CreateRegisterAirtable {
   'ID pagamento': string
   'Nome do estabelecimento': string
@@ -72,7 +89,7 @@ export interface CreateRegisterAirtable {
   'Inscrição estadual': string
   Rua: string
   Número: string
-  'Complemento': string
+  Complemento: string
   'CEP de entrega': string
   Bairro: string
   Cidade: string
@@ -89,6 +106,36 @@ export interface CreateRegisterAirtable {
   'Código Promotor': string
   'Quantas vezes em média na semana você faz pedidos?': string
   'Cadastrado por': string
+  'Nome responsável financeiro': string
+  'Telefone do responsável financeiro com DDD': string
+  'E-mail financeiro para envio de cobranças': string
+}
+
+export interface UpdateAddressRegisterAirtable {
+  'ID_Cliente': string
+  'Número': string
+  'Rua': string
+  'Resp. recebimento': string
+  'Tel resp. recebimento': string
+  'Complemento': string
+  'CEP': string
+  'h_min seg': string
+  'h_max seg': string
+  'h_min ter': string
+  'h_max ter': string
+  'h_min qua': string
+  'h_max qua': string
+  'h_min qui': string
+  'h_max qui': string
+  'h_min sex': string
+  'h_max sex': string
+  'h_min sab': string
+  'h_max sab': string
+  'h_min dom': string
+  'h_max dom': string
+  'Bairro String': string
+  'Cidade String': string
+  'Informações de entrega': string
 }
 
 export type AirtableResponse = AirtableRecord<FieldSet> | Records<FieldSet> | undefined
