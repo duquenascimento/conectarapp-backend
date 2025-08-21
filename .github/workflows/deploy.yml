@@ -45,8 +45,8 @@ jobs:
             cat > .env << EOF
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
-            HOST=localhost
-            PORT=9841
+            HOST=0.0.0.0
+            PORT=3334
             LOG_PATH=../log.txt
             SALT=12
             INTERNAL_ERROR_MSG=internal error, try later.
@@ -139,8 +139,8 @@ jobs:
             cat > .env << EOF
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}
-            HOST=localhost
-            PORT=9841
+            HOST=0.0.0.0
+            PORT=3333
             LOG_PATH=../log.txt
             SALT=12
             INTERNAL_ERROR_MSG=internal error, try later.
