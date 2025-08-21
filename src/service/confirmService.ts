@@ -21,6 +21,7 @@ import { addPendingRequest } from './promiseService'
 import { bolecodeAndPixErrorMessage, receiptErrorMessage } from '../utils/slackUtils'
 import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
+import { type agendamentoPedido } from '../types/confirmTypes'
 
 export interface Supplier {
   name: string
@@ -64,6 +65,7 @@ export interface confirmOrderRequest {
 }
 
 export interface confirmOrderPremiumRequest {
+  [x: string]: any
   token: string
   selectedRestaurant: any
 }
@@ -679,7 +681,8 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
       sigla_UF: 'RJ',
       cliente_com_boleto: (getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário') ? '1' : '0',
       nome_cliente: req.restaurant.restaurant.name.replaceAll(' ', ''),
-      id_distribuidor: (req.restaurant.restaurant.externalId !== 'PF324' && req.restaurant.restaurant.externalId !== 'C186') ? 'F0' : req.supplier.externalId
+      id_distribuidor: (req.restaurant.restaurant.externalId === 'C757') ? 'F0' : req.supplier.externalId
+      // id_distribuidor: req.supplier.externalId
     } satisfies Pedido)
   }).catch(async (err) => {
     await receiptErrorMessage(req.restaurant.restaurant.externalId as string)
@@ -745,13 +748,18 @@ ${cart?.map(cart => `*${String(cart.amount).replace('.', ',')}x ${(items.data.fi
 ---------------------------------------
 
 *${req.selectedRestaurant.name}*
-${req.selectedRestaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${req.selectedRestaurant.responsibleReceivingPhoneNumber ?? ''}
+${req.selectedRestaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${req.selectedRestaurant.addressInfos[0].responsibleReceivingPhoneNumber ?? ''}
+
 
 ${req.selectedRestaurant.addressInfos[0].address}, ${req.selectedRestaurant.addressInfos[0].localNumber} ${req.selectedRestaurant.addressInfos[0].complement}
 ${req.selectedRestaurant.addressInfos[0].neighborhood}, ${req.selectedRestaurant.addressInfos[0].city}
-${req.selectedRestaurant.addressInfos[0].zipCode}
+${req.selectedRestaurant.addressInfos[0].zipCode} - ${req.selectedRestaurant.addressInfos[0].deliveryInformation}
+
 
 Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
+
+Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.substring(11, 16)} e ${req.selectedRestaurant.addressInfos[0].finalDeliveryTime.substring(11, 16)} horas
+
     `
 
     await createOrderTextAirtable({
@@ -776,5 +784,62 @@ Pedido gerado às ${today.toFormat('HH:mm')} no dia ${today.toFormat('dd/MM')}
     })
   } catch (err) {
     void logRegister(err)
+  }
+}
+
+
+export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
+  try {
+    // Decodificar o token para obter o ID do usuário/restaurante
+    const decoded = decode(req.token) as { id: string }
+    if (!decoded?.id) throw new Error('Token inválido ou ausente')
+
+    // Recuperar o carrinho e os produtos
+    const cart = await listByUser({ restaurantId: decoded.id })
+    const items = await listProduct()
+
+    if (cart == null || items == null) {
+      console.error('Erro: Carrinho ou lista de produtos está vazio')
+      throw new Error('Empty cart/items', { cause: 'visibleError' })
+    }
+
+    // Validar e formatar o número de telefone
+    let phoneNumber = req.selectedRestaurant.addressInfos[0].phoneNumber ?? ''
+    phoneNumber = phoneNumber.replace(/\D/g, '') // Remover caracteres não numéricos
+    if (!phoneNumber.startsWith('55') && phoneNumber.length < 12) {
+      phoneNumber = `55${phoneNumber}` // Adicionar DDI se necessário
+    }
+
+    // Codificar a mensagem
+    const msg = encodeURIComponent(req.message)
+      .replace('!', '%21')
+      .replace('\'', '%27')
+      .replace('(', '%28')
+      .replace(')', '%29')
+      .replace('*', '%2A')
+
+    // Validar e formatar a data/hora agendada
+    const [year, month, day] = req.sendDate.split('-').map(Number)
+    const [hours, minutes] = req.sendTime.split(':').map(Number)
+    const sendDate = new Date(year, month - 1, day, hours, minutes)
+
+    if (isNaN(sendDate.getTime())) {
+      throw new Error('Data ou horário inválido')
+    }
+
+    const formattedSendDate = `${sendDate.toISOString().split('T')[0]} ${String(sendDate.getHours()).padStart(2, '0')}:${String(sendDate.getMinutes()).padStart(2, '0')}`
+
+    // Configurações da API do ChatGuru
+    const url = `https://s16.chatguru.app/api/v1?key=${process.env.CG_API_KEY}&account_id=${process.env.CG_ACCOUNT_ID}&phone_id=${process.env.CG_PHONE_ID}&action=message_send&text=${msg}&send_date=${formattedSendDate}&chat_number=${phoneNumber}`
+
+    // Fazer a chamada à API usando `fetch`
+    const response = await fetch(url, { method: 'POST' })
+    const result = await response.text()
+
+    return { status: 201, message: 'Agendamento realizado com sucesso!' }
+  } catch (err) {
+    console.error('Erro ao realizar o agendamento:', err)
+    await logRegister(err)
+    throw err
   }
 }
