@@ -126,6 +126,8 @@ model cart {
   restaurantId String  @db.Uuid
   version      Int     @default(0)
   addOrder     Int?    @default(0)
+
+  @@unique([restaurantId, productId], name: "cart_restaurantId_productId_unique")
 }
 
 model order {
@@ -334,14 +336,14 @@ model supplier {
 }
 
 model restaurant_supplier {
-  id           String   @id @default(uuid()) @db.Uuid
-  restaurantId String   @db.Uuid
-  supplierId   String   @db.Uuid
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
-  asaasCustomerId       String    @db.VarChar(50)
-  restaurant restaurant @relation(fields: [restaurantId], references: [id])
-  supplier   supplier   @relation(fields: [supplierId], references: [id])
+  id              String     @id @default(uuid()) @db.Uuid
+  restaurantId    String     @db.Uuid
+  supplierId      String     @db.Uuid
+  createdAt       DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime   @updatedAt @db.Timestamptz(3)
+  asaasCustomerId String     @db.VarChar(50)
+  restaurant      restaurant @relation(fields: [restaurantId], references: [id])
+  supplier        supplier   @relation(fields: [supplierId], references: [id])
 
   @@unique([restaurantId, supplierId])
 }
