@@ -3,6 +3,7 @@ import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestau
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
+import { logRecord } from '../utils/log-utility'
 
 export interface ICreateRestaurantRequest {
   name: string
@@ -39,19 +40,39 @@ export interface IRestaurant {
 }
 
 export const createRestaurant = async (req: IRestaurant): Promise<any> => {
+  await logRecord({
+    level: 'info',
+    message: 'Dados para criar Restaurante',
+    data: req,
+    location: 'restaurantService.createRestaurant'
+  })
   try {
     await registerRestaurant(req)
 
-    const airtableUserRecord = await updateUserAirtable({
+    const dataUserRecord = {
       ID_Usuário: req.user[0],
       'Restaurantes associados Novo': req.externalId
-    })
+    }
+
+    const airtableUserRecord = await updateUserAirtable(dataUserRecord)
 
     if (!airtableUserRecord || typeof airtableUserRecord !== 'object' || !('fields' in airtableUserRecord)) {
+      await logRecord({
+        level: 'error',
+        message: 'Falha ao cadastrar externalId no cadastro do Airtable ou estrutura do registro inválida',
+        data: dataUserRecord,
+        location: 'restaurantService.createRestaurant'
+      })
       throw new Error('Falha ao cadastrar externalId no cadastro do Airtable ou estrutura do registro inválida')
     }
 
     if (!airtableUserRecord.fields || typeof airtableUserRecord.fields !== 'object' || !('ID_Usuário' in airtableUserRecord.fields)) {
+      await logRecord({
+        level: 'error',
+        message: 'ID_Usuário não encontrado no registro do Airtable',
+        data: dataUserRecord,
+        location: 'restaurantService.createRestaurant'
+      })
       throw new Error('ID_Usuário não encontrado no registro do Airtable')
     }
 
@@ -174,7 +195,7 @@ export const updateAddressService = async (rest: any): Promise<void> => {
   }
 }
 
-export const updateRegistrationReleasedNewApp = async (req: { externalId: string; registrationReleasedNewApp: boolean }): Promise<void> => {
+export const updateRegistrationReleasedNewApp = async (req: { externalId: string, registrationReleasedNewApp: boolean }): Promise<void> => {
   try {
     await updateRegistrationReleasedNewAppRepository(req.externalId, req.registrationReleasedNewApp)
   } catch (err) {
@@ -183,7 +204,7 @@ export const updateRegistrationReleasedNewApp = async (req: { externalId: string
   }
 }
 
-export const updateComercialBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
+export const updateComercialBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
   try {
     await updateComercialBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -192,7 +213,7 @@ export const updateComercialBlock = async (req: { restId: string; value: boolean
   }
 }
 
-export const updateFinanceBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
+export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
   try {
     await updateFinanceBlockRepository(req.restId, req.value)
   } catch (err) {
