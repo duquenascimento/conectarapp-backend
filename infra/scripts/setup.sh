@@ -29,43 +29,72 @@ systemctl enable nginx
 
 # Configura Nginx
 cat > /etc/nginx/sites-available/default << 'EOF'
+# --- PRODUÇÃO ---
+# Redireciona HTTP → HTTPS para PROD
 server {
     listen 80;
     server_name api-appconectar.conectarhortifruti.com.br;
+    return 301 https://$host$request_uri;
+}
+
+# Servidor PROD (HTTPS)
+server {
+    listen 443 ssl;
+    server_name api-appconectar.conectarhortifruti.com.br;
+
+    ssl_certificate /etc/letsencrypt/live/api-appconectar.conectarhortifruti.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/api-appconectar.conectarhortifruti.com.br/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     location / {
         proxy_pass http://127.0.0.1:3333;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_cache_bypass $http_upgrade;
     }
 }
 
+# --- DESENVOLVIMENTO ---
+# Redireciona HTTP → HTTPS para DEV
 server {
     listen 80;
     server_name dev.api-appconectar.conectarhortifruti.com.br;
+    return 301 https://$host$request_uri;
+}
+
+# Servidor DEV (HTTPS)
+server {
+    listen 443 ssl;
+    server_name dev.api-appconectar.conectarhortifruti.com.br;
+
+    ssl_certificate /etc/letsencrypt/live/dev.api-appconectar.conectarhortifruti.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dev.api-appconectar.conectarhortifruti.com.br/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     location / {
         proxy_pass http://127.0.0.1:3334;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-        proxy_cache_bypass \$http_upgrade;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_cache_bypass $http_upgrade;
     }
 }
 EOF
 
 ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 systemctl restart nginx && echo "✅ Nginx configurado"
+sudo nginx -t && sudo systemctl reload nginx
 
 # Cria diretório .ssh
 mkdir -p /home/ubuntu/.ssh
