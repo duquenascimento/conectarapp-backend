@@ -1,5 +1,12 @@
 import { decode } from 'jsonwebtoken'
-import { addRepository, deleteByUserId, deleteByUserIdAndProductId, findByProductAndUser, type ICartAdd, listByUser } from '../repository/cartRepository'
+import {
+  addRepository,
+  deleteByUserId,
+  deleteByUserIdAndProductId,
+  findByProductAndUser,
+  type ICartAdd,
+  listByUser
+} from '../repository/cartRepository'
 import { logRegister } from '../utils/logUtils'
 import { v4 as uuidv4 } from 'uuid'
 import { Decimal } from '@prisma/client/runtime/library'
@@ -61,17 +68,18 @@ interface Product {
 }
 
 const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
+  const existingItem = await findByProductAndUser({
+    productId: req.productId,
+    restaurantId: id
+  })
+
   const request: ICartAdd = {
     ...req,
-    id: uuidv4(),
+    id: existingItem?.id ?? uuidv4(),
     restaurantId: id,
     addOrder: req.addOrder
   }
-  const result = await findByProductAndUser({
-    productId: req.productId,
-    restaurantId: request.restaurantId
-  })
-  if (result != null) request.id = result.id
+
   if (request.amount === 0) {
     await deleteByUserIdAndProductId(request.id)
   }
@@ -101,17 +109,33 @@ export const deleteItem = async (req: ICartDeleteItem): Promise<void> => {
 export const addService = async (req: ICartAddRequestArray): Promise<void> => {
   try {
     const decoded = decode(req.token) as { id: string }
-    const countItens = await countCartItens(decoded.id)
+    const restaurantId = decoded.id
+
+    const countItens = await countCartItens(restaurantId)
     let orderIndex = countItens
     for (const cart of req.carts) {
       orderIndex++
       cart.addOrder = orderIndex
-      await addToCart(cart, decoded.id)
     }
+
+    const addResults = await Promise.allSettled(
+      req.carts.map(async (cart) => {
+        await addToCart(cart, restaurantId)
+      })
+    )
+
+    addResults.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(
+          `Erro ao adicionar item ${req.carts[index].productId} ao carrinho:`,
+          result.reason
+        )
+      }
+    })
 
     await Promise.all(
       req.cartToExclude.map(async (cartToDelete) => {
-        await deleteItens(cartToDelete, decoded.id)
+        await deleteItens(cartToDelete, restaurantId)
       })
     )
   } catch (err) {
@@ -120,7 +144,9 @@ export const addService = async (req: ICartAddRequestArray): Promise<void> => {
   }
 }
 
-export const listCart = async (req: ICartList): Promise<ICartResponse[] | null> => {
+export const listCart = async (
+  req: ICartList
+): Promise<ICartResponse[] | null> => {
   try {
     const decoded = decode(req.token) as { id: string }
     const result = await listByUser({ restaurantId: decoded.id })
@@ -132,7 +158,9 @@ export const listCart = async (req: ICartList): Promise<ICartResponse[] | null> 
   }
 }
 
-export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] | null> => {
+export const listCartComplete = async (
+  req: ICartList
+): Promise<ICartResponse[] | null> => {
   try {
     const decoded = decode(req.token) as { id: string }
     const result = await listByUser({ restaurantId: decoded.id })
@@ -142,8 +170,14 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
     myHeaders.append('external-id', 'F0')
     myHeaders.append('username', 'contato@conectarhortifruti.com.br')
     myHeaders.append('Content-Type', 'application/json')
-    myHeaders.append('system-user-pass', 'd2NuOUVVNnJWbDR5dDE5Mnl0WFdaeGo2cjRGeEtycUMydzNaWEJ5enlub0FLQmdjdEU2anBVQ2RDbWxkM2xSMQo=')
-    myHeaders.append('Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA2LTIwVDAzOjQwOjM3IiwibmJmIjoxNzE3OTkwODM3LCJleHAiOjE3MTg4NTQ4MzcsImlhdCI6MTcxNzk5MDgzNywiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.RBX5whQIqwtRJOnjTX622qvwCFQJxcgVXQKTyUoVFys')
+    myHeaders.append(
+      'system-user-pass',
+      'd2NuOUVVNnJWbDR5dDE5Mnl0WFdaeGo2cjRGeEtycUMydzNaWEJ5enlub0FLQmdjdEU2anBVQ2RDbWxkM2xSMQo='
+    )
+    myHeaders.append(
+      'Authorization',
+      'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IkYwIiwiZW1haWwiOiJjb250YXRvQGNvbmVjdGFyaG9ydGlmcnV0aS5jb20uYnIiLCJuYW1laWQiOiIwIiwiX0V4cGlyZWQiOiIyMDI0LTA2LTIwVDAzOjQwOjM3IiwibmJmIjoxNzE3OTkwODM3LCJleHAiOjE3MTg4NTQ4MzcsImlhdCI6MTcxNzk5MDgzNywiaXNzIjoiNWRhYTY1NmNmMGNkMmRhNDk1M2U2ZTA2Njc3OTMxY2E1MTU1YzIyYWE5MTg2ZmVhYzYzMTBkNzJkMjNkNmIzZiIsImF1ZCI6ImRlN2NmZGFlNzBkMjBiODk4OWQxMzgxOTRkNDM5NGIyIn0.RBX5whQIqwtRJOnjTX622qvwCFQJxcgVXQKTyUoVFys'
+    )
 
     const raw = JSON.stringify({
       ids: result?.map((item) => item.productId)
@@ -155,7 +189,10 @@ export const listCartComplete = async (req: ICartList): Promise<ICartResponse[] 
       body: raw
     }
 
-    const res = await fetch('https://gateway.conectarhortifruti.com.br/api/v1/system/listFavoriteProductToApp', requestOptions)
+    const res = await fetch(
+      'https://gateway.conectarhortifruti.com.br/api/v1/system/listFavoriteProductToApp',
+      requestOptions
+    )
     let data = await res.json()
     data = data.data.map((item: Product) => {
       const produto = result.find((x) => x.productId === item.id)

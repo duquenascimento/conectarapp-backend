@@ -22,10 +22,17 @@ export interface IFindByProductAndUser {
 export const addRepository = async (req: ICartAdd): Promise<void> => {
   try {
     await prisma.cart.upsert({
+      where: {
+        // id: req.id
+        cart_restaurantId_productId_unique: {
+          restaurantId: req.restaurantId,
+          productId: req.productId
+        }
+      },
       create: {
+        id: req.id,
         amount: req.amount,
         productId: req.productId,
-        id: req.id,
         restaurantId: req.restaurantId,
         obs: req.obs ?? '',
         addOrder: req.addOrder
@@ -33,15 +40,20 @@ export const addRepository = async (req: ICartAdd): Promise<void> => {
       update: {
         amount: req.amount,
         obs: req.obs
-      },
-      where: {
-        id: req.id
       }
     })
     await prisma.$disconnect()
   } catch (err: any) {
+    if (err.code === 'P2002') {
+      console.warn(
+        `Falha de duplicidade no carrinho para o produto ${req.productId} do restaurante ${req.restaurantId}`
+      )
+    } else {
+      console.error('Erro desconhecido ao adicionar produto ao carrinho:', err)
+      await logRegister(err)
+      throw err
+    }
     await prisma.$disconnect()
-    await logRegister(err)
   }
 }
 
@@ -52,7 +64,9 @@ export const countCartItens = async (restaurantId: string): Promise<number> => {
   return itemQuantity
 }
 
-export const findByProductAndUser = async (req: IFindByProductAndUser): Promise<cart | null> => {
+export const findByProductAndUser = async (
+  req: IFindByProductAndUser
+): Promise<cart | null> => {
   try {
     const result = await prisma.cart.findFirst({
       where: {
