@@ -72,9 +72,9 @@ export const firstStepSignUp = async (req: IFirstStepSignUpRequest): Promise<fir
     )
 
     const airtableUserRecord = await createUserAirtable({
-      'ID_Usuário': request.id,
+      ID_Usuário: request.id,
       'Nome usuário': request.name ?? '',
-      'Cargo': request.position ?? 'Outros',
+      Cargo: request.position ?? 'Outros',
       'Telefone usuário': request.phone ?? '',
       'Email login': request.email
     })
@@ -145,7 +145,7 @@ export const PwRecoveryCreateService = async (req: { email: string }): Promise<v
   }
 }
 
-export const PwRecoveryCheckService = async (req: { email: string, codeSent: string }): Promise<void> => {
+export const PwRecoveryCheckService = async (req: { email: string; codeSent: string }): Promise<void> => {
   try {
     const code = await checkCode({ identifier: req.email })
     if ((code?.code ?? '') !== req.codeSent) throw Error('invalid code', { cause: 'visibleError' })
@@ -155,7 +155,7 @@ export const PwRecoveryCheckService = async (req: { email: string, codeSent: str
   }
 }
 
-export const PwChange = async (req: { email: string, codeSent: string, newPW: string }): Promise<void> => {
+export const PwChange = async (req: { email: string; codeSent: string; newPW: string }): Promise<void> => {
   try {
     await PwRecoveryCheckService(req)
     const hashPassword = await encryptPassword(req.newPW)
@@ -164,5 +164,17 @@ export const PwChange = async (req: { email: string, codeSent: string, newPW: st
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err)
     throw Error((err as Error).message)
+  }
+}
+
+export const checkPremiumAccess = async (externalId: string): Promise<any> => {
+  const authorizedIds = (process.env.CONECTAR_PLUS_AUTH_IDS ?? '').split(',').map((id) => id.trim())
+  if (authorizedIds.includes(externalId)) {
+    return {
+      authorized: true
+    }
+  }
+  return {
+    authorized: false
   }
 }

@@ -42,12 +42,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/app-dev
-            echo "🔧 Criando .env para DEV..."
-            cat > .env << EOF
+            cat > .env.development << EOF
             # Banco de dados
-            DATABASE_URL=${{ secrets.DATABASE_URL_DEV }}
-            HOST=localhost
-            PORT=9841
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            HOST=0.0.0.0
+            PORT=3334
+            LOG_PATH=../log.txt
+            SALT=12
+            INTERNAL_ERROR_MSG=internal error, try later.
 
             # Integrações
             API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
@@ -85,15 +87,6 @@ jobs:
             SCOPE=${{ secrets.SCOPE }}
             ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}
 
-            # Pix Itaú
-            ITAU_PIX_KEY=${{ secrets.ITAU_PIX_KEY }}
-            ITAU_CLIENT_ID=${{ secrets.ITAU_CLIENT_ID }}
-            ITAU_AGENCY_ID=${{ secrets.ITAU_AGENCY_ID }}
-            ITAU_ACCOUNT_ID=${{ secrets.ITAU_ACCOUNT_ID }}
-            ITAU_TOKEN=${{ secrets.ITAU_TOKEN }}
-            ITAU_SECRET=${{ secrets.ITAU_SECRET }}
-            ITAU_ETAPA=${{ secrets.ITAU_ETAPA }}
-
             # AWS S3
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -120,23 +113,6 @@ jobs:
             AIRTABLE_TABLE_DBCLIENTE_NAME=${{ secrets.AIRTABLE_TABLE_DBCLIENTE_NAME }}
             AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}
 
-            # Inter
-            INTER_CLIENT_ID=${{ secrets.INTER_CLIENT_ID }}
-            INTER_CLIENT_SECRET=${{ secrets.INTER_CLIENT_SECRET }}
-            INTER_GRANT_TYPE=${{ secrets.INTER_GRANT_TYPE }}
-            INTER_SCOPE=${{ secrets.INTER_SCOPE }}
-            INTER_ACCOUNT_NUMBER=${{ secrets.INTER_ACCOUNT_NUMBER }}
-            INTER_PIX_KEY=${{ secrets.INTER_PIX_KEY }}
-            INTER_HOST=${{ secrets.INTER_HOST }}
-            INTER_PATH_AUTH=${{ secrets.INTER_PATH_AUTH }}
-            INTER_PATH_GENERATE_BOLECODE=${{ secrets.INTER_PATH_GENERATE_BOLECODE }}
-            INTER_PATH_GENERATE_SIMPLE_PIX=${{ secrets.INTER_PATH_GENERATE_SIMPLE_PIX }}
-            INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX=${{ secrets.INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX }}
-            INTER_PATH_WEBHOOK=${{ secrets.INTER_PATH_WEBHOOK }}
-            INTER_PIX_TIMEOUT=${{ secrets.INTER_PIX_TIMEOUT }}
-            SECONDS_TO_REJECT_BOLECODE_PROMISE=${{ secrets.SECONDS_TO_REJECT_BOLECODE_PROMISE }}
-            BANK_CLIENT=${{ secrets.BANK_CLIENT }}
-
             # Slack
             SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}
             SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}
@@ -145,24 +121,11 @@ jobs:
             MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}
             MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}
 
-            # Certificados (reconstruídos com \n → quebra de linha)
-            CERT='$(echo "${{ secrets.CERT }}" | sed 's/\\n/\n/g')'
-            KEY='$(echo "${{ secrets.KEY }}" | sed 's/\\n/\n/g')'
-            ITAU_CRT='$(echo "${{ secrets.ITAU_CRT }}" | sed 's/\\n/\n/g')'
-            ITAU_KEY='$(echo "${{ secrets.ITAU_KEY }}" | sed 's/\\n/\n/g')'
-            INTER_CERT='$(echo "${{ secrets.INTER_CERT }}" | sed 's/\\n/\n/g')'
-            INTER_KEY='$(echo "${{ secrets.INTER_KEY }}" | sed 's/\\n/\n/g')'
-
             # Ambiente
             NODE_ENV=development
             EOF
-
-            echo "✅ .env DEV criado"
-            echo "🐳 Subindo container DEV..."
-            docker-compose -f docker-compose.dev.yml down || true
-            docker-compose -f docker-compose.dev.yml up -d --build
-            echo "📋 Logs do container DEV:"
-            docker logs api-dev
+            echo "✅ .env.development DEV criado com sucesso"
+            cat .env.development
 
       - name: 🛠️ Criar .env na EC2 (PROD)
         if: github.ref == 'refs/heads/main'
@@ -173,12 +136,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/ubuntu/app-prod
-            echo "🔧 Criando .env para PROD..."
             cat > .env << EOF
             # Banco de dados
-            DATABASE_URL=${{ secrets.DATABASE_URL_PROD }}
-            HOST=localhost
-            PORT=9841
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            HOST=0.0.0.0
+            PORT=3333
+            LOG_PATH=../log.txt
+            SALT=12
+            INTERNAL_ERROR_MSG=internal error, try later.
 
             # Integrações
             API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
@@ -216,15 +181,6 @@ jobs:
             SCOPE=${{ secrets.SCOPE }}
             ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}
 
-            # Pix Itaú
-            ITAU_PIX_KEY=${{ secrets.ITAU_PIX_KEY }}
-            ITAU_CLIENT_ID=${{ secrets.ITAU_CLIENT_ID }}
-            ITAU_AGENCY_ID=${{ secrets.ITAU_AGENCY_ID }}
-            ITAU_ACCOUNT_ID=${{ secrets.ITAU_ACCOUNT_ID }}
-            ITAU_TOKEN=${{ secrets.ITAU_TOKEN }}
-            ITAU_SECRET=${{ secrets.ITAU_SECRET }}
-            ITAU_ETAPA=${{ secrets.ITAU_ETAPA }}
-
             # AWS S3
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
             AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -251,23 +207,6 @@ jobs:
             AIRTABLE_TABLE_DBCLIENTE_NAME=${{ secrets.AIRTABLE_TABLE_DBCLIENTE_NAME }}
             AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}
 
-            # Inter
-            INTER_CLIENT_ID=${{ secrets.INTER_CLIENT_ID }}
-            INTER_CLIENT_SECRET=${{ secrets.INTER_CLIENT_SECRET }}
-            INTER_GRANT_TYPE=${{ secrets.INTER_GRANT_TYPE }}
-            INTER_SCOPE=${{ secrets.INTER_SCOPE }}
-            INTER_ACCOUNT_NUMBER=${{ secrets.INTER_ACCOUNT_NUMBER }}
-            INTER_PIX_KEY=${{ secrets.INTER_PIX_KEY }}
-            INTER_HOST=${{ secrets.INTER_HOST }}
-            INTER_PATH_AUTH=${{ secrets.INTER_PATH_AUTH }}
-            INTER_PATH_GENERATE_BOLECODE=${{ secrets.INTER_PATH_GENERATE_BOLECODE }}
-            INTER_PATH_GENERATE_SIMPLE_PIX=${{ secrets.INTER_PATH_GENERATE_SIMPLE_PIX }}
-            INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX=${{ secrets.INTER_PATH_GENERATE_FINE_AND_INTEREST_PIX }}
-            INTER_PATH_WEBHOOK=${{ secrets.INTER_PATH_WEBHOOK }}
-            INTER_PIX_TIMEOUT=${{ secrets.INTER_PIX_TIMEOUT }}
-            SECONDS_TO_REJECT_BOLECODE_PROMISE=${{ secrets.SECONDS_TO_REJECT_BOLECODE_PROMISE }}
-            BANK_CLIENT=${{ secrets.BANK_CLIENT }}
-
             # Slack
             SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}
             SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}
@@ -276,21 +215,51 @@ jobs:
             MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}
             MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}
 
-            # Certificados
-            CERT='$(echo "${{ secrets.CERT }}" | sed 's/\\n/\n/g')'
-            KEY='$(echo "${{ secrets.KEY }}" | sed 's/\\n/\n/g')'
-            ITAU_CRT='$(echo "${{ secrets.ITAU_CRT }}" | sed 's/\\n/\n/g')'
-            ITAU_KEY='$(echo "${{ secrets.ITAU_KEY }}" | sed 's/\\n/\n/g')'
-            INTER_CERT='$(echo "${{ secrets.INTER_CERT }}" | sed 's/\\n/\n/g')'
-            INTER_KEY='$(echo "${{ secrets.INTER_KEY }}" | sed 's/\\n/\n/g')'
-
             # Ambiente
             NODE_ENV=production
             EOF
+            echo "✅ .env PROD criado com sucesso"
+            cat .env
 
-            echo "✅ .env PROD criado"
-            echo "🐳 Subindo container PROD..."
+      - name: 🐳 Deploy com Docker Compose (DEV)
+        if: github.ref == 'refs/heads/develop'
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app-dev
+            echo "🛑 Parando container DEV antigo..."
+            docker-compose -f docker-compose.dev.yml down || true
+            echo "🛠️ Construindo e subindo API DEV..."
+            docker-compose -f docker-compose.dev.yml up -d --build
+            echo "📋 Logs do container DEV:"
+            docker logs api-dev
+
+      - name: 🐳 Deploy com Docker Compose (PROD)
+        if: github.ref == 'refs/heads/main'
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/app-prod
+            echo "🛑 Parando container PROD antigo..."
             docker-compose -f docker-compose.prod.yml down || true
+            echo "🛠️ Construindo e subindo API PROD..."
             docker-compose -f docker-compose.prod.yml up -d --build
             echo "📋 Logs do container PROD:"
             docker logs api-prod
+
+      - name: 🌐 Testar conectividade com o RDS (ambos)
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            echo "🔍 Testando conexão com o banco..."
+            sudo apt update -y && sudo apt install -y netcat --assume-yes
+            nc -zv ${{ secrets.DB_HOST }} 5432 || echo "⚠️ Falha na conexão com o banco"

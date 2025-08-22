@@ -342,7 +342,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   }
 
   await Promise.all([
-    updateOrder({ orderDocument: pdfUrl }, orderId),
+    updateOrder({ orderDocument: pdfUrl, orderTextGuru: orderText }, orderId),
     addDetailing(
       detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)
     ),
@@ -457,6 +457,8 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
       restaurantId: decoded.id,
       orderId
     })
+
+    await updateOrder({ orderTextGuru: orderText }, orderId)
 
     await deleteCartByUser({
       token: req.token,

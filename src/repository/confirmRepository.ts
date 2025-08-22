@@ -70,6 +70,7 @@ export const updateOrder = async (data: any, id: string): Promise<void> => {
       }
     })
   } catch (err: any) {
+    console.error('Error updating order:', err)
     await logRegister(err)
   } finally {
     await prisma.$disconnect()
