@@ -6,6 +6,7 @@ import { createDetailingAirtable } from '../repository/airtableDetailingService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { findProductsIdsFromAirtable } from '../repository/airtableProductService'
 import { findIdFromAirtable } from '../repository/airtableSupplierService'
+import { airtableOrderErrorMessage } from '../utils/slackUtils'
 
 export const airtableHandler = async (
   _order: Order,
@@ -63,7 +64,12 @@ export const airtableHandler = async (
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'Forma de pagamento': _order.paymentWay ?? '',
       'ID Distribuidor':
-        _order.restaurantId === 'C757' || _order.restaurantId === 'C939' || _order.restaurantId === 'C940' || _order.restaurantId === 'C941' ? ['recWgNcSLy6StEn4L'] : [supplierId],
+        _order.restaurantId === 'C757' ||
+        _order.restaurantId === 'C939' ||
+        _order.restaurantId === 'C940' ||
+        _order.restaurantId === 'C941'
+          ? ['recWgNcSLy6StEn4L']
+          : [supplierId],
       // 'ID Distribuidor': [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
@@ -78,12 +84,12 @@ export const airtableHandler = async (
         _order.status_id === 12
           ? 'Confirmado'
           : _order.status_id === 13
-            ? 'Teste'
-            : _order.status_id === 6
-              ? 'Cancelado'
-              : _order.status_id === 13
-                ? 'Recusado'
-                : 'Teste',
+          ? 'Teste'
+          : _order.status_id === 6
+          ? 'Cancelado'
+          : _order.status_id === 13
+          ? 'Recusado'
+          : 'Teste',
       'Recibo original': [
         {
           url: _order.orderDocument!
@@ -134,6 +140,7 @@ export const airtableHandler = async (
       'Texto Pedido': orderText
     })
   } catch (err) {
+    await airtableOrderErrorMessage(_order.id, orderText)
     console.error('>>>erro: ', err)
   }
 }
