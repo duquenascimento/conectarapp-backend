@@ -79,11 +79,7 @@ const addToCart = async (req: ICartAddRequest, id: string): Promise<void> => {
     restaurantId: id,
     addOrder: req.addOrder
   }
-  /* const result = await findByProductAndUser({
-    productId: req.productId,
-    restaurantId: request.restaurantId
-  })
-  if (result != null) request.id = result.id */
+
   if (request.amount === 0) {
     await deleteByUserIdAndProductId(request.id)
   }
@@ -120,7 +116,6 @@ export const addService = async (req: ICartAddRequestArray): Promise<void> => {
     for (const cart of req.carts) {
       orderIndex++
       cart.addOrder = orderIndex
-      // await addToCart(cart, decoded.id)
     }
 
     const addResults = await Promise.allSettled(
