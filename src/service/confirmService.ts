@@ -89,7 +89,7 @@ ${req.supplier.discount.product
 ${req.restaurant.restaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${
     req.restaurant.restaurant.addressInfos[0].responsibleReceivingPhoneNumber ??
     ''
-  }
+  }\n\n
 
 ${req.restaurant.restaurant.addressInfos[0].address}, ${
     req.restaurant.restaurant.addressInfos[0].localNumber
@@ -416,7 +416,7 @@ ${cart
 ${req.selectedRestaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${
       req.selectedRestaurant.addressInfos[0].responsibleReceivingPhoneNumber ??
       ''
-    }
+    }\n\n
 
 
 ${req.selectedRestaurant.addressInfos[0].address}, ${
