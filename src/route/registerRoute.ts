@@ -1,6 +1,7 @@
 import { type FastifyInstance } from 'fastify'
-import { type CheckCnpj, checkCnpj, fullRegister, type RestaurantFormData } from '../service/registerService'
+import { type CheckCnpj, checkCnpj, fullRegister, getProgress, type RestaurantFormData, saveProgress } from '../service/registerService'
 import registerSchema from '../validators/registerValidator'
+
 export const registerRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/register/checkCnpj', async (req, res): Promise<any> => {
     try {
@@ -50,6 +51,31 @@ export const registerRoute = async (server: FastifyInstance): Promise<void> => {
           msg: message
         })
       }
+    }
+  })
+
+  server.post('/register/save-progress', async (req, res): Promise<any> => {
+    try {
+      const token = (req.headers.authorization ?? '').replace('Bearer ', '')
+      const { step, values } = req.body as { step: number, values: Record<string, any> }
+
+      await saveProgress(token, step, values)
+      return await res.status(200).send({ status: 200, msg: 'Progresso salvo' })
+    } catch (err) {
+      const message = (err as Error).message
+      return await res.status(500).send({ status: 500, msg: message })
+    }
+  })
+
+  server.get('/register/progress', async (req, res): Promise<any> => {
+    try {
+      const token = (req.headers.authorization ?? '').replace('Bearer ', '')
+      const progress = await getProgress(token)
+
+      return await res.status(200).send({ status: 200, progress })
+    } catch (err) {
+      const message = (err as Error).message
+      return await res.status(404).send({ status: 404, msg: message })
     }
   })
 }

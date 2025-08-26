@@ -9,6 +9,7 @@ import { createRegisterAirtable } from '../repository/airtableRegisterService'
 import { mapCnpjData } from '../utils/mapCnpjData'
 import { validateDocument } from '../utils/validateDocument'
 import { v4 as uuidv4 } from 'uuid'
+import { findRegisterProgressByUser, upsertRegisterProgress } from '../repository/registerRepository'
 
 export interface CheckCnpj {
   cnpj: string
@@ -222,4 +223,21 @@ function capitalizeWithExceptions(text: string): string {
       return word.charAt(0).toUpperCase() + word.slice(1)
     })
     .join(' ')
+}
+
+export const saveProgress = async (token: string, step: number, values: Record<string, any>): Promise<void> => {
+  const decoded = decode(token) as { id: string }
+  if (!decoded?.id) throw new Error('Token inválido')
+
+  await upsertRegisterProgress(decoded.id, step, values)
+}
+
+export const getProgress = async (token: string): Promise<any> => {
+  const decoded = decode(token) as { id: string }
+  if (!decoded?.id) throw new Error('Token inválido')
+
+  const progress = await findRegisterProgressByUser(decoded.id)
+  if (!progress) throw new Error('Nenhum progresso encontrado')
+
+  return progress
 }
