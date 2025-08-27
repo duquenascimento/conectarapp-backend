@@ -48,8 +48,8 @@ export const airtableOrderErrorMessage = async (
   orderText: string
 ) => {
   await sendMessage(`@canal Erro ao criar o pedido no Airtable: 
-
-    *************** OrderId: ${orderId}*****************
+        >>>>>>>>>>>>>>>  TESTE  <<<<<<<<<<<<<<<<
+    *************** OrderId: ${orderId} *****************
     
     ${orderText}
     ****************************************************`)
