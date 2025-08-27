@@ -111,13 +111,6 @@ export const addService = async (req: ICartAddRequestArray): Promise<void> => {
     const decoded = decode(req.token) as { id: string }
     const restaurantId = decoded.id
 
-    const countItens = await countCartItens(restaurantId)
-    let orderIndex = countItens
-    for (const cart of req.carts) {
-      orderIndex++
-      cart.addOrder = orderIndex
-    }
-
     const addResults = await Promise.allSettled(
       req.carts.map(async (cart) => {
         await addToCart(cart, restaurantId)
