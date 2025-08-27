@@ -1,4 +1,5 @@
 import { type FastifyInstance } from 'fastify'
+import { findById } from '../repository/userRepository'
 import { type CheckCnpj, checkCnpj, fullRegister, getProgress, type RestaurantFormData, saveProgress } from '../service/registerService'
 import registerSchema from '../validators/registerValidator'
 
@@ -71,7 +72,8 @@ export const registerRoute = async (server: FastifyInstance): Promise<void> => {
     try {
       const token = (req.headers.authorization ?? '').replace('Bearer ', '')
       const progress = await getProgress(token)
-
+      const hasUserRegistered = await findById(progress.userId as string)
+      progress.roleUser = hasUserRegistered?.role[0]
       return await res.status(200).send({ status: 200, progress })
     } catch (err) {
       const message = (err as Error).message
