@@ -95,6 +95,18 @@ export interface addressFormData {
   closedDoorDelivery: boolean
 }
 
+interface Progress {
+  step: number
+  completed: boolean
+  userId: string
+}
+
+interface ProgressResult {
+  success: boolean
+  data?: Progress
+  error?: string
+}
+
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
 })
@@ -210,7 +222,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
   }
 }
 
-function capitalizeWithExceptions(text: string): string {
+function capitalizeWithExceptions (text: string): string {
   const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
 
   return text
@@ -232,12 +244,42 @@ export const saveProgress = async (token: string, step: number, values: Record<s
   await upsertRegisterProgress(decoded.id, step, values)
 }
 
-export const getProgress = async (token: string): Promise<any> => {
-  const decoded = decode(token) as { id: string }
-  if (!decoded?.id) throw new Error('Token inválido')
+// export const getProgress = async (token: string): Promise<ProgressResult> => {
+//   const decoded = decode(token) as { id?: string }
+//   if (!decoded?.id) {
+//     return { success: false, error: 'Token inválido' }
+//   }
+
+//   const progress = await findRegisterProgressByUser(decoded.id)
+//   if (!progress) {
+//     return { success: false, error: 'Nenhum progresso encontrado' }
+//   }
+
+//   return {
+//     success: true,
+//     data: {
+//       ...progress,
+//       userId: decoded.id
+//     }
+//   }
+// }
+
+export const getProgress = async (token: string): Promise<ProgressResult> => {
+  const decoded = decode(token) as { id?: string }
+  if (!decoded?.id) {
+    return { success: false, error: 'Token inválido' }
+  }
 
   const progress = await findRegisterProgressByUser(decoded.id)
-  if (!progress) throw new Error('Nenhum progresso encontrado')
+  if (!progress) {
+    return { success: false, error: 'Nenhum progresso encontrado' }
+  }
 
-  return progress
+  return {
+    success: true,
+    data: {
+      ...progress,
+      userId: decoded.id // sempre presente
+    }
+  }
 }

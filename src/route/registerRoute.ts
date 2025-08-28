@@ -68,16 +68,40 @@ export const registerRoute = async (server: FastifyInstance): Promise<void> => {
     }
   })
 
-  server.get('/register/progress', async (req, res): Promise<any> => {
+  server.get('/register/progress', async (req, res) => {
     try {
       const token = (req.headers.authorization ?? '').replace('Bearer ', '')
-      const progress = await getProgress(token)
-      const hasUserRegistered = await findById(progress.userId as string)
-      progress.roleUser = hasUserRegistered?.role[0]
-      return await res.status(200).send({ status: 200, progress })
+      const progressResult = await getProgress(token)
+
+      if (!progressResult.success) {
+        if (progressResult.error === 'Nenhum progresso encontrado') {
+          return await res.status(204).send()
+        }
+
+        return await res.status(400).send({
+          status: 400,
+          msg: progressResult.error
+        })
+      }
+
+      const progress = progressResult.data!
+      const hasUserRegistered = await findById(progress.userId)
+
+      const roleUser = hasUserRegistered?.role?.[0] ?? ''
+
+      return await res.status(200).send({
+        status: 200,
+        progress: {
+          ...progress,
+          roleUser
+        }
+      })
     } catch (err) {
-      const message = (err as Error).message
-      return await res.status(404).send({ status: 404, msg: message })
+      console.error('Erro inesperado ao obter progresso:', JSON.stringify(err))
+      return await res.status(500).send({
+        status: 500,
+        msg: 'Erro interno no servidor'
+      })
     }
   })
 }
