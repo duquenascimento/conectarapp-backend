@@ -244,26 +244,6 @@ export const saveProgress = async (token: string, step: number, values: Record<s
   await upsertRegisterProgress(decoded.id, step, values)
 }
 
-// export const getProgress = async (token: string): Promise<ProgressResult> => {
-//   const decoded = decode(token) as { id?: string }
-//   if (!decoded?.id) {
-//     return { success: false, error: 'Token inválido' }
-//   }
-
-//   const progress = await findRegisterProgressByUser(decoded.id)
-//   if (!progress) {
-//     return { success: false, error: 'Nenhum progresso encontrado' }
-//   }
-
-//   return {
-//     success: true,
-//     data: {
-//       ...progress,
-//       userId: decoded.id
-//     }
-//   }
-// }
-
 export const getProgress = async (token: string): Promise<ProgressResult> => {
   const decoded = decode(token) as { id?: string }
   if (!decoded?.id) {
@@ -279,7 +259,7 @@ export const getProgress = async (token: string): Promise<ProgressResult> => {
     success: true,
     data: {
       ...progress,
-      userId: decoded.id // sempre presente
+      userId: decoded.id
     }
   }
 }
