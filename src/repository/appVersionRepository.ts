@@ -2,8 +2,7 @@ import { PrismaClient, type appVersion } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export const createAppVersion = async (data: { externalId: string, version: string, statusId: number, OperationalSystem: string }): Promise<appVersion> => {
-  // Verifica se o restaurante com o externalId existe
+export const createAppVersion = async (data: { externalId: string; version: string; statusId: number; OperationalSystem: string }): Promise<appVersion> => {
   const restaurant = await prisma.restaurant.findUnique({
     where: { externalId: data.externalId }
   })
@@ -30,12 +29,7 @@ export const createAppVersion = async (data: { externalId: string, version: stri
   })
 }
 
-export const updateAppVersion = async (data: {
-  externalId: string
-  version: string
-  statusId: number
-  OperationalSystem: string
-}) => {
+export const updateAppVersion = async (data: { externalId: string; version: string; statusId: number; OperationalSystem: string }) => {
   return await prisma.appVersion.update({
     where: {
       externalId: data.externalId
@@ -55,7 +49,6 @@ export const updateAppVersion = async (data: {
     }
   })
 }
-
 
 export const findAppVersionByExternalId = async (externalId: string): Promise<appVersion | null> => {
   return await prisma.appVersion.findFirst({

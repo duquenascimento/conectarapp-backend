@@ -10,7 +10,6 @@ export enum TipoProdutoEnum {
 
 export enum TipoFornecedorEnum {
   QUALQUER = 'qualquer',
-  MELHOR_AVALIADO = 'melhor_avaliado',
   ESPECIFICO = 'especifico'
 }
 

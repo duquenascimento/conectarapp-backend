@@ -98,7 +98,7 @@ export const authRoute = async (server: FastifyInstance): Promise<void> => {
 
   server.post('/auth/recoveryCheck', async (req, res): Promise<any> => {
     try {
-      await PwRecoveryCheckService(req.body as { email: string, codeSent: string })
+      await PwRecoveryCheckService(req.body as { email: string; codeSent: string })
       return await res.status(200).send({
         status: 200
       })
@@ -120,7 +120,7 @@ export const authRoute = async (server: FastifyInstance): Promise<void> => {
 
   server.post('/auth/pwChange', async (req, res): Promise<any> => {
     try {
-      await PwChange(req.body as { email: string, codeSent: string, newPW: string })
+      await PwChange(req.body as { email: string; codeSent: string; newPW: string })
       return await res.status(200).send({
         status: 200
       })
