@@ -9,6 +9,7 @@ import { createRegisterAirtable } from '../repository/airtableRegisterService'
 import { mapCnpjData } from '../utils/mapCnpjData'
 import { validateDocument } from '../utils/validateDocument'
 import { v4 as uuidv4 } from 'uuid'
+import { findRegisterProgressByUser, upsertRegisterProgress } from '../repository/registerRepository'
 
 export interface CheckCnpj {
   cnpj: string
@@ -92,6 +93,18 @@ export interface addressFormData {
   localType: string
   city: string
   closedDoorDelivery: boolean
+}
+
+interface Progress {
+  step: number
+  completed: boolean
+  userId: string
+}
+
+interface ProgressResult {
+  success: boolean
+  data?: Progress
+  error?: string
 }
 
 configure({
@@ -209,7 +222,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
   }
 }
 
-function capitalizeWithExceptions(text: string): string {
+function capitalizeWithExceptions (text: string): string {
   const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
 
   return text
@@ -222,4 +235,31 @@ function capitalizeWithExceptions(text: string): string {
       return word.charAt(0).toUpperCase() + word.slice(1)
     })
     .join(' ')
+}
+
+export const saveProgress = async (token: string, step: number, values: Record<string, any>): Promise<void> => {
+  const decoded = decode(token) as { id: string }
+  if (!decoded?.id) throw new Error('Token inválido')
+
+  await upsertRegisterProgress(decoded.id, step, values)
+}
+
+export const getProgress = async (token: string): Promise<ProgressResult> => {
+  const decoded = decode(token) as { id?: string }
+  if (!decoded?.id) {
+    return { success: false, error: 'Token inválido' }
+  }
+
+  const progress = await findRegisterProgressByUser(decoded.id)
+  if (!progress) {
+    return { success: false, error: 'Nenhum progresso encontrado' }
+  }
+
+  return {
+    success: true,
+    data: {
+      ...progress,
+      userId: decoded.id
+    }
+  }
 }
