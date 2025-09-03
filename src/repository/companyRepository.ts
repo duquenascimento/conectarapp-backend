@@ -100,11 +100,11 @@ export const createCompany = async (data: Company): Promise<any> => {
   try {
     const company = await prisma.companies.create(dataForCreate)
     return company
-  } catch (error) {
+  } catch (error: any) {
     await logRecord({
       level: 'error',
       message: 'Erro ao criar empresa',
-      data: error,
+      data: { error, 'error.message': error?.message },
       location: 'companyRepository.createCompany'
     })
     throw new Error('Failed to create company')

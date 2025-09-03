@@ -12,7 +12,7 @@ const formatDate = (dateString: string): Date => {
 
 const mapCNPJDataToCompany = (data: any): Company => {
   return {
-    cnpj: data.cnpj.replace(/\D/g, ''), 
+    cnpj: data.cnpj.replace(/\D/g, ''),
     identificador_matriz_filial: data.matrizfilial.id,
     descricao_matriz_filial: data.matrizfilial.tipo,
     razao_social: data.razao,
@@ -20,7 +20,7 @@ const mapCNPJDataToCompany = (data: any): Company => {
     situacao_cadastral: data.situacao.id,
     descricao_situacao_cadastral: data.situacao.nome,
     data_situacao_cadastral: formatDate(data.situacao.data),
-    motivo_situacao_cadastral: data.situacao.motivo.id,
+    motivo_situacao_cadastral: data.situacao.motivo.id ?? 0,
     nome_cidade_exterior: undefined,
     codigo_natureza_juridica: parseInt(data.naturezaJuridica.codigo, 10),
     data_inicio_atividade: formatDate(data.inicioAtividade),
