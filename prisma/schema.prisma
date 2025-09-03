@@ -19,6 +19,8 @@ model user {
   role       String[]  @db.VarChar(500)
   createdAt  DateTime  @db.Date
   updatedAt  DateTime? @db.Date
+
+  register_progress register_progress?
 }
 
 model restaurant {
@@ -351,4 +353,14 @@ model restaurant_supplier {
 enum LogStatus {
   SUCCESS
   FAIL
+}
+
+model register_progress {
+  id        String   @id @default(uuid())
+  userId    String   @unique @db.Uuid
+  step      Int
+  values    Json
+  updatedAt DateTime @updatedAt
+
+  user      user     @relation(fields: [userId], references: [id])
 }
