@@ -140,7 +140,11 @@ export const airtableHandler = async (
       'Texto Pedido': orderText
     })
   } catch (err) {
-    await airtableOrderErrorMessage(_order.id, orderText)
+    const message = `${orderText}
+  *************************************
+  Fornecedor: ${_order.supplierId}
+    `
+    await airtableOrderErrorMessage(_order.id, message)
     console.error('>>>erro: ', err)
   }
 }
