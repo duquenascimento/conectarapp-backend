@@ -14,11 +14,14 @@ import { deleteCartByUser } from './cartService'
 import { listByUser } from '../repository/cartRepository'
 import { decode } from 'jsonwebtoken'
 import { listProduct } from './productService'
-import { configure } from 'airtable'
+import Airtable, { configure } from 'airtable'
 import { saveTransaction } from '../repository/financeRepository'
 import { Decimal } from '@prisma/client/runtime/library'
 import { logRegister } from '../utils/logUtils'
-import { receiptErrorMessage } from '../utils/slackUtils'
+import {
+  airtableOrderErrorMessage,
+  receiptErrorMessage
+} from '../utils/slackUtils'
 import { airtableHandler } from './airtableConfirmService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import {
@@ -340,15 +343,22 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     pdfUrl = await uploadPdfFileToS3(String(documintResponse.url), pdfKey)
     order.orderDocument = pdfUrl
   }
-
   await Promise.all([
     updateOrder({ orderDocument: pdfUrl, orderTextGuru: orderText }, orderId),
     addDetailing(
       detailing.map(({ name, orderUnit, quotationUnit, ...rest }) => rest)
-    ),
-    airtableHandler(order, detailing, yourNumber, orderText)
+    )
   ])
 
+  try {
+    await airtableHandler(order, detailing, yourNumber, orderText)
+  } catch (error: any) {
+    const message = `${orderText}
+          *************************************
+          Fornecedor: ${order.supplierId}
+            `
+    await airtableOrderErrorMessage(order.id, message)
+  }
   if (shouldDeleteCart) {
     await deleteCartByUser({
       token: req.token,
@@ -390,8 +400,9 @@ export const confirmOrderPremium = async (
       true,
       req.selectedRestaurant.externalId as string
     )
-    if (cart == null || items == null)
+    if (cart == null || items == null) {
       throw Error('Empty cart/items', { cause: 'visibleError' })
+    }
     const orderText = `🌱 *Pedido Conéctar* 🌱
 ---------------------------------------
 

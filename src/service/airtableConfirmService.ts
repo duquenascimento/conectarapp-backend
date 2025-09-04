@@ -6,7 +6,6 @@ import { createDetailingAirtable } from '../repository/airtableDetailingService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { findProductsIdsFromAirtable } from '../repository/airtableProductService'
 import { findIdFromAirtable } from '../repository/airtableSupplierService'
-import { airtableOrderErrorMessage } from '../utils/slackUtils'
 
 export const airtableHandler = async (
   _order: Order,
@@ -87,9 +86,7 @@ export const airtableHandler = async (
           ? 'Teste'
           : _order.status_id === 6
           ? 'Cancelado'
-          : _order.status_id === 13
-          ? 'Recusado'
-          : 'Teste',
+          : 'Recusado',
       'Recibo original': [
         {
           url: _order.orderDocument!
@@ -139,12 +136,7 @@ export const airtableHandler = async (
       'ID Cliente': _order.restaurantId,
       'Texto Pedido': orderText
     })
-  } catch (err) {
-    const message = `${orderText}
-  *************************************
-  Fornecedor: ${_order.supplierId}
-    `
-    await airtableOrderErrorMessage(_order.id, message)
-    console.error('>>>erro: ', err)
+  } catch (err: any) {
+    throw new Error(`Erro no servico do airtable: ${err.message}`)
   }
 }

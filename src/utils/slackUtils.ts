@@ -19,7 +19,8 @@ const sendMessage = async (msg: string): Promise<void> => {
       text: msg ?? ''
     })
   } catch (err) {
-    void logRegister(err)
+    console.error('Falha ao enviar mensagem para o slack: ', err)
+    void logRegister(err, false)
   }
 }
 

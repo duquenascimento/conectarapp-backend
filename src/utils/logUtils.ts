@@ -8,7 +8,7 @@ const getSãoPauloDate = (): string => {
   return saoPauloDateTime.toFormat('yyyy-MM-dd HH:mm:ss')
 }
 
-export const logRegister = async (err: any): Promise<void> => {
+export const logRegister = async (err: any, rethrow = true): Promise<void> => {
   try {
     console.error(err)
     const logDir = path.join(process.cwd(), 'logs')
@@ -25,9 +25,17 @@ export const logRegister = async (err: any): Promise<void> => {
 
     await appendFile(logPath, `${timestamp} - ERROR: ${errorMessage}\n`)
 
-    throw new Error(process.env.INTERNAL_ERROR_MSG ?? 'Internal error.')
+    // throw new Error(process.env.INTERNAL_ERROR_MSG ?? 'Internal error.')
   } catch (error) {
     console.error('Error logging the message:', error)
-    throw error
+    // throw error
+  } finally {
+    if (rethrow) {
+      if (err instanceof Error) {
+        throw err
+      } else {
+        throw new Error(String(err))
+      }
+    }
   }
 }
