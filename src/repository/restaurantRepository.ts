@@ -6,6 +6,7 @@ import { type addressFormData } from '../service/registerService'
 import { v4 as uuidv4 } from 'uuid'
 import { HttpException } from '../errors/httpException'
 import { authorizedPremiumRestautants } from '../utils/restaurantUtils'
+import { logRecord } from '../utils/log-utility'
 
 const prisma = new PrismaClient()
 
@@ -68,7 +69,7 @@ export const removeClientCount = async (): Promise<void> => {
 
 export const registerAddress = async (req: addressFormData): Promise<any> => {
   try {
-    await prisma.address.create({
+    const dataRegisterAddress = {
       data: {
         address: req.street,
         zipCode: req.zipcode,
@@ -90,8 +91,21 @@ export const registerAddress = async (req: addressFormData): Promise<any> => {
         complement: req.complement,
         localNumber: req.localNumber
       }
+    }
+    await logRecord({
+      level: 'info',
+      message: 'Dados para registrar endereço',
+      data: dataRegisterAddress,
+      location: 'restaurantRepository.registerAddress'
     })
+    await prisma.address.create(dataRegisterAddress)
   } catch (err: any) {
+    await logRecord({
+      level: 'error',
+      message: 'Error ao registrar endereço',
+      data: err,
+      location: 'restaurantRepository.registerAddress'
+    })
     await logRegister(err)
   } finally {
     await prisma.$disconnect()
@@ -133,6 +147,12 @@ export const findRestaurantByCompanyRegistrationNumberForBilling = async (compan
 
 export const updateUserWithRestaurant = async (userId: string, restaurantId: string, updatedAt: Date): Promise<any> => {
   try {
+    await logRecord({
+      level: 'info',
+      message: 'Dados para atualizar usuário com restaurante',
+      data: ({ userId, restaurantId, updatedAt }),
+      location: 'restaurantRepository.updateUserWithRestaurant'
+    })
     const result = await prisma.user.update({
       where: {
         id: userId
@@ -145,6 +165,12 @@ export const updateUserWithRestaurant = async (userId: string, restaurantId: str
     })
     return result
   } catch (err: any) {
+    await logRecord({
+      level: 'error',
+      message: 'Erro ao atualizar usuário com restaurante',
+      data: err,
+      location: 'restaurantRepository.updateUserWithRestaurant'
+    })
     await prisma.$disconnect()
     await logRegister(err)
     return null

@@ -89,7 +89,7 @@ ${req.supplier.discount.product
 ${req.restaurant.restaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${
     req.restaurant.restaurant.addressInfos[0].responsibleReceivingPhoneNumber ??
     ''
-  }
+  }\n\n
 
 ${req.restaurant.restaurant.addressInfos[0].address}, ${
     req.restaurant.restaurant.addressInfos[0].localNumber
@@ -357,6 +357,8 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   }
 
   return {
+    orderId,
+    externalId: req.supplier.externalId,
     restName: req.restaurant.restaurant.name,
     address: `${req.restaurant.restaurant.addressInfos[0].localType} ${req.restaurant.restaurant.addressInfos[0].address}, ${req.restaurant.restaurant.addressInfos[0].localNumber} - ${req.restaurant.restaurant.addressInfos[0].complement}, ${req.restaurant.restaurant.addressInfos[0].neighborhood}, ${req.restaurant.restaurant.addressInfos[0].city}`,
     maxHour:
@@ -416,7 +418,7 @@ ${cart
 ${req.selectedRestaurant.addressInfos[0].responsibleReceivingName ?? ''} - ${
       req.selectedRestaurant.addressInfos[0].responsibleReceivingPhoneNumber ??
       ''
-    }
+    }\n\n
 
 
 ${req.selectedRestaurant.addressInfos[0].address}, ${

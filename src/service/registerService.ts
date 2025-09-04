@@ -9,7 +9,8 @@ import { createRegisterAirtable } from '../repository/airtableRegisterService'
 import { mapCnpjData } from '../utils/mapCnpjData'
 import { validateDocument } from '../utils/validateDocument'
 import { v4 as uuidv4 } from 'uuid'
-
+import { findRegisterProgressByUser, upsertRegisterProgress } from '../repository/registerRepository'
+import { logRecord } from '../utils/log-utility'
 export interface CheckCnpj {
   cnpj: string
 }
@@ -94,6 +95,18 @@ export interface addressFormData {
   closedDoorDelivery: boolean
 }
 
+interface Progress {
+  step: number
+  completed: boolean
+  userId: string
+}
+
+interface ProgressResult {
+  success: boolean
+  data?: Progress
+  error?: string
+}
+
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
 })
@@ -110,7 +123,7 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
     const isoFormattedTimeMax = `2024-01-01T${maxHourFormated?.substring(0, 12)}000Z`
     const isoFormattedTimeMin = `2024-01-01T${minHourFormated?.substring(0, 12)}000Z`
 
-    const airtableRecord = await createRegisterAirtable({
+    const dataForRegister = {
       'A partir de que horas seu estabelecimento está disponível para recebimento de hortifrúti?': req.minHour,
       'ID pagamento': req.paymentWay,
       'Nome do estabelecimento': req.restaurantName,
@@ -137,13 +150,35 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'Nome responsável financeiro': req.financeResponsibleName,
       'Telefone do responsável financeiro com DDD': req.financeResponsiblePhoneNumber,
       'E-mail financeiro para envio de cobranças': req.emailBilling
+    }
+
+    await logRecord({
+      level: 'info',
+      message: 'Dados para registro no AirTable:',
+      data: dataForRegister,
+      location: 'registerService.fullRegister'
     })
 
+    const airtableRecord = await createRegisterAirtable(dataForRegister)
+
     if (!airtableRecord || typeof airtableRecord !== 'object' || !('fields' in airtableRecord)) {
+      await logRecord({
+        level: 'error',
+        message: 'Falha ao criar registro no Airtable ou estrutura do registro inválida',
+        data: dataForRegister,
+        location: 'registerService.fullRegister'
+      })
+
       throw new Error('Falha ao criar registro no Airtable ou estrutura do registro inválida')
     }
 
     if (!airtableRecord.fields || typeof airtableRecord.fields !== 'object' || !('ID_Cliente' in airtableRecord.fields)) {
+      await logRecord({
+        level: 'error',
+        message: 'ID_Cliente não encontrado no registro do Airtable',
+        data: dataForRegister,
+        location: 'registerService.fullRegister'
+      })
       throw new Error('ID_Cliente não encontrado no registro do Airtable')
     }
 
@@ -205,11 +240,17 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
 
     await updateUserWithRestaurant(decoded.id, restaurantId, DateTime.now().setZone('America/Sao_Paulo').toJSDate())
   } catch (err) {
+    await logRecord({
+      level: 'error',
+      message: 'Erro ao registrar dados do restaurante',
+      data: err,
+      location: 'registerService.fullRegister'
+    })
     console.error(err)
   }
 }
 
-function capitalizeWithExceptions(text: string): string {
+function capitalizeWithExceptions (text: string): string {
   const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
 
   return text
@@ -222,4 +263,31 @@ function capitalizeWithExceptions(text: string): string {
       return word.charAt(0).toUpperCase() + word.slice(1)
     })
     .join(' ')
+}
+
+export const saveProgress = async (token: string, step: number, values: Record<string, any>): Promise<void> => {
+  const decoded = decode(token) as { id: string }
+  if (!decoded?.id) throw new Error('Token inválido')
+
+  await upsertRegisterProgress(decoded.id, step, values)
+}
+
+export const getProgress = async (token: string): Promise<ProgressResult> => {
+  const decoded = decode(token) as { id?: string }
+  if (!decoded?.id) {
+    return { success: false, error: 'Token inválido' }
+  }
+
+  const progress = await findRegisterProgressByUser(decoded.id)
+  if (!progress) {
+    return { success: false, error: 'Nenhum progresso encontrado' }
+  }
+
+  return {
+    success: true,
+    data: {
+      ...progress,
+      userId: decoded.id
+    }
+  }
 }
