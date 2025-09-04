@@ -8,10 +8,6 @@ interface BolecodeAndPixErrorMessage {
   finalValue: number
 }
 
-/* const client = new WebClient(process.env.SLACK_TOKEN, {
-  logLevel: LogLevel.DEBUG
-}) */
-
 export const createSlackClient = (): WebClient => {
   return new WebClient(process.env.SLACK_TOKEN, {
     logLevel: LogLevel.DEBUG
