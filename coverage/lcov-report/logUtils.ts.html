@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">96% </span>
+                <span class="strong">32% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>24/25</span>
+                <span class='fraction'>8/25</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">77.77% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>7/9</span>
+                <span class='fraction'>0/9</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">100% </span>
+                <span class="strong">0% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/2</span>
+                <span class='fraction'>0/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">95.83% </span>
+                <span class="strong">29.16% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>23/24</span>
+                <span class='fraction'>7/24</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line high'></div>
+    <div class='status-line low'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -111,37 +111,37 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -151,38 +151,38 @@ import 'dotenv/config'
 import path from 'path'
 import * as fs from 'fs'
 &nbsp;
-const getSãoPauloDate = (): string =&gt; {
-  const saoPauloDateTime = DateTime.now().setZone('America/Sao_Paulo')
-  return saoPauloDateTime.toFormat('yyyy-MM-dd HH:mm:ss')
+const getSãoPauloDate = <span class="fstat-no" title="function not covered" >(): string =</span>&gt; {
+  const saoPauloDateTime = <span class="cstat-no" title="statement not covered" >DateTime.now().setZone('America/Sao_Paulo')</span>
+<span class="cstat-no" title="statement not covered" >  return saoPauloDateTime.toFormat('yyyy-MM-dd HH:mm:ss')</span>
 }
 &nbsp;
-export const logRegister = async (err: any, rethrow = true): Promise&lt;void&gt; =&gt; {
-  try {
-    console.error(err)
-    const logDir = path.join(process.cwd(), 'logs')
-    const logFileName = DateTime.now().toFormat('yyyy-MM-dd') + '.log'
-    const logPath = path.join(logDir, logFileName)
+export const logRegister = <span class="fstat-no" title="function not covered" >async </span>(err: any, rethrow = <span class="branch-0 cbranch-no" title="branch not covered" >true)</span>: Promise&lt;void&gt; =&gt; {
+<span class="cstat-no" title="statement not covered" >  try {</span>
+<span class="cstat-no" title="statement not covered" >    console.error(err)</span>
+    const logDir = <span class="cstat-no" title="statement not covered" >path.join(process.cwd(), 'logs')</span>
+    const logFileName = <span class="cstat-no" title="statement not covered" >DateTime.now().toFormat('yyyy-MM-dd') + '.log'</span>
+    const logPath = <span class="cstat-no" title="statement not covered" >path.join(logDir, logFileName)</span>
 &nbsp;
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (!fs.existsSync(logDir)) {
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (!fs.existsSync(logDir)) {</span>
 <span class="cstat-no" title="statement not covered" >      fs.mkdirSync(logDir)</span>
     }
 &nbsp;
-    const timestamp = getSãoPauloDate()
-    const errorMessage = err instanceof Error ? err.message : String(err)
+    const timestamp = <span class="cstat-no" title="statement not covered" >getSãoPauloDate()</span>
+    const errorMessage = <span class="cstat-no" title="statement not covered" >err instanceof Error ? err.message : String(err)</span>
 &nbsp;
-    await appendFile(logPath, `${timestamp} - ERROR: ${errorMessage}\n`)
+<span class="cstat-no" title="statement not covered" >    await appendFile(logPath, `${timestamp} - ERROR: ${errorMessage}\n`)</span>
   } catch (loggingError) {
-    console.error('Error logging the message:', loggingError)
+<span class="cstat-no" title="statement not covered" >    console.error('Error logging the message:', loggingError)</span>
   } finally {
-    if (rethrow) {
-      const customMsg = process.env.INTERNAL_ERROR_MSG
-      const finalError = customMsg
+<span class="cstat-no" title="statement not covered" >    <span class="missing-if-branch" title="if path not taken" >I</span>if (rethrow) {</span>
+      const customMsg = <span class="cstat-no" title="statement not covered" >process.env.INTERNAL_ERROR_MSG</span>
+      const finalError = <span class="cstat-no" title="statement not covered" >customMsg</span>
         ? new Error(customMsg)
         : err instanceof Error
         ? err
-        : <span class="branch-1 cbranch-no" title="branch not covered" >new Error(String(err))</span>
+        : new Error(String(err))
 &nbsp;
-      throw finalError
+<span class="cstat-no" title="statement not covered" >      throw finalError</span>
     }
   }
 }
@@ -193,7 +193,7 @@ export const logRegister = async (err: any, rethrow = true): Promise&lt;void&gt;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-09-04T19:15:14.970Z
+                at 2025-09-04T20:07:05.956Z
             </div>
         <script src="prettify.js"></script>
         <script>

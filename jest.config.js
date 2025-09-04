@@ -15,5 +15,10 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.ts', '!src/**/*.d.ts'],
   coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov']
+  coverageReporters: ['text', 'lcov'],
+  globals: {
+    'ts-jest': {
+      isolatedModules: true
+    }
+  }
 }
