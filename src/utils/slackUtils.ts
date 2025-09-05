@@ -8,18 +8,22 @@ interface BolecodeAndPixErrorMessage {
   finalValue: number
 }
 
-const client = new WebClient(process.env.SLACK_TOKEN, {
-  logLevel: LogLevel.DEBUG
-})
+export const createSlackClient = (): WebClient => {
+  return new WebClient(process.env.SLACK_TOKEN, {
+    logLevel: LogLevel.DEBUG
+  })
+}
 
-const sendMessage = async (msg: string): Promise<void> => {
+export const sendMessage = async (msg: string): Promise<void> => {
+  const client = createSlackClient()
   try {
     await client.chat.postMessage({
       channel: process.env.SLACK_BUGS_AND_ERROS_CHANNELID ?? '',
       text: msg ?? ''
     })
   } catch (err) {
-    void logRegister(err)
+    console.error('Falha ao enviar mensagem para o slack: ', err)
+    void logRegister(err, false)
   }
 }
 
