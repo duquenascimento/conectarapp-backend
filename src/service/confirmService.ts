@@ -484,11 +484,9 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
 
 export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
   try {
-    // Decodificar o token para obter o ID do usuário/restaurante
     const decoded = decode(req.token) as { id: string }
     if (!decoded?.id) throw new Error('Token inválido ou ausente')
 
-    // Recuperar o carrinho e os produtos
     const cart = await listByUser({ restaurantId: decoded.id })
     const items = await listProduct()
 
@@ -497,14 +495,12 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
       throw new Error('Empty cart/items', { cause: 'visibleError' })
     }
 
-    // Validar e formatar o número de telefone
     let phoneNumber = req.selectedRestaurant.addressInfos[0].phoneNumber ?? ''
-    phoneNumber = phoneNumber.replace(/\D/g, '') // Remover caracteres não numéricos
+    phoneNumber = phoneNumber.replace(/\D/g, '')
     if (!phoneNumber.startsWith('55') && phoneNumber.length < 12) {
-      phoneNumber = `55${phoneNumber}` // Adicionar DDI se necessário
+      phoneNumber = `55${phoneNumber}`
     }
 
-    // Codificar a mensagem
     const msg = encodeURIComponent(req.message)
       .replace('!', '%21')
       .replace("'", '%27')
@@ -512,7 +508,6 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
       .replace(')', '%29')
       .replace('*', '%2A')
 
-    // Validar e formatar a data/hora agendada
     const [year, month, day] = req.sendDate.split('-').map(Number)
     const [hours, minutes] = req.sendTime.split(':').map(Number)
     const sendDate = new Date(year, month - 1, day, hours, minutes)
@@ -525,10 +520,8 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
       sendDate.getHours()
     ).padStart(2, '0')}:${String(sendDate.getMinutes()).padStart(2, '0')}`
 
-    // Configurações da API do ChatGuru
     const url = `https://s16.chatguru.app/api/v1?key=${process.env.CG_API_KEY}&account_id=${process.env.CG_ACCOUNT_ID}&phone_id=${process.env.CG_PHONE_ID}&action=message_send&text=${msg}&send_date=${formattedSendDate}&chat_number=${phoneNumber}`
 
-    // Fazer a chamada à API usando `fetch`
     const response = await fetch(url, { method: 'POST' })
     await response.text()
 

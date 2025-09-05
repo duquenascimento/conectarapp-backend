@@ -1,4 +1,3 @@
-import { DateTime } from 'luxon'
 import path from 'path'
 import { logRegister } from '../../utils/logUtils'
 import { appendFile } from 'fs/promises'

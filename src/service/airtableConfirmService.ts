@@ -69,7 +69,6 @@ export const airtableHandler = async (
         _order.restaurantId === 'C941'
           ? ['recWgNcSLy6StEn4L']
           : [supplierId],
-      // 'ID Distribuidor': [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
       'Presentes na cotação': _order.calcOrderAgain.data.map(

@@ -4,7 +4,7 @@ import 'dotenv/config'
 import path from 'path'
 import * as fs from 'fs'
 
-const getSãoPauloDate = (): string => {
+const getSaoPauloDate = (): string => {
   const saoPauloDateTime = DateTime.now().setZone('America/Sao_Paulo')
   return saoPauloDateTime.toFormat('yyyy-MM-dd HH:mm:ss')
 }
@@ -20,7 +20,7 @@ export const logRegister = async (err: any, rethrow = true): Promise<void> => {
       fs.mkdirSync(logDir)
     }
 
-    const timestamp = getSãoPauloDate()
+    const timestamp = getSaoPauloDate()
     const errorMessage = err instanceof Error ? err.message : String(err)
 
     await appendFile(logPath, `${timestamp} - ERROR: ${errorMessage}\n`)

@@ -1,5 +1,3 @@
-// airtableHandler.spec.ts
-
 import { airtableHandler } from '../../service/airtableConfirmService'
 import { chunkArray } from '../../utils/chunkArray'
 import { createOrderAirtable } from '../../repository/airtableOrderService'
@@ -8,7 +6,6 @@ import { createOrderTextAirtable } from '../../repository/airtableOrderTextServi
 import { findProductsIdsFromAirtable } from '../../repository/airtableProductService'
 import { findIdFromAirtable } from '../../repository/airtableSupplierService'
 
-// Mocks
 jest.mock('../../utils/chunkArray')
 jest.mock('../../repository/airtableOrderService')
 jest.mock('../../repository/airtableDetailingService')
@@ -16,7 +13,6 @@ jest.mock('../../repository/airtableOrderTextService')
 jest.mock('../../repository/airtableProductService')
 jest.mock('../../repository/airtableSupplierService')
 
-// Mock das variáveis de ambiente
 const mockEnv = {
   AIRTABLE_TABLE_SUPPLIER_NAME: 'Suppliers',
   AIRTABLE_TABLE_REST_NAME: 'Restaurants',
