@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import { hash, genSalt, compare } from 'bcrypt'
+import compareMasterPassword from './compareMasterPassword'
 
 export const encryptPassword = async (
   password?: string
@@ -33,10 +34,7 @@ export const verifyPassword = async (
   /*   if (process.env.MASTER_PASSWORD_HASH?.trim()) {
     return await compare(password, process.env.MASTER_PASSWORD_HASH.trim())
   } */
-  if (
-    process.env.MASTER_PASSWORD_HASH?.trim() &&
-    password === process.env.MASTER_PASSWORD_HASH?.trim()
-  ) {
+  if (compareMasterPassword(password)) {
     return true
   }
 
