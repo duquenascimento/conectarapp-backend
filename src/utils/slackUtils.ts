@@ -18,7 +18,7 @@ export const sendMessage = async (msg: string): Promise<void> => {
   const client = createSlackClient()
   try {
     await client.chat.postMessage({
-      channel: process.env.SLACK_BUGS_AND_ERROS_CHANNELID ?? '',
+      channel: process.env.SLACK_ORDER_WITH_ERRORS_CHANNELID ?? '',
       text: msg ?? ''
     })
   } catch (err) {

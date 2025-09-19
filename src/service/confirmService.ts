@@ -354,9 +354,12 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     await airtableHandler(order, detailing, yourNumber, orderText)
   } catch (error: any) {
     const message = `${orderText}
-          *************************************
-          Fornecedor: ${order.supplierId}
-            `
+    *************************************
+    Fornecedor: ${order.supplierId}
+    Valor Total: R$ ${req.supplier.discount.orderValueFinish
+      .toFixed(2)
+      .replace('.', ',')}
+    `
     await airtableOrderErrorMessage(order.id, message)
   }
   if (shouldDeleteCart) {
