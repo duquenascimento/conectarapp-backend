@@ -143,6 +143,7 @@ export const signIn = async (
         email: user.email,
         restaurant: user.restaurant,
         active: user.active,
+        position: user.position,
         createdAt: user.createdAt
       },
       process.env.JWT_SECRET

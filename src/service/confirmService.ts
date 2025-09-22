@@ -33,7 +33,10 @@ import {
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
 import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
-import { isTestRestaurant } from '../utils/testRestaurantUtils'
+import {
+  isTestRestaurant,
+  isTestRestaurant2
+} from '../utils/testRestaurantUtils'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
@@ -182,9 +185,8 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     paymentWay: req.restaurant.restaurant.paymentWay,
     referencePoint: req.restaurant.restaurant.addressInfos[0].deliveryReference,
     restaurantId: req.restaurant.restaurant.externalId,
-    status_id: isTestRestaurant(req.restaurant.restaurant.externalId as string)
-      ? 13
-      : 12,
+    // isTestRestaurant(req.restaurant.restaurant.externalId as string)
+    status_id: isTestRestaurant2(req.token) ? 13 : 12,
     tax: req.restaurant.restaurant.tax / 100,
     totalConectar: req.supplier.discount.orderValueFinish,
     totalSupplier: req.supplier.discount.orderWithoutTax,
