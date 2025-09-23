@@ -277,6 +277,8 @@ export const findById = async (restaurantId: string) => {
   return await findRestaurantById(restaurantId)
 }
 
-export const checkPremiumAccess = async (externalId: string): Promise<any> => {
+export const checkPremiumAccess = async (
+  externalId: string
+): Promise<{ authorized: boolean }> => {
   return await findAuthorizedPremiumRestaurant(externalId)
 }

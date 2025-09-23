@@ -63,6 +63,7 @@ model restaurant {
   appVersion                          appVersion?           @relation("RestaurantAppVersion")
   asaasCustomerId                     String?               @db.VarChar(50)
   restaurant_supplier                 restaurant_supplier[]
+  conectarPlus                        Boolean               @default(false) @db.Boolean
 }
 
 model appVersion {
@@ -128,6 +129,8 @@ model cart {
   restaurantId String  @db.Uuid
   version      Int     @default(0)
   addOrder     Int?    @default(0)
+  createdAt    DateTime  @default(now()) @db.Date
+  updatedAt    DateTime? @updatedAt @db.Date
 
   @@unique([restaurantId, productId], name: "cart_restaurantId_productId_unique")
 }
@@ -154,7 +157,7 @@ model order {
   status              status         @relation(fields: [status_id], references: [id])
   transactions        transactions[]
   orderInvoices       order_invoice?
-  orderTextGuru       String?        @db.VarChar(2000)
+  orderTextGuru       String?         @db.VarChar(2000)
 }
 
 model detailing {

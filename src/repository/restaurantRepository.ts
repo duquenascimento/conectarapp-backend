@@ -446,9 +446,14 @@ export const findRestaurantById = async (id: string): Promise<any> => {
 }
 
 export const findAuthorizedPremiumRestaurant = async (externalId: string): Promise<{ authorized: boolean }> => {
-  const authorizedRestaurants = authorizedPremiumRestautants()
-  if (authorizedRestaurants.includes(externalId)) {
-    return { authorized: true }
+  try {
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { externalId },
+      select: { conectarPlus: true }
+    })
+    return { authorized: restaurant?.conectarPlus ?? false }
+  } catch (err) {
+    console.error('Erro ao verificar acesso premium:', err)
+    throw new Error('Falha ao consultar o restaurante')
   }
-  return { authorized: false }
 }
