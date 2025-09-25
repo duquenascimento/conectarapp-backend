@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, checkPremiumAccess } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, findConectarPlus, setConectarPlus } from '../service/restaurantService'
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -323,20 +323,56 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
-  server.get('/restaurant/premium-access/:externalId', async (req, res): Promise<any> => {
+  server.get('/restaurant/conectar-plus/:externalId', async (req, res): Promise<any> => {
     const { externalId } = req.params as { externalId: string }
     try {
-      const result = await checkPremiumAccess(externalId)
+      const result = await findConectarPlus(externalId)
       return await res.status(200).send({
         status: 200,
         data: result
       })
     } catch (error) {
-      console.error(error)
-      await res.status(500).send({
-        status: 500,
-        msg: 'Falha ao verificar acesso conectar plus'
+      const message = (error as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
+  })
+
+  server.post('/restaurant/conectar-plus', async (req, res): Promise<any> => {
+    try {
+      const { externalId, conectarPlusAuthorization } = req.body as {
+        externalId: string
+        conectarPlusAuthorization: boolean
+      }
+
+      const updated = await setConectarPlus(externalId, conectarPlusAuthorization)
+
+      return await res.status(200).send({
+        success: true,
+        ...updated
       })
+    } catch (error: any) {
+      const message = (error as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
     }
   })
 }

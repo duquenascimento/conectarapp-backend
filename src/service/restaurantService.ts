@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findAuthorizedPremiumRestaurant } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findConectarPlusAccess, updateConectarPlusAccess } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
@@ -277,8 +277,20 @@ export const findById = async (restaurantId: string) => {
   return await findRestaurantById(restaurantId)
 }
 
-export const checkPremiumAccess = async (
+export const findConectarPlus = async (
   externalId: string
 ): Promise<{ authorized: boolean }> => {
-  return await findAuthorizedPremiumRestaurant(externalId)
+  return await findConectarPlusAccess(externalId)
 }
+
+export const setConectarPlus = async (externalId: string, conectarPlusAuthorization: boolean) => {
+  if (!externalId) {
+    throw new Error('externalId é obrigatório')
+  }
+  if (typeof conectarPlusAuthorization !== 'boolean') {
+    throw new Error('O valor de conectarPlus deve ser boolean')
+  }
+
+  return await updateConectarPlusAccess(externalId, conectarPlusAuthorization)
+}
+
