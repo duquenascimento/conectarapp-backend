@@ -323,56 +323,27 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
-  server.get('/restaurant/conectar-plus/:externalId', async (req, res): Promise<any> => {
+  server.get('/restaurant/conectar-plus/:externalId', async (req, reply): Promise<any> => {
     const { externalId } = req.params as { externalId: string }
-    try {
-      const result = await findConectarPlus(externalId)
-      return await res.status(200).send({
-        status: 200,
-        data: result
-      })
-    } catch (error) {
-      const message = (error as Error).message
-      if (message === process.env.INTERNAL_ERROR_MSG) {
-        await res.status(500).send({
-          status: 500,
-          msg: message
-        })
-      } else {
-        await res.status(404).send({
-          status: 404,
-          msg: message
-        })
-      }
-    }
+
+    const result = await findConectarPlus(externalId)
+    return await reply.status(200).send({
+      status: 200,
+      data: result
+    })
   })
 
-  server.post('/restaurant/conectar-plus', async (req, res): Promise<any> => {
-    try {
-      const { externalId, conectarPlusAuthorization } = req.body as {
-        externalId: string
-        conectarPlusAuthorization: boolean
-      }
-
-      const updated = await setConectarPlus(externalId, conectarPlusAuthorization)
-
-      return await res.status(200).send({
-        success: true,
-        ...updated
-      })
-    } catch (error: any) {
-      const message = (error as Error).message
-      if (message === process.env.INTERNAL_ERROR_MSG) {
-        await res.status(500).send({
-          status: 500,
-          msg: message
-        })
-      } else {
-        await res.status(404).send({
-          status: 404,
-          msg: message
-        })
-      }
+  server.post('/restaurant/conectar-plus', async (req, reply): Promise<any> => {
+    const { externalId, conectarPlusAuthorization } = req.body as {
+      externalId: string
+      conectarPlusAuthorization: boolean
     }
+
+    const updated = await setConectarPlus(externalId, conectarPlusAuthorization)
+
+    return await reply.status(200).send({
+      success: true,
+      ...updated
+    })
   })
 }

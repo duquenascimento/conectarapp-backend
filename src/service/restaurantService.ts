@@ -195,7 +195,7 @@ export const updateAddressService = async (rest: any): Promise<void> => {
   }
 }
 
-export const updateRegistrationReleasedNewApp = async (req: { externalId: string, registrationReleasedNewApp: boolean }): Promise<void> => {
+export const updateRegistrationReleasedNewApp = async (req: { externalId: string; registrationReleasedNewApp: boolean }): Promise<void> => {
   try {
     await updateRegistrationReleasedNewAppRepository(req.externalId, req.registrationReleasedNewApp)
   } catch (err) {
@@ -204,7 +204,7 @@ export const updateRegistrationReleasedNewApp = async (req: { externalId: string
   }
 }
 
-export const updateComercialBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+export const updateComercialBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
   try {
     await updateComercialBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -213,7 +213,7 @@ export const updateComercialBlock = async (req: { restId: string, value: boolean
   }
 }
 
-export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+export const updateFinanceBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
   try {
     await updateFinanceBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -277,9 +277,7 @@ export const findById = async (restaurantId: string) => {
   return await findRestaurantById(restaurantId)
 }
 
-export const findConectarPlus = async (
-  externalId: string
-): Promise<{ authorized: boolean }> => {
+export const findConectarPlus = async (externalId: string): Promise<{ authorized: boolean }> => {
   return await findConectarPlusAccess(externalId)
 }
 
@@ -293,4 +291,3 @@ export const setConectarPlus = async (externalId: string, conectarPlusAuthorizat
 
   return await updateConectarPlusAccess(externalId, conectarPlusAuthorization)
 }
-
