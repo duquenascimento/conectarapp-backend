@@ -3,18 +3,20 @@ import { findById } from '../repository/userRepository'
 import { sendWhatsAppMessageChatGuru } from '../utils/sendWhatsappMessage'
 import { cartAbandonedSlackAlert } from '../utils/slackUtils'
 
-export const checkCartAndAlert = async (restaurantId: string, externalId: string, name: string, userId: string) => {
-  if (!restaurantId) {
-    throw new Error('restaurantId é obrigatório')
-  }
+export const checkCartAndAlert = async (restaurantId: string, externalId: string, restaurantName: string, userId: string) => {
+  if (!restaurantId) throw new Error('restaurantId é obrigatório')
 
-  const cart = await findCartItens(restaurantId)
-  const user = await findById(userId)
-  if (!user?.phone || !user?.name) return
+  const cart = await findCartItens(userId[0])
+  const user = await findById(userId[0])
 
-  if (cart) {
-    // await cartAbandonedSlackAlert(externalId, name)
-    await sendWhatsAppMessageChatGuru(user?.phone, user?.name)
+  if (!user) return { success: false, msg: 'Usuário não encontrado' }
+  if (!user.phone) return { success: false, msg: 'Usuário sem telefone' }
+  if (!user.name) return { success: false, msg: 'Usuário sem nome' }
+
+  if (cart.length > 0) {
+    await cartAbandonedSlackAlert(externalId, restaurantName)
+    await sendWhatsAppMessageChatGuru(user.phone, user.name)
+
     return { success: true, msg: 'Itens do carrinho encontrados, alerta enviado' }
   }
 

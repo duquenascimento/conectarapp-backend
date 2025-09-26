@@ -4,27 +4,26 @@ import { checkCartAndAlert } from '../service/alertService'
 export const alertsRoutes = async (server: FastifyInstance): Promise<void> => {
   server.post('/alerts/abandoned-cart', async (request, reply) => {
     try {
-      const { restaurantId, externalId, name, userId } = request.body as {
+      const { restaurantId, externalId, restaurantName, userId } = request.body as {
         restaurantId: string
         externalId: string
-        name: string
+        restaurantName: string
         userId: string
       }
 
-      const result = await checkCartAndAlert(restaurantId, externalId, name, userId)
+      if (!restaurantId || !userId) {
+        return await reply.code(400).send({ error: 'restaurantId e userId são obrigatórios' })
+      }
 
+      const result = await checkCartAndAlert(restaurantId, externalId, restaurantName, userId)
       return await reply.code(200).send({
         success: true,
         message: 'Alerta processado com sucesso',
         data: result
       })
     } catch (err: any) {
-      server.log.error(err, 'Erro em /alerts/abandoned-cart')
-
-      return await reply.code(400).send({
-        success: false,
-        error: err.message || 'Erro inesperado ao processar alerta'
-      })
+      console.error('Erro na rota /alerts/abandoned-cart:', err)
+      return await reply.code(500).send({ error: err.message })
     }
   })
 }
