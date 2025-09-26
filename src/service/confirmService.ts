@@ -353,7 +353,11 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   try {
     await airtableHandler(order, detailing, yourNumber, orderText)
   } catch (error: any) {
-    const message = `${orderText}
+    const message =
+      error.statusCode === 422
+        ? 'Houve uma falha ao criar o detalhamento do pedido. Confira se os dados do fornecedor na tabela de detalhamento do airTable conferem com a base de dados do app.\n' +
+          error.message
+        : `${orderText}
     *************************************
     Fornecedor: ${order.supplierId}
     Valor Total: R$ ${req.supplier.discount.orderValueFinish

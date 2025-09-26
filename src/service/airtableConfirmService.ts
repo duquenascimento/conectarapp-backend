@@ -6,6 +6,7 @@ import { createDetailingAirtable } from '../repository/airtableDetailingService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { findProductsIdsFromAirtable } from '../repository/airtableProductService'
 import { findIdFromAirtable } from '../repository/airtableSupplierService'
+import { olderSupplierDiscountNamePattern } from '../utils/airtableDetailingUtils'
 
 export const airtableHandler = async (
   _order: Order,
@@ -142,6 +143,9 @@ export const airtableHandler = async (
       'Texto Pedido': orderText
     })
   } catch (err: any) {
+    if (err.statusCode === 422) {
+      throw err
+    }
     throw new Error(`Erro no servico do airtable: ${err.message}`)
   }
 }
@@ -157,6 +161,12 @@ function prepareProductQuotationFieldsForDetailing(
     const supplier = quotationData.supplier
     if (!supplier?.name) return
 
+    const detailingSuffix = olderSupplierDiscountNamePattern(
+      supplier.externalId as string
+    )
+      ? '_ %'
+      : '_%'
+
     const supplierName = supplier.name
     const discountData = supplier.discount || {}
 
@@ -169,10 +179,10 @@ function prepareProductQuotationFieldsForDetailing(
       const discountPercentage = discountData.discount || 0
 
       quotationFields[`${supplierName}`] = productValue
-      quotationFields[`${supplierName}_ %`] = discountPercentage
+      quotationFields[`${supplierName}${detailingSuffix}`] = discountPercentage
     } else {
       quotationFields[`${supplierName}`] = 0
-      quotationFields[`${supplierName}_ %`] = 0
+      quotationFields[`${supplierName}${detailingSuffix}`] = 0
     }
   })
 

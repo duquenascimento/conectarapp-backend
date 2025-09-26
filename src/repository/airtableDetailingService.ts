@@ -1,6 +1,7 @@
 import { base, type FieldSet, type Records } from 'airtable'
 import { type CreateDetailingAirtable, type AirtableResponse } from './types'
 import { logRegister } from '../utils/logUtils'
+import { HttpException } from '../errors/httpException'
 
 export const createDetailingAirtable = async (
   req: CreateDetailingAirtable[]
@@ -14,8 +15,12 @@ export const createDetailingAirtable = async (
     )
     return detailing
   } catch (err) {
-    console.error('Falha na criação de detalhamento de pedidos')
-    void logRegister(err)
-    return undefined
+    void logRegister(err, false)
+    const errorMessage = err instanceof Error ? err.message : String(err)
+    throw new HttpException(
+      `Falha ao enviar dados de detalhamento do pedido ao airTable: ${errorMessage}`,
+      422
+    )
+    // return undefined
   }
 }
