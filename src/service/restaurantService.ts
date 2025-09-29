@@ -1,5 +1,5 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findAuthorizedPremiumRestaurant } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findConectarPlusAccess, updateConectarPlusAccess } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
@@ -195,7 +195,7 @@ export const updateAddressService = async (rest: any): Promise<void> => {
   }
 }
 
-export const updateRegistrationReleasedNewApp = async (req: { externalId: string, registrationReleasedNewApp: boolean }): Promise<void> => {
+export const updateRegistrationReleasedNewApp = async (req: { externalId: string; registrationReleasedNewApp: boolean }): Promise<void> => {
   try {
     await updateRegistrationReleasedNewAppRepository(req.externalId, req.registrationReleasedNewApp)
   } catch (err) {
@@ -204,7 +204,7 @@ export const updateRegistrationReleasedNewApp = async (req: { externalId: string
   }
 }
 
-export const updateComercialBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+export const updateComercialBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
   try {
     await updateComercialBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -213,7 +213,7 @@ export const updateComercialBlock = async (req: { restId: string, value: boolean
   }
 }
 
-export const updateFinanceBlock = async (req: { restId: string, value: boolean }): Promise<void> => {
+export const updateFinanceBlock = async (req: { restId: string; value: boolean }): Promise<void> => {
   try {
     await updateFinanceBlockRepository(req.restId, req.value)
   } catch (err) {
@@ -277,6 +277,17 @@ export const findById = async (restaurantId: string) => {
   return await findRestaurantById(restaurantId)
 }
 
-export const checkPremiumAccess = async (externalId: string): Promise<any> => {
-  return await findAuthorizedPremiumRestaurant(externalId)
+export const findConectarPlus = async (externalId: string): Promise<{ authorized: boolean }> => {
+  return await findConectarPlusAccess(externalId)
+}
+
+export const setConectarPlus = async (externalId: string, conectarPlusAuthorization: boolean) => {
+  if (!externalId) {
+    throw new Error('externalId é obrigatório')
+  }
+  if (typeof conectarPlusAuthorization !== 'boolean') {
+    throw new Error('O valor de conectarPlus deve ser boolean')
+  }
+
+  return await updateConectarPlusAccess(externalId, conectarPlusAuthorization)
 }
