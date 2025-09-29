@@ -10,7 +10,6 @@ export const sendWhatsAppMessageChatGuru = async (phone: string, nomeContato: st
   try {
     const phoneNumber = normalizePhone(phone)
     const messageText = 'Olá! Notamos que você deixou itens no carrinho. Posso ajudar com algo?'
-    const encodedMessage = encodeURIComponent(messageText).replace('!', '%21').replace("'", '%27').replace('(', '%28').replace(')', '%29').replace('*', '%2A')
 
     const params = new URLSearchParams({
       key: process.env.CG_API_KEY!,
@@ -19,7 +18,7 @@ export const sendWhatsAppMessageChatGuru = async (phone: string, nomeContato: st
       chat_number: phoneNumber,
       action: 'message_send',
       name: nomeContato,
-      text: encodedMessage
+      text: messageText
     })
 
     const response = await fetch('https://s16.chatguru.app/api/v1', {
