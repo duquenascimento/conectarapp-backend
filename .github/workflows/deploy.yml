@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
           target: "/home/ubuntu/app-dev"
-          rm: true
+          rm: false
 
       - name: 📤 Enviar arquivos para a EC2 (PROD)
         if: github.ref == 'refs/heads/main'
