@@ -445,10 +445,32 @@ export const findRestaurantById = async (id: string): Promise<any> => {
   }
 }
 
-export const findAuthorizedPremiumRestaurant = async (externalId: string): Promise<{ authorized: boolean }> => {
-  const authorizedRestaurants = authorizedPremiumRestautants()
-  if (authorizedRestaurants.includes(externalId)) {
-    return { authorized: true }
+export const findConectarPlusAccess = async (externalId: string): Promise<{ authorized: boolean }> => {
+  try {
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { externalId },
+      select: { conectarPlusAuthorization: true }
+    })
+    return { authorized: restaurant?.conectarPlusAuthorization ?? false }
+  } catch (err) {
+    console.error('Erro ao verificar acesso premium:', err)
+    throw new Error('Falha ao consultar o restaurante')
   }
-  return { authorized: false }
+}
+
+export const updateConectarPlusAccess = async (
+  externalId: string,
+  conectarPlusAuthorization: boolean
+): Promise<{ externalId: string, conectarPlusAuthorization: boolean }> => {
+  try {
+    const updated = await prisma.restaurant.update({
+      where: { externalId },
+      data: { conectarPlusAuthorization },
+      select: { externalId: true, conectarPlusAuthorization: true }
+    })
+    return updated
+  } catch (err) {
+    console.error('Erro ao atualizar conectarPlus:', err)
+    throw new Error('Falha ao atualizar conectarPlus')
+  }
 }

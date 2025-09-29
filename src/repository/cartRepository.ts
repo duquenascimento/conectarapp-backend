@@ -132,3 +132,9 @@ export const deleteByUserId = async (id: string): Promise<void> => {
     await logRegister(err)
   }
 }
+
+export const findCartItens = async (restaurantId: string) => {
+  return await prisma.cart.findMany({
+    where: { restaurantId }
+  })
+}
