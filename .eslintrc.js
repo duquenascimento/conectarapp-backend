@@ -1,37 +1,40 @@
 module.exports = {
+  root: true,
   env: {
-    browser: true,
-    es2021: true
+    node: true,
+    es2021: true,
+    jest: true,
   },
-  extends: 'standard-with-typescript',
-  overrides: [
-    {
-      env: {
-        node: true
-      },
-      files: ['.eslintrc.{js,cjs}'],
-      parserOptions: {
-        sourceType: 'script'
-      }
-    }
-  ],
+  parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
-    project: './tsconfig.json'
+    project: './tsconfig.json',
   },
+  extends: [
+    'airbnb-base',
+    'airbnb-typescript/base',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
+  ],
+  plugins: ['@typescript-eslint'],
   rules: {
-    '@typescript-eslint/no-explicit-any': 'warn', // Aviso para uso de `any`
-    '@typescript-eslint/explicit-function-return-type': 'warn', // Aviso para tipos de retorno explícitos
-    '@typescript-eslint/strict-boolean-expressions': 'warn', // Aviso para expressões booleanas
-    '@typescript-eslint/no-unused-vars': 'warn', // Aviso para variáveis não utilizadas
-    'no-console': 'warn', // Aviso para uso de `console.log`
-    // 'comma-dangle': ['warn', 'always-multiline'], // Aviso para vírgulas no final de objetos/arrays multilinha
-    quotes: ['warn', 'single'], // Aviso para uso de aspas simples
-    semi: ['warn', 'never'], // Aviso para ponto e vírgula
-    indent: ['warn', 2], // Aviso para indentação de 2 espaços,
-    '@typescript-eslint/no-non-null-assertion': 'warn',
-    '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn'
-  }
+    quotes: ['error', 'single', { avoidEscape: true }],
+    semi: ['error', 'always'],
+    'comma-dangle': ['error', 'always-multiline'],
+    'max-len': ['warn', { code: 100, ignoreComments: true }],
+    indent: 'off',
+    '@typescript-eslint/indent': 'off',
 
-}
+    '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/strict-boolean-expressions': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'warn',
+
+    'no-console': 'warn',
+    'import/prefer-default-export': 'off',
+    'class-methods-use-this': 'off',
+  },
+};
