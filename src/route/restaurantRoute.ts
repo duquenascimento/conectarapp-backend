@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, checkPremiumAccess } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, findConectarPlus, setConectarPlus } from '../service/restaurantService'
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -323,15 +323,27 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
     }
   })
 
-  server.get('/restaurant/premium-access/:externalId', async (req, res): Promise<any> => {
+  server.get('/restaurant/conectar-plus/:externalId', async (req, reply): Promise<any> => {
     const { externalId } = req.params as { externalId: string }
-    try {
-      return await checkPremiumAccess(externalId)
-    } catch (error) {
-      await res.status(500).send({
-        status: 500,
-        msg: 'Falha ao verificar acesso conectar plus'
-      })
+
+    const result = await findConectarPlus(externalId)
+    return await reply.status(200).send({
+      status: 200,
+      data: result
+    })
+  })
+
+  server.post('/restaurant/conectar-plus', async (req, reply): Promise<any> => {
+    const { externalId, conectarPlusAuthorization } = req.body as {
+      externalId: string
+      conectarPlusAuthorization: boolean
     }
+
+    const updated = await setConectarPlus(externalId, conectarPlusAuthorization)
+
+    return await reply.status(200).send({
+      success: true,
+      ...updated
+    })
   })
 }

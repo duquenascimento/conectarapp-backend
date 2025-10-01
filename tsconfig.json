@@ -108,6 +108,14 @@
   },
   "include": [
     "src/**/*",
-    ".eslintrc.js" // Adicione o arquivo .eslintrc.js aqui
+    ".eslintrc.js", // Adicione o arquivo .eslintrc.js aqui
+     "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/tests"
+  ],
+   "exclude": [
+     "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/tests"
   ]
 }
