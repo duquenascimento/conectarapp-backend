@@ -5,8 +5,12 @@ import {
   type FornecedorMotor,
   type FornecedorPriceList,
   type MotorCombinacaoResponse,
-  type MotorCombinacaoWithSupplierNames
+  type MotorCombinacaoWithSupplierNames,
+  type Discount
 } from '../types/quotationTypes'
+import { ApiRepository } from '../repository/apiRepository'
+
+const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
 
 export async function getSuppliersFromPriceList(
   prices: any[],
@@ -41,11 +45,12 @@ export async function fornecedoresCotacaoPremium(
         productId: produto?.sku
       }
     })
+    const discounts = await getSupplierDiscountRange(item.externalId)
 
     fornecedoresCotacao.push({
       id: item.externalId,
       products: produtosComPrecoFornecedor,
-      discounts: [],
+      discounts,
       minValue: item.minimumOrder
     })
   }
@@ -87,4 +92,23 @@ function isOpen(supplier: Supplier): boolean {
   )
 
   return Number(supplier.hour.replaceAll(':', '')) > currentHour
+}
+
+async function getSupplierDiscountRange(
+  externalId: string
+): Promise<Discount[]> {
+  try {
+    const discount = await apiDbConectar.callApi(
+      `/system/desconto/faixas/${externalId}`,
+      'GET'
+    )
+
+    return discount.data
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      return []
+    } else {
+      throw error
+    }
+  }
 }

@@ -10,7 +10,7 @@ interface ProdutoFornecedor {
   productId?: string
 }
 
-interface Discount {
+export interface Discount {
   threshold: number
   rate: number
 }
@@ -137,7 +137,8 @@ export interface MotorCombinacaoResponse {
   terminationCondition: string
 }
 
-export interface MotorCombinacaoWithSupplierNames extends Omit<MotorCombinacaoResponse, 'supplier'> {
+export interface MotorCombinacaoWithSupplierNames
+  extends Omit<MotorCombinacaoResponse, 'supplier'> {
   supplier: SupplierWithName[]
 }
 
