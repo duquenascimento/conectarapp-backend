@@ -1,5 +1,7 @@
-export function isTestRestaurant(externalId: string): boolean {
-  const testRestaurants = ['C757', 'C939', 'C940', 'C941']
+import { decode } from 'jsonwebtoken'
 
-  return testRestaurants.includes(externalId)
+export function isTestRestaurant(token: string): boolean {
+  const isTest = decode(token) as { position: string } | null
+
+  return isTest?.position === 'teste'
 }
