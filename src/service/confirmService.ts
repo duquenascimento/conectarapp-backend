@@ -184,8 +184,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     paymentWay: req.restaurant.restaurant.paymentWay,
     referencePoint: req.restaurant.restaurant.addressInfos[0].deliveryReference,
     restaurantId: req.restaurant.restaurant.externalId,
-    // isTestRestaurant(req.restaurant.restaurant.externalId as string)
-    // status_id: isTestRestaurant2(req.token) ? 13 : 12,
     status_id: testRestaurantFlag ? 13 : 12,
     tax: req.restaurant.restaurant.tax / 100,
     totalConectar: req.supplier.discount.orderValueFinish,
@@ -317,12 +315,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
             : '0',
         nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
         id_distribuidor: testRestaurantFlag ? 'F0' : req.supplier.externalId
-        /*           req.restaurant.restaurant.externalId === 'C757' ||
-          req.restaurant.restaurant.externalId === 'C939' ||
-          req.restaurant.restaurant.externalId === 'C940' ||
-          req.restaurant.restaurant.externalId === 'C941'
-            ? 'F0'
-            : req.supplier.externalId */
       })
     }
   ).catch(async (err) => {
