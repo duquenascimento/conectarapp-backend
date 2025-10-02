@@ -64,12 +64,7 @@ export const airtableHandler = async (
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'Forma de pagamento': _order.paymentWay ?? '',
       'ID Distribuidor':
-        _order.restaurantId === 'C757' ||
-        _order.restaurantId === 'C939' ||
-        _order.restaurantId === 'C940' ||
-        _order.restaurantId === 'C941'
-          ? ['recWgNcSLy6StEn4L']
-          : [supplierId],
+        _order.status_id === 13 ? ['recWgNcSLy6StEn4L'] : [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
       'Presentes na cotação': _order.calcOrderAgain.data.map(
@@ -104,7 +99,6 @@ export const airtableHandler = async (
       _detailing.map((item) => {
         const productQuotationFields =
           prepareProductQuotationFieldsForDetailing(_order, item.productId)
-        // console.log(`Produto ${item.name} : `, productQuotationFields)
         return {
           ID_Pedido: [(order as AirtableRecord<FieldSet>).id],
           'ID Produto': [productsMap[item.productId]],

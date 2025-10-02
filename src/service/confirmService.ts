@@ -33,10 +33,7 @@ import {
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
 import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
-import {
-  isTestRestaurant,
-  isTestRestaurant2
-} from '../utils/testRestaurantUtils'
+import { isTestRestaurant } from '../utils/testRestaurantUtils'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
@@ -174,6 +171,8 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
   const orderHour = today.toJSDate()
   orderHour.setHours(orderHour.getHours() - 3)
 
+  const testRestaurantFlag = isTestRestaurant(req.token)
+
   const order: Order = {
     addressId: uuidv4(),
     deliveryDate: new Date(deliveryDate.toString().substring(0, 10)),
@@ -186,7 +185,8 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     referencePoint: req.restaurant.restaurant.addressInfos[0].deliveryReference,
     restaurantId: req.restaurant.restaurant.externalId,
     // isTestRestaurant(req.restaurant.restaurant.externalId as string)
-    status_id: isTestRestaurant2(req.token) ? 13 : 12,
+    // status_id: isTestRestaurant2(req.token) ? 13 : 12,
+    status_id: testRestaurantFlag ? 13 : 12,
     tax: req.restaurant.restaurant.tax / 100,
     totalConectar: req.supplier.discount.orderValueFinish,
     totalSupplier: req.supplier.discount.orderWithoutTax,
@@ -316,13 +316,13 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
             ? '1'
             : '0',
         nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
-        id_distribuidor:
-          req.restaurant.restaurant.externalId === 'C757' ||
+        id_distribuidor: testRestaurantFlag ? 'F0' : req.supplier.externalId
+        /*           req.restaurant.restaurant.externalId === 'C757' ||
           req.restaurant.restaurant.externalId === 'C939' ||
           req.restaurant.restaurant.externalId === 'C940' ||
           req.restaurant.restaurant.externalId === 'C941'
             ? 'F0'
-            : req.supplier.externalId
+            : req.supplier.externalId */
       })
     }
   ).catch(async (err) => {
@@ -374,7 +374,6 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
       selectedRestaurant: []
     })
   }
-
   return {
     orderId,
     externalId: req.supplier.externalId,
