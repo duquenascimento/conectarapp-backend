@@ -28,12 +28,15 @@ import {
   type confirmOrderPremiumRequest,
   type confirmOrderRequest,
   type agendamentoPedido,
-  type confirmOrderPlusRequest
+  type confirmOrderPlusRequest,
+  confirmOrderEmail
 } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
 import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
 import { isTestRestaurant } from '../utils/testRestaurantUtils'
+import { sendHTMLEmail } from '../utils/mailUtils'
+import { generateRandomSequenceObject } from '../utils/utils'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
@@ -553,4 +556,18 @@ export const handleConfirmPlus = async (
   }
 
   return ordersResult
+}
+
+export const sendConfirmOrderEmail = async (
+  confirmOrderData: confirmOrderEmail
+): Promise<any> => {
+  try {
+    await sendHTMLEmail(confirmOrderData, '12345')
+  } catch (err) {
+    console.error(' Erro ao enviar e-mail:', err);
+    if (err) {
+      console.error('Detalhes do erro:', err);
+      await logRegister(err)
+    }
+  }
 }

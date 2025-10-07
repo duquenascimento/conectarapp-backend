@@ -122,3 +122,9 @@ export interface confirmOrderPlusRequest {
 }
 
 export type PaymentDescriptions = Record<string, string>
+
+export interface confirmOrderEmail {
+  userName: string,
+  userEmail: string,
+  subject: string
+}

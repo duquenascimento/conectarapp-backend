@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>E-mail Conéctar</title>
+	<style>
+			/* Estilos para clientes de e-mail que suportam media queries (Gmail, Apple Mail) */
+			@media screen and (max-width: 600px) {
+				.container {
+						width: 100% !important;
+				}
+			}
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f4f4;">
+	<table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4;">
+		<tr>
+			<td align="center">
+				<table class="container" width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #f4f4f4; margin-top: 20px; margin-bottom: 20px;">
+						
+					<tr>
+						<td align="center" style="padding: 20px 0;">
+							<img src="https://cdn.prod.website-files.com/64f5ee2d1ec4b6735f2ff175/670faff330f3b9109e5a7460_logo_menu.png" alt="Logo Conéctar Hortifruti" width="150">
+						</td>
+					</tr>
+
+					<tr>
+						<td style="padding: 20px 30px; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #333333;">
+							<h1 style="font-size: 28px; color: #1bb17a; margin-top: 0;">{{H1_EMAIL}}</h1>
+							<p style="font-size: 18px;">Olá, {{NOME_DO_USUARIO}}!</p>
+							<p style="font-size: 18px;">Recebemos uma solicitação para confirmação de pedido. Utilize o código abaixo para realizar essa confirmação!</p>
+						</td>
+					</tr>
+
+					<tr>
+						<td align="center" style="padding: 20px 30px;">
+							<table border="0" cellspacing="0" cellpadding="0">
+								<tr>
+									<td align="center">
+										<h2 style="font-size: 24px;">Seu código:</h2>
+										<p style="font-size: 18px; font-weight: 500;">{{CODIGO}}</p>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					
+					<tr>
+						<td align="center" style="padding: 20px 30px; font-family: Arial, sans-serif; font-size: 14px; color: #888888;">
+							<p>&copy; 2025 Conéctar Hortifruti. Todos os direitos reservados.</p>
+						</td>
+					</tr>
+
+				</table>
+			</td>
+		</tr>
+	</table>
+
+</body>
+</html>
