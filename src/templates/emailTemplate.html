@@ -1,16 +1,15 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>E-mail Conéctar</title>
+	<title>Confirmação de pedido</title>
 	<style>
-			/* Estilos para clientes de e-mail que suportam media queries (Gmail, Apple Mail) */
-			@media screen and (max-width: 600px) {
-				.container {
-						width: 100% !important;
-				}
+		@media screen and (max-width: 600px) {
+			.container {
+				width: 100% !important;
 			}
+		}
     </style>
 </head>
 <body style="margin: 0; padding: 0; background-color: #f4f4f4;">
@@ -26,20 +25,21 @@
 					</tr>
 
 					<tr>
-						<td style="padding: 20px 30px; font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5; color: #333333;">
-							<h1 style="font-size: 28px; color: #1bb17a; margin-top: 0;">{{H1_EMAIL}}</h1>
-							<p style="font-size: 18px;">Olá, {{NOME_DO_USUARIO}}!</p>
-							<p style="font-size: 18px;">Recebemos uma solicitação para confirmação de pedido. Utilize o código abaixo para realizar essa confirmação!</p>
+						<td style="padding: 20px 30px; font-family: Arial, sans-serif; line-height: 1.4; color: #333333;">
+							<h1 align="center" style="font-size: 28px; color: #0BC07D; margin-top: 0;">{{ASSUNTO_EMAIL}}</h1>
+							<p style="font-size: 18px;">Olá, {{NOME_USUARIO}}!</p>
+							<p style="font-size: 18px;">As informações do seu pedido {{NUMERO_PEDIDO}} estão aqui!</p>
 						</td>
 					</tr>
 
 					<tr>
-						<td align="center" style="padding: 20px 30px;">
-							<table border="0" cellspacing="0" cellpadding="0">
+						<td align="center">
+							<table width="500" border="0" cellspacing="0" cellpadding="0" style="padding: 8px; margin: 0 12px; border: solid 1px #000000; border-radius: 12px;">
 								<tr>
-									<td align="center">
-										<h2 style="font-size: 24px;">Seu código:</h2>
-										<p style="font-size: 18px; font-weight: 500;">{{CODIGO}}</p>
+									<td style="font-size: 18px;font-family: Arial, sans-serif;">
+										<p>Número do pedido: {{NUMERO_PEDIDO}}</p>
+										<p>Valor do pedido: R${{VALOR_PEDIDO}}</p>
+										<p>Fornecedor: {{NOME_FORNECEDOR}}</p>
 									</td>
 								</tr>
 							</table>
@@ -47,7 +47,7 @@
 					</tr>
 					
 					<tr>
-						<td align="center" style="padding: 20px 30px; font-family: Arial, sans-serif; font-size: 14px; color: #888888;">
+						<td class="footer" align="center" style="padding: 20px 30px; font-size: 14px; font-family: Arial, sans-serif; color: #888888;">
 							<p>&copy; 2025 Conéctar Hortifruti. Todos os direitos reservados.</p>
 						</td>
 					</tr>

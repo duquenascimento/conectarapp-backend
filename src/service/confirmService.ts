@@ -29,7 +29,8 @@ import {
   type confirmOrderRequest,
   type agendamentoPedido,
   type confirmOrderPlusRequest,
-  confirmOrderEmail
+  confirmOrderEmail,
+  emailMsgType
 } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
@@ -37,6 +38,8 @@ import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
 import { isTestRestaurant } from '../utils/testRestaurantUtils'
 import { sendHTMLEmail } from '../utils/mailUtils'
 import { generateRandomSequenceObject } from '../utils/utils'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
@@ -561,8 +564,29 @@ export const handleConfirmPlus = async (
 export const sendConfirmOrderEmail = async (
   confirmOrderData: confirmOrderEmail
 ): Promise<any> => {
+  const { nomeUsuario, emailUsuario, subject, numeroPedido, valorPedido, nomeFornecedor } = confirmOrderData // Desestruturação do objeto recebido
+  const emailTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.html') // Caminho até o template do email
+  let htmlFile = readFileSync(emailTemplatePath, 'utf-8') // Leitura do arquivo HTML
+
+  htmlFile = htmlFile.replaceAll('{{NOME_USUARIO}}', nomeUsuario) // Redefine a variável 'NOME_USUARIO' para o nome recebido pela função
+  htmlFile = htmlFile.replaceAll('{{ASSUNTO_EMAIL}}', subject) // Redefine a variável '{{ASSUNTO_EMAIL}}' para o assunto recebido pela função
+  htmlFile = htmlFile.replaceAll('{{NUMERO_PEDIDO}}', numeroPedido) // Redefine a variável '{{NUMERO_PEDIDO}}' para o número do pedido recebido pela função
+  htmlFile = htmlFile.replaceAll('{{VALOR_PEDIDO}}', valorPedido) // Redefine a variável '{{VALOR_PEDIDO}}' para o valor do pedido recebido pela função
+  htmlFile = htmlFile.replaceAll('{{NOME_FORNECEDOR}}', nomeFornecedor) // Redefine a variável '{{NOME_FORNECEDOR}}' para o nome do fornecedor recebido pela função
+
+  const msg: emailMsgType = {
+    to: emailUsuario,
+    from: {
+      email: 'no-reply@conectarhortifruti.com.br',
+      name: 'noreply'
+    },
+    subject: subject,
+    html: htmlFile,
+    text: `${nomeUsuario}, seu pedido está aqui! Número ${numeroPedido}, valor R$${valorPedido}, do fornecedor ${nomeFornecedor}`
+  }
+
   try {
-    await sendHTMLEmail(confirmOrderData, '12345')
+    await sendHTMLEmail(msg)
   } catch (err) {
     console.error(' Erro ao enviar e-mail:', err);
     if (err) {

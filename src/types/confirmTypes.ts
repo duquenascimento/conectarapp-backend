@@ -124,7 +124,21 @@ export interface confirmOrderPlusRequest {
 export type PaymentDescriptions = Record<string, string>
 
 export interface confirmOrderEmail {
-  userName: string,
-  userEmail: string,
-  subject: string
+  nomeUsuario: string,
+  emailUsuario: string,
+  subject: string,
+  numeroPedido: string,
+  valorPedido: string,
+  nomeFornecedor: string
+}
+
+export interface emailMsgType {
+  to: string,
+  from: {
+    email: string,
+    name: string
+  },
+  subject: string,
+  html: string,
+  text: string
 }

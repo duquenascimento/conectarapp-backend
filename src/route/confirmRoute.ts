@@ -99,7 +99,7 @@ export const confirmRoute = async (server: FastifyInstance): Promise<void> => {
 
   server.post('/confirm/sendEmailOrder', async(req, res): Promise<any> => {
     try {
-      const body = req.query as confirmOrderEmail // ESTÁ PEGANDO 'query' DA REQUEST, TALVEZ TENHA QUE MUDAR PARA 'body' QUANDO CONECTAR COM O FRONTEND
+      const body = req.query as confirmOrderEmail // ESTÁ PEGANDO 'query' DA REQUEST, TALVEZ TENHA QUE MUDAR PARA 'body' FUTURAMENTE
       await sendConfirmOrderEmail(body);
       return await res.status(200).send({
         status: 200,
