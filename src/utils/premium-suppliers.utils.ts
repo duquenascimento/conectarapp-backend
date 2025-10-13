@@ -41,7 +41,7 @@ export async function fornecedoresCotacaoPremium(
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id)
       return {
-        price: produto?.priceUnique,
+        price: produto?.priceUniqueWithTaxAndDiscount,
         productId: produto?.sku
       }
     })
