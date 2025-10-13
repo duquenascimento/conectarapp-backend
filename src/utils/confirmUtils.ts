@@ -4,7 +4,7 @@ import JsBarcode from 'jsbarcode'
 import { DateTime } from 'luxon'
 import { type BoletoInter } from '../service/interService'
 import { type DadoBoleto } from '../service/itauService'
-import { type PaymentDescriptions, type confirmOrderRequest } from '../types/confirmTypes'
+import { emailAttachmentMsgType, emailAttachmentType, type PaymentDescriptions, type confirmOrderRequest } from '../types/confirmTypes'
 import QRCode from 'qrcode'
 
 export const getPaymentDate = (paymentWay: string): string => {
@@ -209,4 +209,11 @@ export const getPaymentDescription = (paymentWay: string): string => {
   }
 
   return paymentDescriptions[paymentWay] ?? ''
+}
+
+export const addEmailAttachment = (msg: emailAttachmentMsgType, att: emailAttachmentType) => {
+  return {
+    ...msg,
+    attachments: [...msg.attachments, att]
+  }
 }

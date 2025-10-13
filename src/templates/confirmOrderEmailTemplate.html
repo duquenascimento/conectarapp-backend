@@ -24,24 +24,26 @@
 						
 					<tr>
 						<td align="center" style="padding: 20px 0;">
-							<img src="https://cdn.prod.website-files.com/64f5ee2d1ec4b6735f2ff175/670faff330f3b9109e5a7460_logo_menu.png" alt="Logo Conéctar Hortifruti" width="150">
+							<img src={{LOGO_CONECTAR}} alt="Logo Conéctar Hortifruti" width="150">
 						</td>
 					</tr>
 
 					<tr>
-						<td style="padding: 20px 30px; font-family: Arial, sans-serif; line-height: 1.4; color: #333333;">
-							<h1 align="center" style="font-size: 28px; color: #0BC07D; margin-top: 0;">{{ASSUNTO_EMAIL}}</h1>
+						<td style="padding: 10px 20px; font-family: Arial, sans-serif; color: #333333;">
+							<h1 align="center" style="font-size: 28px; color: #0BC07D; margin-top: 0;">Confirmação de Pedido</h1>
 							<p style="font-size: 18px;">Olá, {{NOME_USUARIO}}!</p>
-							<p style="font-size: 18px;">As informações do seu pedido {{NUMERO_PEDIDO}} estão aqui!</p>
+							<p style="font-size: 18px;">O seu pedido {{NUMERO_PEDIDO}} foi confirmado! Seguem as informações:</p>
 						</td>
 					</tr>
 
 					<tr>
 						<td align="center">
-							<table width="500" border="0" cellspacing="0" cellpadding="0" style="padding: 8px; margin: 0 12px; border: solid 1px #000000; border-radius: 12px;">
+							<table width="500" border="0" cellspacing="0" cellpadding="0" style="padding: 8px; margin: 20px 12px; border: solid 1px #000000; border-radius: 12px;">
 								<tr>
 									<td style="font-size: 18px;font-family: Arial, sans-serif;">
 										<p>Número do pedido: {{NUMERO_PEDIDO}}</p>
+										<p>Data do pedido: {{DATA_PEDIDO}}</p>
+										<p>Horário de entrega: {{HORARIO_ENTREGA}}</p>
 										<p>Valor do pedido: R${{VALOR_PEDIDO}}</p>
 										<p>Fornecedor: {{NOME_FORNECEDOR}}</p>
 									</td>
@@ -51,8 +53,10 @@
 					</tr>
 					
 					<tr>
-						<td class="footer" align="center" style="padding: 20px 30px; font-size: 14px; font-family: Arial, sans-serif; color: #888888;">
-							<span>&copy; 2025 Conéctar Hortifruti. Todos os direitos reservados.</span>
+						<td style="padding: 10px 20px; font-size: 18px; font-family: Arial, sans-serif;">
+							<p>Seguem em anexo o recibo e o boleto do seu pedido.</p>
+							<p>A Conéctar agradece a preferência e lhe deseja uma ótima tarde!</p>
+							<span style="padding: 10px 0; font-size: 14px; font-family: Arial, sans-serif; color: #888888;">#juntossomosmaiores</span>
 						</td>
 					</tr>
 

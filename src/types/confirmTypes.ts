@@ -126,10 +126,13 @@ export type PaymentDescriptions = Record<string, string>
 export interface confirmOrderEmail {
   nomeUsuario: string,
   emailUsuario: string,
-  subject: string,
   numeroPedido: string,
-  valorPedido: string,
-  nomeFornecedor: string
+  valorPedido: number,
+  nomeFornecedor: string,
+  dataPedido: string,
+  horarioEntrega: string,
+  reciboUrl?: string,
+  boletoUrl?: string
 }
 
 export interface emailMsgType {
@@ -141,4 +144,23 @@ export interface emailMsgType {
   subject: string,
   html: string,
   text: string
+}
+
+export interface emailAttachmentType {
+  content: string,
+  filename: string,
+  type: 'application/pdf',
+  disposition: 'attachment'
+}
+
+export interface emailAttachmentMsgType {
+  to: string,
+  from: {
+    email: string,
+    name: string
+  },
+  subject: string,
+  html: string,
+  text: string,
+  attachments: emailAttachmentType[]
 }

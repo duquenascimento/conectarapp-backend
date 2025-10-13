@@ -30,16 +30,18 @@ import {
   type agendamentoPedido,
   type confirmOrderPlusRequest,
   confirmOrderEmail,
-  emailMsgType
+  emailAttachmentMsgType,
+  emailAttachmentType
 } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
-import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
+import { addEmailAttachment, getPaymentDate, getPaymentDescription } from '../utils/confirmUtils'
 import { isTestRestaurant } from '../utils/testRestaurantUtils'
 import { sendHTMLEmail } from '../utils/mailUtils'
-import { generateRandomSequenceObject } from '../utils/utils'
 import { readFileSync } from 'fs'
 import path from 'path'
+import { formatDateYearMonthDay } from '../utils/dateUtils'
+import { formatDecimalNumber } from '../utils/utils'
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? ''
@@ -564,28 +566,73 @@ export const handleConfirmPlus = async (
 export const sendConfirmOrderEmail = async (
   confirmOrderData: confirmOrderEmail
 ): Promise<any> => {
-  const { nomeUsuario, emailUsuario, subject, numeroPedido, valorPedido, nomeFornecedor } = confirmOrderData // Desestruturação do objeto recebido
-  const emailTemplatePath = path.join(__dirname, '..', 'templates', 'emailTemplate.html') // Caminho até o template do email
-  let htmlFile = readFileSync(emailTemplatePath, 'utf-8') // Leitura do arquivo HTML
-
-  htmlFile = htmlFile.replaceAll('{{NOME_USUARIO}}', nomeUsuario) // Redefine a variável 'NOME_USUARIO' para o nome recebido pela função
-  htmlFile = htmlFile.replaceAll('{{ASSUNTO_EMAIL}}', subject) // Redefine a variável '{{ASSUNTO_EMAIL}}' para o assunto recebido pela função
-  htmlFile = htmlFile.replaceAll('{{NUMERO_PEDIDO}}', numeroPedido) // Redefine a variável '{{NUMERO_PEDIDO}}' para o número do pedido recebido pela função
-  htmlFile = htmlFile.replaceAll('{{VALOR_PEDIDO}}', valorPedido) // Redefine a variável '{{VALOR_PEDIDO}}' para o valor do pedido recebido pela função
-  htmlFile = htmlFile.replaceAll('{{NOME_FORNECEDOR}}', nomeFornecedor) // Redefine a variável '{{NOME_FORNECEDOR}}' para o nome do fornecedor recebido pela função
-
-  const msg: emailMsgType = {
-    to: emailUsuario,
-    from: {
-      email: 'no-reply@conectarhortifruti.com.br',
-      name: 'noreply'
-    },
-    subject: subject,
-    html: htmlFile,
-    text: `${nomeUsuario}, seu pedido está aqui! Número ${numeroPedido}, valor R$${valorPedido}, do fornecedor ${nomeFornecedor}`
-  }
-
   try {
+    // Desestruturação do objeto recebido
+    const { nomeUsuario, emailUsuario, numeroPedido, valorPedido, nomeFornecedor, dataPedido, horarioEntrega, reciboUrl, boletoUrl } = confirmOrderData 
+
+    // Formatações
+    const formattedDataPedido = formatDateYearMonthDay(dataPedido) // Formata a data para 'dia/mes/ano'
+    const formattedValorPedido = formatDecimalNumber(valorPedido) // Formata o valor do pedido
+    
+
+    // Preparação do arquivo HTML, corpo do e-mail
+    const emailTemplatePath = path.join(__dirname, '..', 'templates', 'confirmOrderEmailTemplate.html') // Caminho até o template do email
+    let htmlFile = readFileSync(emailTemplatePath, 'utf-8') // Leitura do arquivo HTML
+
+    htmlFile = htmlFile.replaceAll('{{NOME_USUARIO}}', nomeUsuario) // Redefine a variável 'NOME_USUARIO' para o nome recebido pela função
+    htmlFile = htmlFile.replaceAll('{{LOGO_CONECTAR}}', process.env.LOGO_CONECTAR ?? '') // Redefine a variável '{{LOGO_CONECTAR}}' para a logo da Conéctar
+    htmlFile = htmlFile.replaceAll('{{NUMERO_PEDIDO}}', numeroPedido) // Redefine a variável '{{NUMERO_PEDIDO}}' para o número do pedido recebido pela função
+    htmlFile = htmlFile.replaceAll('{{VALOR_PEDIDO}}', formattedValorPedido) // Redefine a variável '{{VALOR_PEDIDO}}' para o valor formatado
+    htmlFile = htmlFile.replaceAll('{{NOME_FORNECEDOR}}', nomeFornecedor) // Redefine a variável '{{NOME_FORNECEDOR}}' para o nome do fornecedor recebido pela função
+    htmlFile = htmlFile.replaceAll('{{DATA_PEDIDO}}', formattedDataPedido) // Redefine a variável '{{DATA_PEDIDO}}' para a data do pedido
+    htmlFile = htmlFile.replaceAll('{{HORARIO_ENTREGA}}', horarioEntrega) // Redefine a variável '{{HORARIO_ENTREGA}}' para o horário de entrega
+
+    // Preparação dos dados do e-mail
+    let msg: emailAttachmentMsgType = {
+      to: emailUsuario,
+      from: {
+        email: 'no-reply@conectarhortifruti.com.br',
+        name: 'noreply'
+      },
+      subject: `Seu pedido ${numeroPedido} foi confirmado!`,
+      html: htmlFile,
+      text: `${nomeUsuario}, seu pedido foi confirmado! Pedido ${numeroPedido}, valor R$${formattedValorPedido}, fornecedor ${nomeFornecedor}`,
+      attachments: []
+    }
+
+    // Preparação dos anexos
+    if(reciboUrl) {
+      const reciboFile = await fetch(reciboUrl) // Faz o download do pdf do recibo
+      const reciboArrayBuffer = await reciboFile.arrayBuffer() // Transforma o recibo em um arrayBuffer
+      const reciboBuffer = Buffer.from(reciboArrayBuffer) // Transforma o recibo em um Buffer
+
+      const reciboAtt: emailAttachmentType = {
+        content: reciboBuffer.toString('base64'),
+        filename: `Recibo_${numeroPedido}.pdf`,
+        type: 'application/pdf',
+        disposition: 'attachment'
+      }
+
+      // Anexa o recibo ao e-mail
+      msg = addEmailAttachment(msg, reciboAtt)
+    }
+
+    if(boletoUrl) {
+      const boletoFile = await fetch(boletoUrl) // Faz o download do pdf do boleto
+      const boletoArrayBuffer = await boletoFile.arrayBuffer() // Transforma o boleto em um arrayBuffer
+      const boletoBuffer = Buffer.from(boletoArrayBuffer) // Transforma o boleto em um Buffer
+
+      const boletoAtt: emailAttachmentType = {
+        content: boletoBuffer.toString('base64'),
+        filename: `Boleto_${numeroPedido}.pdf`,
+        type: 'application/pdf',
+        disposition: 'attachment'
+      }
+
+      // Anexa o boleto ao e-mail
+      msg = addEmailAttachment(msg, boletoAtt)
+    }
+
     await sendHTMLEmail(msg)
   } catch (err) {
     console.error(' Erro ao enviar e-mail:', err);

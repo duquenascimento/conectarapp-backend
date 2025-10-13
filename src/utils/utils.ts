@@ -70,3 +70,14 @@ export const generateRandomSequenceObject = (
 
   return sequence
 }
+
+export const formatDecimalNumber = (num: number): string => {
+  // Função para formatar o número recebido para um número decimal
+  const formatValue = new Intl.NumberFormat('pt-BR', {
+    style: 'decimal',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  return formatValue.format(num)
+}

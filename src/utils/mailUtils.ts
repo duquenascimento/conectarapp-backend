@@ -1,5 +1,5 @@
 import sgMail from '@sendgrid/mail'
-import { emailMsgType } from '../types/confirmTypes'
+import { emailAttachmentMsgType, emailMsgType } from '../types/confirmTypes'
 
 sgMail.setApiKey(process.env.SENDGRID_KEY ?? '')
 
@@ -28,7 +28,7 @@ export const sendEmail = async (
 }
 
 export const sendHTMLEmail = async (
-  msg: emailMsgType
+  msg: emailAttachmentMsgType | emailMsgType
 ): Promise<any> => {
   try {
     await sgMail.send(msg);

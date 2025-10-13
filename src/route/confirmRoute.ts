@@ -1,6 +1,7 @@
 import { type FastifyInstance } from 'fastify'
 import { AgendamentoGuru, confirmOrder, confirmOrderPremium, handleConfirmPlus, sendConfirmOrderEmail } from '../service/confirmService'
 import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido, type confirmOrderPlusRequest, confirmOrderEmail } from '../types/confirmTypes'
+import { sendConfirmOrderEmailSchema } from '../validators/confirmValidator'
 
 export const confirmRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/confirm', async (req, res): Promise<any> => {
@@ -97,10 +98,27 @@ export const confirmRoute = async (server: FastifyInstance): Promise<void> => {
     }
   })
 
-  server.post('/confirm/sendEmailOrder', async(req, res): Promise<any> => {
+  server.post('/confirm/send-email-order', async(req, res): Promise<any> => {
     try {
-      const body = req.query as confirmOrderEmail // ESTÁ PEGANDO 'query' DA REQUEST, TALVEZ TENHA QUE MUDAR PARA 'body' FUTURAMENTE
+      const { value, error } = sendConfirmOrderEmailSchema.validate(req.body, {
+        abortEarly: false
+      })
+
+      if(error) {
+        return await res.status(400).send({
+          status: 400,
+          msg: 'Erro de validação ao enviar e-mail de confirmação de pedido.',
+          errors: error.details.map((err: { path: any[]; message: any }) => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
+      }
+
+      const body: confirmOrderEmail = value
+
       await sendConfirmOrderEmail(body);
+
       return await res.status(200).send({
         status: 200,
         msg: `E-mail enviado com sucesso!`

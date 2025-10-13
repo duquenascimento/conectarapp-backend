@@ -14,3 +14,9 @@ export const isTimeWithinMinutes = (orderHour: Date, comparisonTime: Date, minut
 
   return orderMinutes <= comparisonMinutes + minutes
 }
+
+export const formatDateYearMonthDay = (rawDate: string): string => {
+  const [year, month, day] = rawDate.split('-')
+
+  return `${day}/${month}/${year}`
+}
