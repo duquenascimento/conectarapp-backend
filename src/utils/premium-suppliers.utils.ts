@@ -45,12 +45,11 @@ export async function fornecedoresCotacaoPremium(
         productId: produto?.sku
       }
     })
-    const discounts = await getSupplierDiscountRange(item.externalId)
 
     fornecedoresCotacao.push({
       id: item.externalId,
       products: produtosComPrecoFornecedor,
-      discounts,
+      discounts: [],
       minValue: item.minimumOrder
     })
   }
