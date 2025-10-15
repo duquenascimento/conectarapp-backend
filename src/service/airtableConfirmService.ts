@@ -64,7 +64,7 @@ export const airtableHandler = async (
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'Forma de pagamento': _order.paymentWay ?? '',
       'ID Distribuidor':
-        _order.status_id === 13 ? ['recWgNcSLy6StEn4L'] : [supplierId],
+        _order.status_id === 13 ? ['recGaGKpONIbRlNK5'] : [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
       'Presentes na cotação': _order.calcOrderAgain.data.map(
@@ -78,10 +78,10 @@ export const airtableHandler = async (
         _order.status_id === 12
           ? 'Confirmado'
           : _order.status_id === 13
-          ? 'Teste'
-          : _order.status_id === 6
-          ? 'Cancelado'
-          : 'Recusado',
+            ? 'Teste'
+            : _order.status_id === 6
+              ? 'Cancelado'
+              : 'Recusado',
       'Recibo original': [
         {
           url: _order.orderDocument!
@@ -144,7 +144,7 @@ export const airtableHandler = async (
   }
 }
 
-function prepareProductQuotationFieldsForDetailing(
+function prepareProductQuotationFieldsForDetailing (
   order: Order,
   productId: string
 ): Record<string, any> {

@@ -8,6 +8,7 @@ export const createOrderAirtable = async (req: CreateOrderAirtable): Promise<Air
     const create = await _.create(req as unknown as Partial<FieldSet>)
     return create
   } catch (err) {
+    console.error('error>>>>>>', err)
     console.error('airtable err cretae order>>>>>>', req)
     void logRegister(err)
   }
