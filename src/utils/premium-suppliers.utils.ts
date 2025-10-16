@@ -9,6 +9,7 @@ import {
   type Discount
 } from '../types/quotationTypes'
 import { ApiRepository } from '../repository/apiRepository'
+import { get } from 'axios'
 
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
 
@@ -41,15 +42,17 @@ export async function fornecedoresCotacaoPremium(
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id)
       return {
-        price: produto?.priceUniqueWithTaxAndDiscount,
+        price: produto?.priceUnique,
         productId: produto?.sku
       }
     })
 
+    const discounts = await getSupplierDiscountRange(item.externalId)
+
     fornecedoresCotacao.push({
       id: item.externalId,
       products: produtosComPrecoFornecedor,
-      discounts: [],
+      discounts,
       minValue: item.minimumOrder
     })
   }
