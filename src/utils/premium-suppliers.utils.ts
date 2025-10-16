@@ -35,7 +35,7 @@ export async function fornecedoresCotacaoPremium(
 
   const fornecedoresCotacao: FornecedorMotor[] = []
   for (const item of fornecedores) {
-    if (!isOpen(item)) {
+    if (!isOpen(item) || item.minimumOrder > item.discount.orderValueFinish) {
       continue
     }
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
