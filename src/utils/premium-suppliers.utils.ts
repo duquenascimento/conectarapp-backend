@@ -35,9 +35,6 @@ export async function fornecedoresCotacaoPremium(
 
   const fornecedoresCotacao: FornecedorMotor[] = [];
   for (const item of fornecedores) {
-    if (!isOpen(item) || item.minimumOrder > item.discount.orderValueFinish) {
-      continue;
-    }
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id);
 
