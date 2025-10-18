@@ -65,7 +65,7 @@ export async function solveCombinations(
       (sup) => !combination.fornecedores_bloqueados.includes(sup.id),
     );
 
-    if (combination.preferencia_fornecedor_tipo === 'especifico') {
+    if (combination.preferencias.length > 0) {
       const { preferenceCategories, preferenceProducts } = preferencesResolver(combination);
       favoriteCategories.push(...preferenceCategories);
       favoriteProducts.push(...preferenceProducts);
@@ -81,6 +81,7 @@ export async function solveCombinations(
       zeroFee: [],
       maxSupplier: combination.dividir_em_maximo,
     };
+
     const rawResultadoCotacao = await combinationSolverEngine(reqMotor);
     const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices);
 
