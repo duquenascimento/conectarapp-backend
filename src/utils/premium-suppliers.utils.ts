@@ -30,7 +30,7 @@ export async function fornecedoresCotacaoPremium(
   produtosCesta: ProdutoCesta[],
 ): Promise<FornecedorMotor[] | null> {
   if (fornecedores.length === 0) {
-    return null;
+    return [];
   }
 
   const fornecedoresCotacao: FornecedorMotor[] = [];
