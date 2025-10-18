@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "order" ALTER COLUMN "orderTextGuru" SET DATA TYPE VARCHAR(4000);

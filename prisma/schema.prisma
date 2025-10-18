@@ -153,7 +153,7 @@ model order {
   calcOrderAgain      Json           @db.Json
   orderDocument       String?        @db.VarChar(1000)
   status_id           Int            @default(4)
-  orderTextGuru       String?        @db.VarChar(2000)
+  orderTextGuru       String?        @db.VarChar(4000)
   status              status         @relation(fields: [status_id], references: [id])
   orderInvoices       order_invoice?
   transactions        transactions[]
