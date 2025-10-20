@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { ApiRepository } from '../repository/apiRepository';
 import { type ICartResponse } from '../service/cartService';
 import {
@@ -8,7 +7,6 @@ import {
   type CombinationResponse,
   type MotorCombinacaoRequest,
   type MotorCombinacaoResponse,
-  type MotorCombinacaoWithSupplierNames,
   type PreferenciaClasse,
   type PreferenciaProduto,
 } from '../types/quotationTypes';
@@ -69,7 +67,10 @@ export async function solveCombinations(
       const { preferenceCategories, preferenceProducts } = preferencesResolver(combination);
       favoriteCategories.push(...preferenceCategories);
       favoriteProducts.push(...preferenceProducts);
-      suppliers = suppliers.filter((sup) => combination.fornecedores_especificos.includes(sup.id));
+      if (combination.fornecedores_especificos.length !== 0)
+        suppliers = suppliers.filter((sup) =>
+          combination.fornecedores_especificos.includes(sup.id),
+        );
     }
 
     const reqMotor: MotorCombinacaoRequest = {

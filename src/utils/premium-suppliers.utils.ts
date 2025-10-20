@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon';
-import { get } from 'axios';
 import { type Supplier } from '../types/confirmTypes';
 import {
   type ProdutoCesta,
@@ -35,6 +34,9 @@ export async function fornecedoresCotacaoPremium(
 
   const fornecedoresCotacao: FornecedorMotor[] = [];
   for (const item of fornecedores) {
+    if (!isOpen(item)) {
+      continue;
+    }
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id);
 
