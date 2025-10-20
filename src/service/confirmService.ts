@@ -29,9 +29,9 @@ import {
   type confirmOrderRequest,
   type agendamentoPedido,
   type confirmOrderPlusRequest,
-  confirmOrderEmail,
-  emailAttachmentMsgType,
-  emailAttachmentType
+  ConfirmOrderEmail,
+  EmailAttachmentMsgType,
+  EmailAttachmentType
 } from '../types/confirmTypes'
 import { generateOrderId } from '../utils/generateOrderId'
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils'
@@ -564,7 +564,7 @@ export const handleConfirmPlus = async (
 }
 
 export const sendConfirmOrderEmail = async (
-  confirmOrderData: confirmOrderEmail
+  confirmOrderData: ConfirmOrderEmail
 ): Promise<any> => {
   try {
     // Desestruturação do objeto recebido
@@ -588,7 +588,7 @@ export const sendConfirmOrderEmail = async (
     htmlFile = htmlFile.replaceAll('{{HORARIO_ENTREGA}}', horarioEntrega) // Redefine a variável '{{HORARIO_ENTREGA}}' para o horário de entrega
 
     // Preparação dos dados do e-mail
-    let msg: emailAttachmentMsgType = {
+    let msg: EmailAttachmentMsgType = {
       to: emailUsuario,
       from: {
         email: 'no-reply@conectarhortifruti.com.br',
@@ -606,7 +606,7 @@ export const sendConfirmOrderEmail = async (
       const reciboArrayBuffer = await reciboFile.arrayBuffer() // Transforma o recibo em um arrayBuffer
       const reciboBuffer = Buffer.from(reciboArrayBuffer) // Transforma o recibo em um Buffer
 
-      const reciboAtt: emailAttachmentType = {
+      const reciboAtt: EmailAttachmentType = {
         content: reciboBuffer.toString('base64'),
         filename: `Recibo_${numeroPedido}.pdf`,
         type: 'application/pdf',
@@ -622,7 +622,7 @@ export const sendConfirmOrderEmail = async (
       const boletoArrayBuffer = await boletoFile.arrayBuffer() // Transforma o boleto em um arrayBuffer
       const boletoBuffer = Buffer.from(boletoArrayBuffer) // Transforma o boleto em um Buffer
 
-      const boletoAtt: emailAttachmentType = {
+      const boletoAtt: EmailAttachmentType = {
         content: boletoBuffer.toString('base64'),
         filename: `Boleto_${numeroPedido}.pdf`,
         type: 'application/pdf',

@@ -1,6 +1,6 @@
 import { type FastifyInstance } from 'fastify'
 import { AgendamentoGuru, confirmOrder, confirmOrderPremium, handleConfirmPlus, sendConfirmOrderEmail } from '../service/confirmService'
-import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido, type confirmOrderPlusRequest, confirmOrderEmail } from '../types/confirmTypes'
+import { type confirmOrderPremiumRequest, type confirmOrderRequest, type agendamentoPedido, type confirmOrderPlusRequest, ConfirmOrderEmail } from '../types/confirmTypes'
 import { sendConfirmOrderEmailSchema } from '../validators/confirmValidator'
 
 export const confirmRoute = async (server: FastifyInstance): Promise<void> => {
@@ -115,7 +115,7 @@ export const confirmRoute = async (server: FastifyInstance): Promise<void> => {
         })
       }
 
-      const body: confirmOrderEmail = value
+      const body: ConfirmOrderEmail = value
 
       await sendConfirmOrderEmail(body);
 

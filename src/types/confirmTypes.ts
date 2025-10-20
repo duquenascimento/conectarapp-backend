@@ -123,7 +123,7 @@ export interface confirmOrderPlusRequest {
 
 export type PaymentDescriptions = Record<string, string>
 
-export interface confirmOrderEmail {
+export interface ConfirmOrderEmail {
   nomeUsuario: string,
   emailUsuario: string,
   numeroPedido: string,
@@ -135,7 +135,7 @@ export interface confirmOrderEmail {
   boletoUrl?: string
 }
 
-export interface emailMsgType {
+export interface EmailMsgType {
   to: string,
   from: {
     email: string,
@@ -146,14 +146,14 @@ export interface emailMsgType {
   text: string
 }
 
-export interface emailAttachmentType {
+export interface EmailAttachmentType {
   content: string,
   filename: string,
   type: 'application/pdf',
   disposition: 'attachment'
 }
 
-export interface emailAttachmentMsgType {
+export interface EmailAttachmentMsgType {
   to: string,
   from: {
     email: string,
@@ -162,5 +162,5 @@ export interface emailAttachmentMsgType {
   subject: string,
   html: string,
   text: string,
-  attachments: emailAttachmentType[]
+  attachments: EmailAttachmentType[]
 }
