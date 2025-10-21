@@ -16,10 +16,11 @@ const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '');
 export async function getSuppliersFromPriceList(
   prices: any[],
   cart: ProdutoCesta[],
+  restaurant: any,
 ): Promise<FornecedorMotor[] | null> {
   const supplierList = prices.map((item: any) => item.supplier) as FornecedorPriceList[];
 
-  const result = await fornecedoresCotacaoPremium(supplierList, cart);
+  const result = await fornecedoresCotacaoPremium(supplierList, cart, restaurant);
 
   return result;
 }
@@ -27,16 +28,24 @@ export async function getSuppliersFromPriceList(
 export async function fornecedoresCotacaoPremium(
   fornecedores: FornecedorPriceList[],
   produtosCesta: ProdutoCesta[],
+  restaurant: any,
 ): Promise<FornecedorMotor[] | null> {
   if (fornecedores.length === 0) {
     return [];
   }
 
+  const { allowMinimumOrder, allowClosedSupplier } = restaurant;
+
   const fornecedoresCotacao: FornecedorMotor[] = [];
   for (const item of fornecedores) {
-    if (!isOpen(item)) {
+    const fornecedorFechadoNaoPermitido = !isOpen(item) && !allowClosedSupplier;
+    const abaixoDoMinimoNaoPermitido =
+      item.minimumOrder > item.discount.orderValueFinish && !allowMinimumOrder;
+
+    if (fornecedorFechadoNaoPermitido || abaixoDoMinimoNaoPermitido) {
       continue;
     }
+
     const produtosComPrecoFornecedor = produtosCesta.map((prodCesta) => {
       const produto = item.discount.product.find((p) => p.sku === prodCesta.id);
 
