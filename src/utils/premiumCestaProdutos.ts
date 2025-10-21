@@ -48,7 +48,7 @@ export async function solveCombinations(
   );
   const combinations = combinationsResult.data as CombinacaoAPI[];
 
-  const reqSuppliers = await getSuppliersFromPriceList(prices, products);
+  const reqSuppliers = await getSuppliersFromPriceList(prices, products, restaurant);
   if (!reqSuppliers) {
     throw new HttpException('Não há fornecedores disponíveis', 404);
   }
