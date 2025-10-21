@@ -64,14 +64,13 @@ export async function solveCombinations(
       (sup) => !combination.fornecedores_bloqueados.includes(sup.id),
     );
 
+    if (combination.fornecedores_especificos.length !== 0)
+      suppliers = suppliers.filter((sup) => combination.fornecedores_especificos.includes(sup.id));
+
     if (combination.preferencias.length > 0) {
       const { preferenceCategories, preferenceProducts } = preferencesResolver(combination);
       favoriteCategories.push(...preferenceCategories);
       favoriteProducts.push(...preferenceProducts);
-      if (combination.fornecedores_especificos.length !== 0)
-        suppliers = suppliers.filter((sup) =>
-          combination.fornecedores_especificos.includes(sup.id),
-        );
     }
 
     const reqMotor: MotorCombinacaoRequest = {
