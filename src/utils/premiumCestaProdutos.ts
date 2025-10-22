@@ -55,7 +55,7 @@ export async function solveCombinations(
 
   const solvedCombinations: CombinationResponse[] = [];
   const tax = restaurant.tax.d;
-  const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100;
+  const taxa = Number(`${tax[0]}.${String(tax[1])}`) / 100;
 
   for (const combination of combinations) {
     const favoriteCategories: PreferenciaClasse[] = [];
