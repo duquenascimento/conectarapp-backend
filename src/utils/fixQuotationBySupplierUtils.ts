@@ -12,7 +12,13 @@ export const fixQuotationBySupplier = (data: any[]): any[] => {
   newData = data.map(
     (
       supplierItem: SupplierItem & {
-        supplier: { discount?: { product?: Array<{ price?: number }> } };
+        supplier: {
+          discount?: {
+            product?: Array<{ price?: number }>;
+            orderValue?: number;
+            orderValueFinish?: number;
+          };
+        };
       },
     ) => {
       if (
@@ -30,6 +36,13 @@ export const fixQuotationBySupplier = (data: any[]): any[] => {
             return product;
           },
         );
+
+        // Recalculate orderValue and orderValueFinish based on sum of rounded prices
+        const totalPrice = updatedProducts.reduce((sum, product) => {
+          return sum + (product.price || 0);
+        }, 0);
+        const roundedTotalPrice = Math.round(totalPrice * 100) / 100;
+
         return {
           ...supplierItem,
           supplier: {
@@ -37,6 +50,8 @@ export const fixQuotationBySupplier = (data: any[]): any[] => {
             discount: {
               ...supplierItem.supplier.discount,
               product: updatedProducts,
+              orderValue: roundedTotalPrice,
+              orderValueFinish: roundedTotalPrice,
             },
           },
         };
