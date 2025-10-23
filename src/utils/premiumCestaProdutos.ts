@@ -1,47 +1,62 @@
 import axios from 'axios';
+import { HttpException } from '../errors/httpException';
 import { ApiRepository } from '../repository/apiRepository';
+import { getSuppliersIdsByReferralRestaurantId } from '../repository/supplierRepository';
 import { type ICartResponse } from '../service/cartService';
+import { QuotationPriceItemData, QuotationRestaurantData } from '../types/quotationEngineTypes';
 import {
-  type FornecedorMotor,
-  type ProdutoCesta,
   type CombinacaoAPI,
   type CombinationResponse,
+  type FornecedorMotor,
   type MotorCombinacaoRequest,
-  type MotorCombinacaoResponse,
+  type MotorCombinacaoWithSupplierNames,
   type PreferenciaClasse,
   type PreferenciaProduto,
+  type ProdutoCesta,
 } from '../types/quotationTypes';
-import { HttpException } from '../errors/httpException';
 import { preferencesResolver } from './premium-preferences.utils';
-import { getSuppliersFromPriceList, addSupplierNames } from './premium-suppliers.utils';
+import { addSupplierNames, getSuppliersFromPriceList } from './premium-suppliers.utils';
 
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '');
 
 export async function cestaProdutos(cart: ICartResponse[]): Promise<ProdutoCesta[]> {
   const cesta: ProdutoCesta[] = [];
 
-  for (const item of cart) {
-    const produto = await apiDbConectar.callApi(`/system/produtos/${item.productId}`, 'GET');
+  const results = await Promise.all(
+    cart.map(async (item) => {
+      const produto = await apiDbConectar.callApi(`/system/produtos/${item.productId}`, 'GET');
 
-    if (!produto) {
-      throw new Error('Erro ao buscar produtos na base de dados');
-    }
+      if (!produto) {
+        throw new Error('Erro ao buscar produtos na base de dados');
+      }
 
-    cesta.push({
-      id: produto.data.sku,
-      quantity: Number(item.amount),
-      class: produto.data.classe,
-    });
-  }
+      return {
+        id: produto.data.sku,
+        quantity: Number(item.amount),
+        class: produto.data.classe,
+      } as ProdutoCesta;
+    }),
+  );
+
+  cesta.push(...results);
 
   return cesta;
 }
 
+async function getEngineQuotationForSuppliers(
+  req: MotorCombinacaoRequest,
+  prices: QuotationPriceItemData[],
+): Promise<MotorCombinacaoWithSupplierNames> {
+  const result = await axios.post(`${process.env.API_MOTOR_COTACAO}/solve`, req);
+  const resultadoCotacao = addSupplierNames(result.data, prices);
+  return resultadoCotacao;
+}
+
 export async function solveCombinations(
-  prices: any[],
+  prices: QuotationPriceItemData[],
   products: ProdutoCesta[],
-  restaurant: any,
-): Promise<CombinationResponse[] | undefined> {
+  restaurant: QuotationRestaurantData,
+): Promise<CombinationResponse[]> {
   const combinationsResult = await apiDbConectar.callApi(
     `/system/combinacao/${restaurant.id}`,
     'GET',
@@ -53,52 +68,49 @@ export async function solveCombinations(
     throw new HttpException('Não há fornecedores disponíveis', 404);
   }
 
-  const solvedCombinations: CombinationResponse[] = [];
-  const tax = restaurant.tax.d;
-  const taxa = Number(`${tax[0]}.${String(tax[1])}`) / 100;
+  const taxa = Number(restaurant.tax) / 100;
 
-  for (const combination of combinations) {
-    const favoriteCategories: PreferenciaClasse[] = [];
-    const favoriteProducts: PreferenciaProduto[] = [];
-    let suppliers: FornecedorMotor[] = reqSuppliers.filter(
-      (sup) => !combination.fornecedores_bloqueados.includes(sup.id),
-    );
+  const zeroTaxSuppliersIds = await getSuppliersIdsByReferralRestaurantId(restaurant.id);
 
-    if (combination.fornecedores_especificos.length !== 0)
-      suppliers = suppliers.filter((sup) => combination.fornecedores_especificos.includes(sup.id));
+  const solvedCombinations: CombinationResponse[] = await Promise.all(
+    combinations.map(async (combination) => {
+      const favoriteCategories: PreferenciaClasse[] = [];
+      const favoriteProducts: PreferenciaProduto[] = [];
+      let suppliers: FornecedorMotor[] = reqSuppliers.filter(
+        (sup) => !combination.fornecedores_bloqueados.includes(sup.id),
+      );
 
-    if (combination.preferencias.length > 0) {
-      const { preferenceCategories, preferenceProducts } = preferencesResolver(combination);
-      favoriteCategories.push(...preferenceCategories);
-      favoriteProducts.push(...preferenceProducts);
-    }
+      if (combination.fornecedores_especificos.length !== 0) {
+        suppliers = suppliers.filter((sup) =>
+          combination.fornecedores_especificos.includes(sup.id),
+        );
+      }
 
-    const reqMotor: MotorCombinacaoRequest = {
-      suppliers,
-      favoriteCategories,
-      favoriteProducts,
-      products,
-      fee: taxa,
-      zeroFee: [],
-      maxSupplier: combination.dividir_em_maximo,
-    };
+      if (combination.preferencias.length > 0) {
+        const { preferenceCategories, preferenceProducts } = preferencesResolver(combination);
+        favoriteCategories.push(...preferenceCategories);
+        favoriteProducts.push(...preferenceProducts);
+      }
 
-    const rawResultadoCotacao = await combinationSolverEngine(reqMotor);
-    const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices);
+      const reqMotor: MotorCombinacaoRequest = {
+        suppliers,
+        favoriteCategories,
+        favoriteProducts,
+        products,
+        fee: taxa,
+        zeroFee: zeroTaxSuppliersIds,
+        maxSupplier: combination.dividir_em_maximo,
+      };
 
-    solvedCombinations.push({
-      id: combination.id,
-      nome: combination.nome,
-      resultadoCotacao,
-    });
-  }
+      const quotationResult = await getEngineQuotationForSuppliers(reqMotor, prices);
+
+      return {
+        id: combination.id,
+        nome: combination.nome,
+        resultadoCotacao: quotationResult,
+      } as CombinationResponse;
+    }),
+  );
 
   return solvedCombinations;
-}
-
-async function combinationSolverEngine(
-  req: MotorCombinacaoRequest,
-): Promise<MotorCombinacaoResponse> {
-  const result = await axios.post(`${process.env.API_MOTOR_COTACAO}/solve`, req);
-  return result.data;
 }

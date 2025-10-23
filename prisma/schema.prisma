@@ -63,6 +63,7 @@ model restaurant {
   restaurant_supplier                 restaurant_supplier[]
   transactions                        transactions[]
   conectarPlusAuthorization           Boolean               @default(false) @db.Boolean
+  suppliers_referred                  supplier[]
 }
 
 model appVersion {
@@ -238,6 +239,7 @@ model status {
   order         order[]
   order_invoice order_invoice[]
   transactions  transactions[]
+  supplier      supplier[]
 }
 
 model bolecode {
@@ -327,16 +329,20 @@ model file_log {
 }
 
 model supplier {
-  id                  String                @id @db.Uuid
-  externalId          String                @unique @db.VarChar(50)
-  name                String                @db.VarChar(255)
-  email               String                @db.VarChar(255)
-  phone               String?               @db.VarChar(50)
-  asaasApiToken       String                @db.VarChar(255)
-  asaasWalletId       String                @db.VarChar(255)
-  createdAt           DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(3)
-  restaurant_supplier restaurant_supplier[]
+  id                      String                @id @db.Uuid
+  externalId              String                @unique @db.VarChar(50)
+  name                    String                @db.VarChar(255)
+  email                   String                @db.VarChar(255)
+  phone                   String?               @db.VarChar(50)
+  asaasApiToken           String                @db.VarChar(255)
+  asaasWalletId           String                @db.VarChar(255)
+  createdAt               DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt               DateTime              @updatedAt @db.Timestamptz(3)
+  restaurant_supplier     restaurant_supplier[]
+  referral_restaurant_id  String?               @db.Uuid
+  referral_restaurant     restaurant?           @relation(fields: [referral_restaurant_id], references: [id])
+  status_id               Int                   @default(6) // PENDENTE
+  status                  status                @relation(fields: [status_id], references: [id])
 }
 
 model restaurant_supplier {
