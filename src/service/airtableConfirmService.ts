@@ -6,7 +6,7 @@ import { createDetailingAirtable } from '../repository/airtableDetailingService'
 import { createOrderTextAirtable } from '../repository/airtableOrderTextService'
 import { findProductsIdsFromAirtable } from '../repository/airtableProductService'
 import { findIdFromAirtable } from '../repository/airtableSupplierService'
-import { airtableOrderErrorMessage } from '../utils/slackUtils'
+import { olderSupplierDiscountNamePattern } from '../utils/airtableDetailingUtils'
 
 export const airtableHandler = async (
   _order: Order,
@@ -64,13 +64,7 @@ export const airtableHandler = async (
       'Data Pedido': _order.orderDate.toISOString().substring(0, 10),
       'Forma de pagamento': _order.paymentWay ?? '',
       'ID Distribuidor':
-        _order.restaurantId === 'C757' ||
-        _order.restaurantId === 'C939' ||
-        _order.restaurantId === 'C940' ||
-        _order.restaurantId === 'C941'
-          ? ['recWgNcSLy6StEn4L']
-          : [supplierId],
-      // 'ID Distribuidor': [supplierId],
+        _order.status_id === 13 ? ['recGaGKpONIbRlNK5'] : [supplierId],
       'Pedido Bubble': true,
       'Ponto de referência': _order.referencePoint ?? '',
       'Presentes na cotação': _order.calcOrderAgain.data.map(
@@ -84,12 +78,10 @@ export const airtableHandler = async (
         _order.status_id === 12
           ? 'Confirmado'
           : _order.status_id === 13
-          ? 'Teste'
-          : _order.status_id === 6
-          ? 'Cancelado'
-          : _order.status_id === 13
-          ? 'Recusado'
-          : 'Teste',
+            ? 'Teste'
+            : _order.status_id === 6
+              ? 'Cancelado'
+              : 'Recusado',
       'Recibo original': [
         {
           url: _order.orderDocument!
@@ -104,28 +96,33 @@ export const airtableHandler = async (
     }
 
     const batchedDetails = chunkArray(
-      _detailing.map((item) => ({
-        ID_Pedido: [(order as AirtableRecord<FieldSet>).id],
-        'ID Produto': [productsMap[item.productId]],
-        'Qtd Pedido': item.orderAmount,
-        'Qtd Final Distribuidor': item.supplierFinalAmount,
-        'Qtd Final Cliente': item.restaurantFinalAmount,
-        'Custo / Unidade Fornecedor': item.supplierPricePerUnid,
-        'Custo / Unidade Conéctar': item.conectarPricePerUnid,
-        'Preço Final Distribuidor': item.supplierFinalPrice,
-        'Preço Final Conéctar': item.conectarFinalPrice,
-        'Status Detalhamento Pedido': item.status as
-          | 'Confirmado'
-          | 'Teste'
-          | 'Produto não disponível',
-        OBS: item.obs,
-        Aux_OBS: item.obs,
-        'Custo Estimado': item.conectarFinalPrice,
-        'Custo / Unid Fornecedor BD': item.supplierPricePerUnid,
-        'Custo / Unidade Conéctar BD': item.conectarPricePerUnid,
-        'Taxa Cliente': _order.tax,
-        'Qtd Estimada': item.supplierFinalAmount
-      })),
+      _detailing.map((item) => {
+        const productQuotationFields =
+          prepareProductQuotationFieldsForDetailing(_order, item.productId)
+        return {
+          ID_Pedido: [(order as AirtableRecord<FieldSet>).id],
+          'ID Produto': [productsMap[item.productId]],
+          'Qtd Pedido': item.orderAmount,
+          'Qtd Final Distribuidor': item.supplierFinalAmount,
+          'Qtd Final Cliente': item.restaurantFinalAmount,
+          'Custo / Unidade Fornecedor': item.supplierPricePerUnid,
+          'Custo / Unidade Conéctar': item.conectarPricePerUnid,
+          'Preço Final Distribuidor': item.supplierFinalPrice,
+          'Preço Final Conéctar': item.conectarFinalPrice,
+          'Status Detalhamento Pedido': item.status as
+            | 'Confirmado'
+            | 'Teste'
+            | 'Produto não disponível',
+          OBS: item.obs,
+          Aux_OBS: item.obs,
+          'Custo Estimado': item.conectarFinalPrice,
+          'Custo / Unid Fornecedor BD': item.supplierPricePerUnid,
+          'Custo / Unidade Conéctar BD': item.conectarPricePerUnid,
+          'Taxa Cliente': _order.tax,
+          'Qtd Estimada': item.supplierFinalAmount,
+          ...productQuotationFields
+        }
+      }),
       10
     )
 
@@ -139,12 +136,49 @@ export const airtableHandler = async (
       'ID Cliente': _order.restaurantId,
       'Texto Pedido': orderText
     })
-  } catch (err) {
-    const message = `${orderText}
-  *************************************
-  Fornecedor: ${_order.supplierId}
-    `
-    await airtableOrderErrorMessage(_order.id, message)
-    console.error('>>>erro: ', err)
+  } catch (err: any) {
+    if (err.statusCode === 422) {
+      throw err
+    }
+    throw new Error(`Erro no servico do airtable: ${err.message}`)
   }
+}
+
+function prepareProductQuotationFieldsForDetailing (
+  order: Order,
+  productId: string
+): Record<string, any> {
+  const quotationFields: Record<string, any> = {}
+  if (!order.calcOrderAgain?.data) return quotationFields
+
+  order.calcOrderAgain.data.forEach((quotationData: any) => {
+    const supplier = quotationData.supplier
+    if (!supplier?.name) return
+
+    const detailingSuffix = olderSupplierDiscountNamePattern(
+      supplier.externalId as string
+    )
+      ? '_ %'
+      : '_%'
+
+    const supplierName = supplier.name
+    const discountData = supplier.discount || {}
+
+    const productInQuotation = discountData.product?.find(
+      (prod: any) => prod.sku === productId
+    )
+
+    if (productInQuotation) {
+      const productValue = productInQuotation.price || 0
+      const discountPercentage = discountData.discount || 0
+
+      quotationFields[`${supplierName}`] = productValue
+      quotationFields[`${supplierName}${detailingSuffix}`] = discountPercentage
+    } else {
+      quotationFields[`${supplierName}`] = 0
+      quotationFields[`${supplierName}${detailingSuffix}`] = 0
+    }
+  })
+
+  return quotationFields
 }
