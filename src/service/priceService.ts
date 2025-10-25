@@ -75,7 +75,7 @@ export const suppliersPrices = async (req: ICartList): Promise<any> => {
     // Para o banco de produção, filtrar o fornecedor de teste
     if (process.env.FILTER_TEST_SUPPLIER === 'true') {
       const filteredSuppliers = data.data.filter(
-        (sup: SupplierItem) => sup.supplier.externalId !== 'F0',
+        (sup: SupplierItem) => sup.supplier.externalId === 'F1000',
       );
 
       return {
