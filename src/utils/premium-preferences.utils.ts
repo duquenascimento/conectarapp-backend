@@ -24,6 +24,7 @@ export function preferencesResolver(combinacao: CombinacaoAPI): PreferencesResol
           productId: prod.produto_sku,
           supplierId,
           unavailableIfFailed: preferencia.acao_na_falha !== 'ignorar',
+          priority: preferencia.ordem,
           preferenceType: preferencia.tipo === 'fixar' ? 'fix' : 'block',
         };
       }),
@@ -41,6 +42,7 @@ export function preferencesResolver(combinacao: CombinacaoAPI): PreferencesResol
           class: prod.classe,
           supplierId,
           unavailableIfFailed: preferencia.acao_na_falha !== 'ignorar',
+          priority: preferencia.ordem,
           preferenceType: preferencia.tipo === 'fixar' ? 'fix' : 'block',
         };
       }),

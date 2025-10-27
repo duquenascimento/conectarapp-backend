@@ -63,6 +63,7 @@ export interface PreferenciaProduto {
   productId: string;
   supplierId: string;
   unavailableIfFailed: boolean;
+  priority: number;
   preferenceType: string;
 }
 
@@ -70,6 +71,7 @@ export interface PreferenciaClasse {
   class: string;
   supplierId: string;
   unavailableIfFailed: boolean;
+  priority: number;
   preferenceType: string;
 }
 
