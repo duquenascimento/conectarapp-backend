@@ -1,6 +1,6 @@
-import axios from 'axios'
-import { ApiRepository } from '../repository/apiRepository'
-import { type ICartResponse } from '../service/cartService'
+import axios from 'axios';
+import { ApiRepository } from '../repository/apiRepository';
+import { type ICartResponse } from '../service/cartService';
 import {
   type FornecedorMotor,
   type ProdutoCesta,
@@ -8,79 +8,69 @@ import {
   type CombinationResponse,
   type MotorCombinacaoRequest,
   type MotorCombinacaoResponse,
-  type MotorCombinacaoWithSupplierNames,
   type PreferenciaClasse,
-  type PreferenciaProduto
-} from '../types/quotationTypes'
-import { HttpException } from '../errors/httpException'
-import { preferencesResolver } from './premium-preferences.utils'
-import {
-  getSuppliersFromPriceList,
-  addSupplierNames
-} from './premium-suppliers.utils'
+  type PreferenciaProduto,
+} from '../types/quotationTypes';
+import { HttpException } from '../errors/httpException';
+import { preferencesResolver } from './premium-preferences.utils';
+import { getSuppliersFromPriceList, addSupplierNames } from './premium-suppliers.utils';
 
-const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '')
+const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '');
 
-export async function cestaProdutos(
-  cart: ICartResponse[]
-): Promise<ProdutoCesta[]> {
-  const cesta: ProdutoCesta[] = []
+export async function cestaProdutos(cart: ICartResponse[]): Promise<ProdutoCesta[]> {
+  const cesta: ProdutoCesta[] = [];
 
   for (const item of cart) {
-    const produto = await apiDbConectar.callApi(
-      `/system/produtos/${item.productId}`,
-      'GET'
-    )
+    const produto = await apiDbConectar.callApi(`/system/produtos/${item.productId}`, 'GET');
 
     if (!produto) {
-      throw new Error('Erro ao buscar produtos na base de dados')
+      throw new Error('Erro ao buscar produtos na base de dados');
     }
 
     cesta.push({
       id: produto.data.sku,
       quantity: Number(item.amount),
-      class: produto.data.classe
-    })
+      class: produto.data.classe,
+    });
   }
 
-  return cesta
+  return cesta;
 }
 
 export async function solveCombinations(
   prices: any[],
   products: ProdutoCesta[],
-  restaurant: any
+  restaurant: any,
 ): Promise<CombinationResponse[] | undefined> {
   const combinationsResult = await apiDbConectar.callApi(
     `/system/combinacao/${restaurant.id}`,
-    'GET'
-  )
-  const combinations = combinationsResult.data as CombinacaoAPI[]
+    'GET',
+  );
+  const combinations = combinationsResult.data as CombinacaoAPI[];
 
-  const reqSuppliers = await getSuppliersFromPriceList(prices, products)
+  const reqSuppliers = await getSuppliersFromPriceList(prices, products, restaurant);
   if (!reqSuppliers) {
-    throw new HttpException('Não há fornecedores disponíveis', 404)
+    throw new HttpException('Não há fornecedores disponíveis', 404);
   }
 
-  const solvedCombinations: CombinationResponse[] = []
-  const tax = restaurant.tax.d
-  const taxa = Number(`${tax[0]}.${String(tax[1]).slice(0, 2)}`) / 100
+  const solvedCombinations: CombinationResponse[] = [];
+  const tax = restaurant.tax.d;
+  const taxa = Number(`${tax[0]}.${String(tax[1])}`) / 100;
 
   for (const combination of combinations) {
-    const favoriteCategories: PreferenciaClasse[] = []
-    const favoriteProducts: PreferenciaProduto[] = []
+    const favoriteCategories: PreferenciaClasse[] = [];
+    const favoriteProducts: PreferenciaProduto[] = [];
     let suppliers: FornecedorMotor[] = reqSuppliers.filter(
-      (sup) => !combination.fornecedores_bloqueados.includes(sup.id)
-    )
+      (sup) => !combination.fornecedores_bloqueados.includes(sup.id),
+    );
 
-    if (combination.preferencia_fornecedor_tipo === 'especifico') {
-      const { preferenceCategories, preferenceProducts } =
-        preferencesResolver(combination)
-      favoriteCategories.push(...preferenceCategories)
-      favoriteProducts.push(...preferenceProducts)
-      suppliers = suppliers.filter((sup) =>
-        combination.fornecedores_especificos.includes(sup.id)
-      )
+    if (combination.fornecedores_especificos.length !== 0)
+      suppliers = suppliers.filter((sup) => combination.fornecedores_especificos.includes(sup.id));
+
+    if (combination.preferencias.length > 0) {
+      const { preferenceCategories, preferenceProducts } = preferencesResolver(combination);
+      favoriteCategories.push(...preferenceCategories);
+      favoriteProducts.push(...preferenceProducts);
     }
 
     const reqMotor: MotorCombinacaoRequest = {
@@ -90,24 +80,25 @@ export async function solveCombinations(
       products,
       fee: taxa,
       zeroFee: [],
-      maxSupplier: combination.dividir_em_maximo
-    }
-    const rawResultadoCotacao = await combinationSolverEngine(reqMotor)
-    const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices)
+      maxSupplier: combination.dividir_em_maximo,
+    };
+
+    const rawResultadoCotacao = await combinationSolverEngine(reqMotor);
+    const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices);
 
     solvedCombinations.push({
       id: combination.id,
       nome: combination.nome,
-      resultadoCotacao
-    })
+      resultadoCotacao,
+    });
   }
 
-  return solvedCombinations
+  return solvedCombinations;
 }
 
 async function combinationSolverEngine(
-  req: MotorCombinacaoRequest
+  req: MotorCombinacaoRequest,
 ): Promise<MotorCombinacaoResponse> {
-  const result = await axios.post(`${process.env.API_MOTOR_COTACAO}/solve`, req)
-  return result.data
+  const result = await axios.post(`${process.env.API_MOTOR_COTACAO}/solve`, req);
+  return result.data;
 }

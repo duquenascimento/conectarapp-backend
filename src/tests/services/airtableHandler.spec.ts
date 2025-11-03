@@ -208,7 +208,7 @@ describe('airtableHandler', () => {
 
       expect(mockCreateOrderAirtable).toHaveBeenCalledWith(
         expect.objectContaining({
-          'ID Distribuidor': ['recWgNcSLy6StEn4L']
+          'ID Distribuidor': ['recGaGKpONIbRlNK5']
         })
       )
     })
