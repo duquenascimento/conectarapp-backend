@@ -84,13 +84,29 @@ export async function solveCombinations(
     };
 
     const rawResultadoCotacao = await combinationSolverEngine(reqMotor);
-    const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices);
-
-    solvedCombinations.push({
-      id: combination.id,
-      nome: combination.nome,
-      resultadoCotacao,
-    });
+    if (
+      rawResultadoCotacao.totalOrderValue < 350 &&
+      rawResultadoCotacao.supplier.length !== 1 &&
+      !restaurant.allowMinimumOrder
+    ) {
+      solvedCombinations.push({
+        id: combination.id,
+        nome: combination.nome,
+        resultadoCotacao: {
+          totalOrderValue: 0,
+          supplier: [],
+          status: 'error',
+          terminationCondition: 'Combinação impossível',
+        },
+      });
+    } else {
+      const resultadoCotacao = addSupplierNames(rawResultadoCotacao, prices);
+      solvedCombinations.push({
+        id: combination.id,
+        nome: combination.nome,
+        resultadoCotacao,
+      });
+    }
   }
 
   return solvedCombinations;

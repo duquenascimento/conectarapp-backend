@@ -121,15 +121,15 @@ model favorite {
 }
 
 model cart {
-  id           String         @id @db.Uuid
-  productId    String         @db.Uuid
-  obs          String?        @db.VarChar(200)
-  amount       Decimal        @db.Decimal(10, 3)
-  restaurantId String         @db.Uuid
-  version      Int            @default(0)
-  addOrder     Int?           @default(0)
-  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
+  id           String    @id @db.Uuid
+  productId    String    @db.Uuid
+  obs          String?   @db.VarChar(200)
+  amount       Decimal   @db.Decimal(10, 3)
+  restaurantId String    @db.Uuid
+  version      Int       @default(0)
+  addOrder     Int?      @default(0)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime? @updatedAt @db.Timestamptz(3)
 
   @@unique([restaurantId, productId], name: "cart_restaurantId_productId_unique")
 }
@@ -359,6 +359,14 @@ model register_progress {
   values    Json
   updatedAt DateTime @updatedAt
   user      user     @relation(fields: [userId], references: [id])
+}
+
+model conectar_plus_constraints {
+  id                 String   @id @default(uuid())
+  minTotalOrderValue Int
+  minSupplierValue   Int
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
 }
 
 enum LogStatus {
