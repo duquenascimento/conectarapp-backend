@@ -5,6 +5,7 @@ import { DateTime } from 'luxon'
 import * as dotenv from 'dotenv'
 import multipart from '@fastify/multipart'
 import { errorHandler } from './middleware/errorHandler'
+import { authPlugin } from './utils/authPlugin'
 
 dotenv.config()
 
@@ -20,6 +21,7 @@ async function startServer(): Promise<void> {
     ])
     await server.register(multipart)
     server.setErrorHandler(errorHandler)
+    await server.register(authPlugin)
     await registerRoutes(server)
     const port = parseInt(process.env.PORT ?? '9841', 10)
     const host = process.env.HOST ?? '192.168.201.96'
