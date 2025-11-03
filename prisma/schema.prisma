@@ -367,6 +367,14 @@ model register_progress {
   user      user     @relation(fields: [userId], references: [id])
 }
 
+model conectar_plus_constraints {
+  id                 String   @id @default(uuid())
+  minTotalOrderValue Int
+  minSupplierValue   Int
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
+}
+
 enum LogStatus {
   SUCCESS
   FAIL
