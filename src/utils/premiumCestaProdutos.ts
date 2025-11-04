@@ -14,6 +14,7 @@ import {
 import { HttpException } from '../errors/httpException';
 import { preferencesResolver } from './premium-preferences.utils';
 import { getSuppliersFromPriceList, addSupplierNames } from './premium-suppliers.utils';
+import { getCombinationConstraints } from '../repository/combinationRepository';
 
 const apiDbConectar = new ApiRepository(process.env.API_DB_CONECTAR ?? '');
 
@@ -48,7 +49,19 @@ export async function solveCombinations(
   );
   const combinations = combinationsResult.data as CombinacaoAPI[];
 
-  const reqSuppliers = await getSuppliersFromPriceList(prices, products, restaurant);
+  const conectarPlusConstraints = await getCombinationConstraints();
+  if (!conectarPlusConstraints) {
+    throw new HttpException('Falha ao buscar as restrições de preço do conectar plus', 404);
+  }
+
+  const { minTotalOrderValue, minSupplierValue } = conectarPlusConstraints;
+
+  const reqSuppliers = await getSuppliersFromPriceList(
+    prices,
+    products,
+    restaurant,
+    minSupplierValue,
+  );
   if (!reqSuppliers) {
     throw new HttpException('Não há fornecedores disponíveis', 404);
   }
@@ -85,7 +98,7 @@ export async function solveCombinations(
 
     const rawResultadoCotacao = await combinationSolverEngine(reqMotor);
     if (
-      rawResultadoCotacao.totalOrderValue < 350 &&
+      rawResultadoCotacao.totalOrderValue < minTotalOrderValue &&
       rawResultadoCotacao.supplier.length !== 1 &&
       !restaurant.allowMinimumOrder
     ) {

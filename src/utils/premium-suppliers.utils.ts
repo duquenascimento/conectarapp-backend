@@ -17,10 +17,11 @@ export async function getSuppliersFromPriceList(
   prices: any[],
   cart: ProdutoCesta[],
   restaurant: any,
+  minSupplierValue: number,
 ): Promise<FornecedorMotor[] | null> {
   const supplierList = prices.map((item: any) => item.supplier) as FornecedorPriceList[];
 
-  const result = await fornecedoresCotacaoPremium(supplierList, cart, restaurant);
+  const result = await fornecedoresCotacaoPremium(supplierList, cart, restaurant, minSupplierValue);
 
   return result;
 }
@@ -29,6 +30,7 @@ export async function fornecedoresCotacaoPremium(
   fornecedores: FornecedorPriceList[],
   produtosCesta: ProdutoCesta[],
   restaurant: any,
+  minSupplierValue: number,
 ): Promise<FornecedorMotor[] | null> {
   if (fornecedores.length === 0) {
     return [];
@@ -60,13 +62,18 @@ export async function fornecedoresCotacaoPremium(
       };
     });
 
+    let minValue = 0;
+    if (!allowMinimumOrder) {
+      minValue = Math.max(item.minimumOrder, minSupplierValue);
+    }
+
     const discounts = await getSupplierDiscountRange(item.externalId);
 
     fornecedoresCotacao.push({
       id: item.externalId,
       products: produtosComPrecoFornecedor,
       discounts,
-      minValue: item.minimumOrder,
+      minValue,
     });
   }
 
