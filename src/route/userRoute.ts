@@ -50,7 +50,8 @@ export const userRoute = async (server: FastifyInstance): Promise<any> => {
     }
   });
 
-  server.put('/delete-user', async (req, res): Promise<any> => {
+  // Rota de delete criada por conta de restrições da apple store para iOs
+  server.delete('/delete-user', async (req, res): Promise<any> => {
     try {
       const authHeader = req.headers.authorization;
       if (!authHeader) {
