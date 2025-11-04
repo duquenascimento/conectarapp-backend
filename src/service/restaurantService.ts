@@ -1,5 +1,24 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findConectarPlusAccess, updateConectarPlusAccess } from '../repository/restaurantRepository'
+import { addClientCount, 
+  findAddressByRestaurantId, 
+  listByUserId, 
+  registerRestaurant, 
+  removeClientCount, 
+  updateAddress, 
+  updateAllowCloseSupplierAndMinimumOrderRepository, 
+  updateRegistrationReleasedNewAppRepository, 
+  updateFinanceBlockRepository, 
+  updateRestaurantRepository, 
+  updateAddressByExternalIdRepository, 
+  patchRestaurantRepository, 
+  updateComercialBlockRepository, 
+  findRestaurantByExternalId, 
+  findRestaurantByRestaurantIdAndSupplierId, 
+  findRestaurantById, 
+  findConectarPlusAccess, 
+  updateConectarPlusAccess, 
+  getMaxSpecificSuppliersRepository 
+} from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
@@ -290,4 +309,9 @@ export const setConectarPlus = async (externalId: string, conectarPlusAuthorizat
   }
 
   return await updateConectarPlusAccess(externalId, conectarPlusAuthorization)
+}
+
+export const getMaxSpecificSuppliersService = async (externalId: string): Promise<any> => {
+  const maxSpecificSuppliers = await getMaxSpecificSuppliersRepository(externalId)
+  return maxSpecificSuppliers.max_specific_suppliers
 }

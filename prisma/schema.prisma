@@ -64,6 +64,7 @@ model restaurant {
   restaurant_supplier                 restaurant_supplier[]
   supplier                            supplier[]
   transactions                        transactions[]
+  max_specific_suppliers              Int                   @default(2)
 }
 
 model appVersion {

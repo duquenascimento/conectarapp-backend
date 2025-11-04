@@ -474,3 +474,15 @@ export const updateConectarPlusAccess = async (
     throw new Error('Falha ao atualizar conectarPlus')
   }
 }
+
+export const getMaxSpecificSuppliersRepository = async (restaurantExternalId: string): Promise<any> => {
+  try {
+    const maxSpecificSuppliers = await prisma.restaurant.findFirst({
+      where: {externalId: restaurantExternalId}
+    })
+    return maxSpecificSuppliers
+  } catch (err) {
+    console.error('Erro ao buscar maxSpecificSuppliers:', err)
+    throw new Error('Falha ao buscar maxSpecificSuppliers')
+  }
+}

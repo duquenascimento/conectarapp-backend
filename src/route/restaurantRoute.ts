@@ -1,5 +1,5 @@
 import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, findConectarPlus, setConectarPlus } from '../service/restaurantService'
+import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, findConectarPlus, setConectarPlus, getMaxSpecificSuppliersService } from '../service/restaurantService'
 import { type restaurant } from '@prisma/client'
 import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
 import addressUpdateSchema from '../validators/addrestValidator'
@@ -345,5 +345,29 @@ export const restaurantRoute = async (server: FastifyInstance): Promise<void> =>
       success: true,
       ...updated
     })
+  })
+
+  server.get('/restaurant/get-max-specific-suppliers/:externalId', async (req, res): Promise<void> => {
+    try {
+      const { externalId } = req.params as { externalId: string }
+      const maxSpecificSuppliersNumber = await getMaxSpecificSuppliersService(externalId)
+      return await res.status(200).send({
+        status: 200,
+        data: maxSpecificSuppliersNumber
+      })
+    } catch (err) {
+      const message = (err as Error).message
+      if (message === process.env.INTERNAL_ERROR_MSG) {
+        await res.status(500).send({
+          status: 500,
+          msg: message
+        })
+      } else {
+        await res.status(404).send({
+          status: 404,
+          msg: message
+        })
+      }
+    }
   })
 }
