@@ -59,10 +59,11 @@ model restaurant {
   financeResponsibleName              String?
   financeResponsiblePhoneNumber       String?
   asaasCustomerId                     String?               @db.VarChar(50)
+  conectarPlusAuthorization           Boolean               @default(false)
   appVersion                          appVersion?           @relation("RestaurantAppVersion")
   restaurant_supplier                 restaurant_supplier[]
+  supplier                            supplier[]
   transactions                        transactions[]
-  conectarPlusAuthorization           Boolean               @default(false) @db.Boolean
 }
 
 model appVersion {
@@ -121,15 +122,15 @@ model favorite {
 }
 
 model cart {
-  id           String         @id @db.Uuid
-  productId    String         @db.Uuid
-  obs          String?        @db.VarChar(200)
-  amount       Decimal        @db.Decimal(10, 3)
-  restaurantId String         @db.Uuid
-  version      Int            @default(0)
-  addOrder     Int?           @default(0)
-  createdAt    DateTime       @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime?      @updatedAt @db.Timestamptz(3)
+  id           String    @id @db.Uuid
+  productId    String    @db.Uuid
+  obs          String?   @db.VarChar(200)
+  amount       Decimal   @db.Decimal(10, 3)
+  restaurantId String    @db.Uuid
+  version      Int       @default(0)
+  addOrder     Int?      @default(0)
+  createdAt    DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime? @updatedAt @db.Timestamptz(3)
 
   @@unique([restaurantId, productId], name: "cart_restaurantId_productId_unique")
 }
@@ -237,6 +238,7 @@ model status {
   bolecode      bolecode[]
   order         order[]
   order_invoice order_invoice[]
+  supplier      supplier[]
   transactions  transactions[]
 }
 
@@ -327,16 +329,20 @@ model file_log {
 }
 
 model supplier {
-  id                  String                @id @db.Uuid
-  externalId          String                @unique @db.VarChar(50)
-  name                String                @db.VarChar(255)
-  email               String                @db.VarChar(255)
-  phone               String?               @db.VarChar(50)
-  asaasApiToken       String                @db.VarChar(255)
-  asaasWalletId       String                @db.VarChar(255)
-  createdAt           DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt           DateTime              @updatedAt @db.Timestamptz(3)
-  restaurant_supplier restaurant_supplier[]
+  id                     String                @id @db.Uuid
+  externalId             String                @unique @db.VarChar(50)
+  name                   String                @db.VarChar(255)
+  email                  String                @db.VarChar(255)
+  phone                  String?               @db.VarChar(50)
+  asaasApiToken          String                @db.VarChar(255)
+  asaasWalletId          String                @db.VarChar(255)
+  createdAt              DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime              @updatedAt @db.Timestamptz(3)
+  referral_restaurant_id String?               @db.Uuid
+  status_id              Int                   @default(6)
+  restaurant_supplier    restaurant_supplier[]
+  restaurant             restaurant?           @relation(fields: [referral_restaurant_id], references: [id])
+  status                 status                @relation(fields: [status_id], references: [id])
 }
 
 model restaurant_supplier {
@@ -359,6 +365,14 @@ model register_progress {
   values    Json
   updatedAt DateTime @updatedAt
   user      user     @relation(fields: [userId], references: [id])
+}
+
+model conectar_plus_constraints {
+  id                 String   @id
+  minTotalOrderValue Int
+  minSupplierValue   Int
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @db.Timestamptz(3)
 }
 
 enum LogStatus {
