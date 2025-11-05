@@ -1,10 +1,10 @@
 import { type user } from '@prisma/client';
-import { findById, softDeleteUser } from '../repository/userRepository';
 import { logRegister } from '../utils/logUtils';
+import userRepository from '../repository/userRepository';
 
 export const findUserById = async (id?: string): Promise<user> => {
   try {
-    const result = await findById(id ?? '');
+    const result = await userRepository.findById(id ?? '');
     if (result == null) throw new Error('not found', { cause: 'visibleError' });
     return result;
   } catch (err) {
@@ -13,15 +13,22 @@ export const findUserById = async (id?: string): Promise<user> => {
   }
 };
 
-export const setUserAsInactive = async (id: string): Promise<void> => {
+export const softDeleteUser = async (id: string): Promise<void> => {
   try {
-    const user = await findById(id);
+    const user = await userRepository.findById(id);
     if (!user) {
       throw new Error('not found', { cause: 'visibleError' });
     }
-    await softDeleteUser(id);
+    await userRepository.softDeleteUser(id);
   } catch (err) {
     if ((err as any).cause !== 'visibleError') await logRegister(err);
     throw Error((err as Error).message);
   }
 };
+
+const userService = {
+  findUserById,
+  softDeleteUser,
+};
+
+export default userService;

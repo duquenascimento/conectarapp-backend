@@ -3,7 +3,7 @@ import { logRegister } from '../utils/logUtils';
 
 const prisma = new PrismaClient();
 
-export const findById = async (id: string) => {
+const findById = async (id: string) => {
   try {
     return await prisma.user.findUnique({
       where: { id },
@@ -16,7 +16,7 @@ export const findById = async (id: string) => {
   }
 };
 
-export const softDeleteUser = async (id: string) => {
+const softDeleteUser = async (id: string) => {
   try {
     await prisma.user.update({
       where: {
@@ -33,3 +33,10 @@ export const softDeleteUser = async (id: string) => {
     await prisma.$disconnect();
   }
 };
+
+const userRepository = {
+  findById,
+  softDeleteUser,
+};
+
+export default userRepository;

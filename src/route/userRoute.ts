@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import * as jwt from 'jsonwebtoken';
-import { findUserById, setUserAsInactive } from '../service/userService';
 import { UserResponse } from '../types/userResponseType';
+import userService from '../service/userService';
 
 export const userRoute = async (server: FastifyInstance): Promise<any> => {
   server.get('/user', async (req, res): Promise<any> => {
@@ -19,7 +19,7 @@ export const userRoute = async (server: FastifyInstance): Promise<any> => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
       const userId = decoded.id;
 
-      const user = await findUserById(userId);
+      const user = await userService.findUserById(userId);
       if (!user) {
         return await res.status(404).send({ message: 'Usuário não encontrado' });
       }
@@ -66,7 +66,7 @@ export const userRoute = async (server: FastifyInstance): Promise<any> => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
       const userId = decoded.id;
 
-      await setUserAsInactive(userId);
+      await userService.softDeleteUser(userId);
       return await res.status(200).send({
         message: 'Usuário excluido com sucesso!',
       });
