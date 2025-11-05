@@ -1,17 +1,42 @@
-import { PrismaClient } from '@prisma/client'
-import { logRegister } from '../utils/logUtils'
+import { PrismaClient } from '@prisma/client';
+import { logRegister } from '../utils/logUtils';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export const findById = async (id: string) => {
+const findById = async (id: string) => {
   try {
     return await prisma.user.findUnique({
-      where: { id }
-    })
+      where: { id },
+    });
   } catch (err) {
-    await logRegister(err)
-    throw Error((err as Error).message)
+    await logRegister(err);
+    throw Error((err as Error).message);
   } finally {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   }
-}
+};
+
+const softDeleteUser = async (id: string) => {
+  try {
+    await prisma.user.update({
+      where: {
+        id,
+      },
+      data: {
+        active: false,
+      },
+    });
+  } catch (err) {
+    await logRegister(err);
+    throw Error((err as Error).message);
+  } finally {
+    await prisma.$disconnect();
+  }
+};
+
+const userRepository = {
+  findById,
+  softDeleteUser,
+};
+
+export default userRepository;
