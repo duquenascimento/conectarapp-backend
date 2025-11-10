@@ -1,349 +1,401 @@
-import { type FastifyInstance } from 'fastify'
-import { AddClientCount, listRestaurantsByUserId, updateAddressService, updateAllowCloseSupplierAndMinimumOrder, updateRegistrationReleasedNewApp, updateFinanceBlock, updateRestaurant, updateAddressByExternalId, patchRestaurant, updateComercialBlock, findByExternalId, findByRestaurantIdAndSupplierId, findConectarPlus, setConectarPlus } from '../service/restaurantService'
-import { type restaurant } from '@prisma/client'
-import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator'
-import addressUpdateSchema from '../validators/addrestValidator'
-import { HttpException } from '../errors/httpException'
+import { type restaurant } from '@prisma/client';
+import { type FastifyInstance } from 'fastify';
+import { HttpException } from '../errors/httpException';
+import {
+  AddClientCount,
+  findByExternalId,
+  findByRestaurantIdAndSupplierId,
+  findConectarPlus,
+  getRestaurantMaxSpecificSuppliers,
+  listRestaurantsByUserId,
+  patchRestaurant,
+  setConectarPlus,
+  updateAddressByExternalId,
+  updateAddressService,
+  updateAllowCloseSupplierAndMinimumOrder,
+  updateComercialBlock,
+  updateFinanceBlock,
+  updateRegistrationReleasedNewApp,
+  updateRestaurant,
+} from '../service/restaurantService';
+import addressUpdateSchema from '../validators/addrestValidator';
+import restaurantUpdateSchema, { restaurantPatchSchema } from '../validators/restaurantValidator';
 
 export const restaurantRoute = async (server: FastifyInstance): Promise<void> => {
   server.post('/restaurant/list', async (req, res): Promise<any> => {
     try {
-      const result = await listRestaurantsByUserId(req.body as { token: string })
-      if (result == null) throw Error(process.env.INTERNAL_ERROR_MSG)
+      const result = await listRestaurantsByUserId(req.body as { token: string });
+      if (result == null) throw Error(process.env.INTERNAL_ERROR_MSG);
       return await res.status(201).send({
         status: 200,
-        data: result
-      })
+        data: result,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.post('/address/update', async (req, res): Promise<void> => {
     try {
-      await updateAddressService(req.body as { rest: any })
+      await updateAddressService(req.body as { rest: any });
       return await res.status(201).send({
-        status: 200
-      })
+        status: 200,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.post('/rest/updateComercialBlock', async (req, res): Promise<void> => {
     try {
-      await updateComercialBlock(req.body as { restId: string; value: boolean })
+      await updateComercialBlock(req.body as { restId: string; value: boolean });
       return await res.status(200).send({
-        status: 200
-      })
+        status: 200,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.post('/rest/updateRegistrationReleasedNewApp', async (req, res): Promise<void> => {
     try {
-      await updateRegistrationReleasedNewApp(req.body as { externalId: string; registrationReleasedNewApp: boolean })
+      await updateRegistrationReleasedNewApp(
+        req.body as { externalId: string; registrationReleasedNewApp: boolean },
+      );
       return await res.status(200).send({
-        status: 200
-      })
+        status: 200,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.post('/rest/updateFinanceBlock', async (req, res): Promise<void> => {
     try {
-      await updateFinanceBlock(req.body as { restId: string; value: boolean })
+      await updateFinanceBlock(req.body as { restId: string; value: boolean });
       return await res.status(200).send({
-        status: 200
-      })
+        status: 200,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.post('/rest/addClientCount', async (req, res): Promise<void> => {
     try {
-      await AddClientCount(req.body as { count: number; value: boolean })
+      await AddClientCount(req.body as { count: number; value: boolean });
       return await res.status(200).send({
-        status: 200
-      })
+        status: 200,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.put('/rest/updateAllowCloseSupplierAndMinimumOrder', async (req, res): Promise<void> => {
     try {
-      await updateAllowCloseSupplierAndMinimumOrder(req.body as Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>)
+      await updateAllowCloseSupplierAndMinimumOrder(
+        req.body as Pick<restaurant, 'allowClosedSupplier' | 'allowMinimumOrder' | 'externalId'>,
+      );
       return await res.status(200).send({
-        status: 200
-      })
+        status: 200,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.put('/rest/updateRestaurant', async (req, res): Promise<void> => {
     try {
-      const { error } = restaurantUpdateSchema.validate(req.body)
+      const { error } = restaurantUpdateSchema.validate(req.body);
       if (error) {
-        return await res.status(422).send({ error: error.details[0].message })
+        return await res.status(422).send({ error: error.details[0].message });
       }
       const { externalId, ...restaurantData } = req.body as {
-        externalId: string
-        [key: string]: any
-      }
+        externalId: string;
+        [key: string]: any;
+      };
 
-      await updateRestaurant(externalId, restaurantData)
+      await updateRestaurant(externalId, restaurantData);
       return await res.status(200).send({
         status: 200,
-        msg: 'Restaurante atualizado com sucesso.'
-      })
+        msg: 'Restaurante atualizado com sucesso.',
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.put('/rest/updateAddressByExternalId', async (req, res): Promise<void> => {
     try {
-      const { error } = addressUpdateSchema.validate(req.body)
+      const { error } = addressUpdateSchema.validate(req.body);
       if (error) {
-        return await res.status(422).send({ error: error.details[0].message })
+        return await res.status(422).send({ error: error.details[0].message });
       }
       const { externalId, ...addressData } = req.body as {
-        externalId: string
-        [key: string]: any
-      }
+        externalId: string;
+        [key: string]: any;
+      };
 
-      await updateAddressByExternalId(externalId, addressData)
+      await updateAddressByExternalId(externalId, addressData);
       return await res.status(200).send({
         status: 200,
-        msg: 'Endereço atualizado com sucesso.'
-      })
+        msg: 'Endereço atualizado com sucesso.',
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
   server.patch('/restaurants', async (req, res) => {
     try {
-      const { error } = restaurantPatchSchema.validate(req.body)
+      const { error } = restaurantPatchSchema.validate(req.body);
       if (error) {
-        console.error('[ERROR] Erro de validação:', error.details[0].message)
-        return await res.status(422).send({ error: error.details[0].message })
+        console.error('[ERROR] Erro de validação:', error.details[0].message);
+        return await res.status(422).send({ error: error.details[0].message });
       }
 
       const { externalId, ...restaurantData } = req.body as {
-        externalId: string
-        [key: string]: any
-      }
+        externalId: string;
+        [key: string]: any;
+      };
 
       // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      const response = await patchRestaurant(externalId, restaurantData)
+      const response = await patchRestaurant(externalId, restaurantData);
 
       // Resposta de sucesso
       return await res.status(200).send({
         status: 200,
-        msg: 'Restaurante atualizado com sucesso.'
-      })
+        msg: 'Restaurante atualizado com sucesso.',
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
-        return await res.status(500).send({
+        return res.status(500).send({
           status: 500,
-          msg: message
-        })
-      } else {
-        return await res.status(404).send({
-          status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
+      return res.status(404).send({
+        status: 404,
+        msg: message,
+      });
     }
-  })
+  });
 
   server.get('/restaurant/account/:externalId', async (req, res) => {
-    const { externalId } = req.params as { externalId: string }
+    const { externalId } = req.params as { externalId: string };
     try {
-      const result = await findByExternalId(externalId)
+      const result = await findByExternalId(externalId);
       if (!result.asaasCustomerId) {
-        throw new HttpException('Carteira de cliente não encontrada!', 404)
+        throw new HttpException('Carteira de cliente não encontrada!', 404);
       }
       return await res.status(200).send({
         status: 200,
-        data: result
-      })
+        data: result,
+      });
     } catch (err) {
-      const message = (err as Error).message
+      const { message } = err as Error;
       if (message === process.env.INTERNAL_ERROR_MSG) {
         await res.status(500).send({
           status: 500,
-          msg: message
-        })
+          msg: message,
+        });
       } else {
         await res.status(404).send({
           status: 404,
-          msg: message
-        })
+          msg: message,
+        });
       }
     }
-  })
+  });
 
-  server.get('/restaurant-supplier/account/:restaurantExternalId/:supplierExternalId', async (req, res) => {
-    const { restaurantExternalId, supplierExternalId } = req.params as {
-      restaurantExternalId: string
-      supplierExternalId: string
-    }
+  server.get(
+    '/restaurant-supplier/account/:restaurantExternalId/:supplierExternalId',
+    async (req, res) => {
+      const { restaurantExternalId, supplierExternalId } = req.params as {
+        restaurantExternalId: string;
+        supplierExternalId: string;
+      };
 
-    try {
-      const result = await findByRestaurantIdAndSupplierId(restaurantExternalId, supplierExternalId)
+      try {
+        const result = await findByRestaurantIdAndSupplierId(
+          restaurantExternalId,
+          supplierExternalId,
+        );
 
-      if (!result) {
-        throw new HttpException('Carteira de cliente não encontrada!', 404)
+        if (!result) {
+          throw new HttpException('Carteira de cliente não encontrada!', 404);
+        }
+
+        return await res.status(200).send({
+          status: 200,
+          data: result,
+        });
+      } catch (err) {
+        const { message } = err as Error;
+        if (message === process.env.INTERNAL_ERROR_MSG) {
+          await res.status(500).send({
+            status: 500,
+            msg: message,
+          });
+        } else {
+          await res.status(404).send({
+            status: 404,
+            msg: message,
+          });
+        }
       }
-
-      return await res.status(200).send({
-        status: 200,
-        data: result
-      })
-    } catch (err) {
-      const message = (err as Error).message
-      if (message === process.env.INTERNAL_ERROR_MSG) {
-        await res.status(500).send({
-          status: 500,
-          msg: message
-        })
-      } else {
-        await res.status(404).send({
-          status: 404,
-          msg: message
-        })
-      }
-    }
-  })
+    },
+  );
 
   server.get('/restaurant/conectar-plus/:externalId', async (req, reply): Promise<any> => {
-    const { externalId } = req.params as { externalId: string }
+    const { externalId } = req.params as { externalId: string };
 
-    const result = await findConectarPlus(externalId)
-    return await reply.status(200).send({
+    const result = await findConectarPlus(externalId);
+    return reply.status(200).send({
       status: 200,
-      data: result
-    })
-  })
+      data: result,
+    });
+  });
 
   server.post('/restaurant/conectar-plus', async (req, reply): Promise<any> => {
     const { externalId, conectarPlusAuthorization } = req.body as {
-      externalId: string
-      conectarPlusAuthorization: boolean
-    }
+      externalId: string;
+      conectarPlusAuthorization: boolean;
+    };
 
-    const updated = await setConectarPlus(externalId, conectarPlusAuthorization)
+    const updated = await setConectarPlus(externalId, conectarPlusAuthorization);
 
-    return await reply.status(200).send({
+    return reply.status(200).send({
       success: true,
-      ...updated
-    })
-  })
-}
+      ...updated,
+    });
+  });
+
+  server.get(
+    '/restaurant/get-max-specific-suppliers/:externalId',
+    async (req, res): Promise<void> => {
+      try {
+        const { externalId } = req.params as { externalId: string };
+        const maxSpecificSuppliersNumber = await getRestaurantMaxSpecificSuppliers(externalId);
+        return await res.status(200).send({
+          status: 200,
+          data: maxSpecificSuppliersNumber,
+        });
+      } catch (err) {
+        const { message } = err as Error;
+        if (message === process.env.INTERNAL_ERROR_MSG) {
+          await res.status(500).send({
+            status: 500,
+            msg: message,
+          });
+        } else {
+          await res.status(404).send({
+            status: 404,
+            msg: message,
+          });
+        }
+      }
+    },
+  );
+};
