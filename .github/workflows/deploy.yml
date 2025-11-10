@@ -233,7 +233,7 @@ jobs:
             echo "🛑 Parando container DEV antigo..."
             docker-compose -f docker-compose.dev.yml down || true
             echo "🛠️ Construindo e subindo API DEV..."
-            docker-compose -f docker-compose.dev.yml up -d --build
+            docker-compose -f docker-compose.dev.yml up -d --build --force-recreate --no-cache
             echo "📋 Logs do container DEV:"
             docker logs api-dev
 
