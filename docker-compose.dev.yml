@@ -6,7 +6,7 @@ services:
       context: .
     container_name: api-dev
     ports:
-      - "3334:3334"
+      - "3334:3333"
     env_file:
       - .env.development # Passa as variáveis de ambiente do .env para o container
     #volumes:
