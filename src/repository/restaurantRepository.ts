@@ -1,7 +1,6 @@
 import { type address, PrismaClient, type restaurant } from '@prisma/client';
 import 'dotenv/config';
 import { v4 as uuidv4 } from 'uuid';
-import { NotFoundError } from '@prisma/client/runtime/react-native.js';
 import { HttpException } from '../errors/httpException';
 import { type addressFormData } from '../service/registerService';
 import { type IRestaurant } from '../service/restaurantService';
