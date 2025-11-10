@@ -1,7 +1,11 @@
+import { Decimal } from '@prisma/client/runtime/library';
+import { configure } from 'airtable';
+import 'dotenv/config';
+import { decode } from 'jsonwebtoken';
 import { DateTime } from 'luxon';
 import { v4 as uuidv4 } from 'uuid';
-import { Decimal } from '@prisma/client/runtime/library';
-import Airtable, { configure } from 'airtable';
+import { createOrderTextAirtable } from '../repository/airtableOrderTextService';
+import { listByUser } from '../repository/cartRepository';
 import {
   addDetailing,
   addOrder,
@@ -10,27 +14,23 @@ import {
   type Detailing,
   type Order,
 } from '../repository/confirmRepository';
-import { suppliersCompletePrices, suppliersPrices } from './priceService';
-import 'dotenv/config';
-import { deleteCartByUser } from './cartService';
-import { listByUser } from '../repository/cartRepository';
-import { decode } from 'jsonwebtoken';
-import { listProduct } from './productService';
 import { saveTransaction } from '../repository/financeRepository';
-import { logRegister } from '../utils/logUtils';
-import { airtableOrderErrorMessage, receiptErrorMessage } from '../utils/slackUtils';
-import { airtableHandler } from './airtableConfirmService';
-import { createOrderTextAirtable } from '../repository/airtableOrderTextService';
 import {
-  type confirmOrderPremiumRequest,
-  type confirmOrderRequest,
   type agendamentoPedido,
   type confirmOrderPlusRequest,
+  type confirmOrderPremiumRequest,
+  type confirmOrderRequest,
 } from '../types/confirmTypes';
-import { generateOrderId } from '../utils/generateOrderId';
-import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils';
 import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils';
+import { generateOrderId } from '../utils/generateOrderId';
+import { logRegister } from '../utils/logUtils';
+import { airtableOrderErrorMessage, receiptErrorMessage } from '../utils/slackUtils';
 import { isTestRestaurant } from '../utils/testRestaurantUtils';
+import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils';
+import { airtableHandler } from './airtableConfirmService';
+import { deleteCartByUser } from './cartService';
+import { suppliersCompletePrices, suppliersPrices } from './priceService';
+import { listProduct } from './productService';
 
 configure({
   apiKey: process.env.AIRTABLE_TOKEN ?? '',
@@ -201,6 +201,8 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     await saveTransaction(transactionData);
   }
 
+  const addressInfo = req.restaurant.restaurant.addressInfos[0];
+
   const documintPromise = await fetch(
     'https://api.documint.me/1/templates/66c89d6350bcff4eb423c34f/content?preview=true&active=true',
     {
@@ -216,31 +218,24 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
         razao_social: req.restaurant.restaurant.legalName,
         cnpj: req.restaurant.restaurant.companyRegistrationNumber,
         data_entrega: deliveryDate.toFormat('yyyy/MM/dd'),
-        horario_maximo: req.restaurant.restaurant.addressInfos[0].finalDeliveryTime.substring(
-          11,
-          16,
-        ),
-        horario_minimo: req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.substring(
-          11,
-          16,
-        ),
+        horario_maximo: addressInfo.finalDeliveryTime.substring(11, 16),
+        horario_minimo: addressInfo.initialDeliveryTime.substring(11, 16),
         total_conectar: req.supplier.discount.orderValueFinish.toString(),
         total_em_descontos: '0',
         total_sem_descontos: req.supplier.discount.orderValueFinish.toString(),
-        bairro: req.restaurant.restaurant.addressInfos[0].neighborhood,
-        cep: req.restaurant.restaurant.addressInfos[0].zipCode,
-        cidade: req.restaurant.restaurant.addressInfos[0].city,
-        informacao_de_entrega: req.restaurant.restaurant.addressInfos[0].deliveryInformation,
+        bairro: addressInfo.neighborhood,
+        cep: addressInfo.zipCode,
+        cidade: addressInfo.city,
+        informacao_de_entrega: addressInfo.deliveryInformation,
         inscricao_estadual:
           req.restaurant.restaurant.stateRegistrationNumber ??
           req.restaurant.restaurant.cityRegistrationNumber,
-        complemento: `${req.restaurant.restaurant.addressInfos[0].localNumber} ${
-          req.restaurant.restaurant.addressInfos[0].complement == null ? ' - ' : ''
-        } ${req.restaurant.restaurant.addressInfos[0].complement}`,
-        resp_recebimento: req.restaurant.restaurant.addressInfos[0].responsibleReceivingName,
-        rua: `${req.restaurant.restaurant.addressInfos[0].localType} ${req.restaurant.restaurant.addressInfos[0].address}`,
-        tel_resp_recebimento:
-          req.restaurant.restaurant.addressInfos[0].responsibleReceivingPhoneNumber,
+        complemento: `${addressInfo.localNumber} ${
+          addressInfo.complement == null ? ' - ' : ''
+        } ${addressInfo.complement}`,
+        resp_recebimento: addressInfo.responsibleReceivingName,
+        rua: `${addressInfo.localType} ${addressInfo.address}`,
+        tel_resp_recebimento: addressInfo.responsibleReceivingPhoneNumber,
         id_cliente: [
           {
             cnpj: req.restaurant.restaurant.companyRegistrationNumber,
@@ -271,12 +266,10 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
         ),
         id_beneficiario: '6030000983545',
         identificador_calculado: yourNumber,
-        nome_bairro: req.restaurant.restaurant.addressInfos[0].neighborhood,
-        nome_cidade: req.restaurant.restaurant.addressInfos[0].city,
-        nome_logradouro: `${req.restaurant.restaurant.addressInfos[0].localType} ${
-          req.restaurant.restaurant.addressInfos[0].address
-        }`,
-        numero_cep: req.restaurant.restaurant.addressInfos[0].zipCode,
+        nome_bairro: addressInfo.neighborhood,
+        nome_cidade: addressInfo.city,
+        nome_logradouro: `${addressInfo.localType} ${addressInfo.address}`,
+        numero_cep: addressInfo.zipCode,
         numero_linha_digitavel: digitableBarCode ?? '',
         numero_nosso_numero: ourNumber,
         sigla_UF: 'RJ',
@@ -290,7 +283,7 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
     },
   ).catch(async (err) => {
     await receiptErrorMessage(req.restaurant.restaurant.externalId as string);
-    void logRegister(err);
+    logRegister(err);
   });
 
   const documintResponse = await documintPromise?.json();
@@ -339,9 +332,9 @@ Valor Total: R$ ${req.supplier.discount.orderValueFinish.toFixed(2).replace('.',
     orderId,
     externalId: req.supplier.externalId,
     restName: req.restaurant.restaurant.name,
-    address: `${req.restaurant.restaurant.addressInfos[0].localType} ${req.restaurant.restaurant.addressInfos[0].address}, ${req.restaurant.restaurant.addressInfos[0].localNumber} - ${req.restaurant.restaurant.addressInfos[0].complement}, ${req.restaurant.restaurant.addressInfos[0].neighborhood}, ${req.restaurant.restaurant.addressInfos[0].city}`,
-    maxHour: req.restaurant.restaurant.addressInfos[0].finalDeliveryTime.substring(11, 16),
-    minHour: req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.substring(11, 16),
+    address: `${addressInfo.localType} ${addressInfo.address}, ${addressInfo.localNumber} - ${addressInfo.complement}, ${addressInfo.neighborhood}, ${addressInfo.city}`,
+    maxHour: addressInfo.finalDeliveryTime.substring(11, 16),
+    minHour: addressInfo.initialDeliveryTime.substring(11, 16),
     deliveryDateFormated: deliveryDate.toFormat('dd/MM/yyyy'),
     paymentWay: req.restaurant.restaurant.paymentWay,
   };
@@ -426,7 +419,7 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
       selectedRestaurant: [],
     });
   } catch (err) {
-    void logRegister(err);
+    logRegister(err);
   }
 };
 
