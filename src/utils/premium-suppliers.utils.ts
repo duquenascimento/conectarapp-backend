@@ -67,6 +67,7 @@ export async function fornecedoresCotacaoPremium(
       products: produtosComPrecoFornecedor,
       discounts,
       minValue: item.minimumOrder,
+      referral_restaurant_id: item.referral_restaurant_id,
     });
   }
 

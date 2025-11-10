@@ -1,23 +1,23 @@
 import { type FastifyInstance } from 'fastify';
+import { alertsRoutes } from './alertRoute';
+import { AppVersionRoute } from './appVersionRoute';
 import { authRoute } from './authRoute';
-import { productRoute } from './productRoute';
-import { favoriteRoute } from './favoriteRoute';
 import { cartRoute } from './cartRoute';
-import { priceRoute } from './priceRoute';
+import { classeProdutoRoute } from './classeProdutoRoute';
+import { combinationRoute } from './combinationRoute';
 import { confirmRoute } from './confirmRoute';
+import { cumulativeReportRoute } from './cumulativeReportRoute';
+import { favoriteRoute } from './favoriteRoute';
+import { interRoute } from './interRoute';
+import { invoiceRoute } from './invoiceRoute';
+import { orderRoute } from './orderRoute';
+import { priceRoute } from './priceRoute';
+import { productRoute } from './productRoute';
+import { quotationEngineRoute } from './quotationEngineRoute';
 import { registerRoute } from './registerRoute';
 import { restaurantRoute } from './restaurantRoute';
-import { interRoute } from './interRoute';
-import { orderRoute } from './orderRoute';
-import { invoiceRoute } from './invoiceRoute';
-import { cumulativeReportRoute } from './cumulativeReportRoute';
-import { AppVersionRoute } from './appVersionRoute';
 import { s3Route } from './s3Route';
 import { supplierRoute } from './supplierRoute';
-import { combinationRoute } from './combinationRoute';
-import { quotationEngineRoute } from './quotationEngineRoute';
-import { classeProdutoRoute } from './classeProdutoRoute';
-import { alertsRoutes } from './alertRoute';
 import { userRoute } from './userRoute';
 
 export const registerRoutes = async (server: FastifyInstance): Promise<void> => {
