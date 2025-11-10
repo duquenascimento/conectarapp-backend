@@ -1,7 +1,12 @@
 import { base } from 'airtable'
 import { logRegister } from '../utils/logUtils'
 
-export const findIdFromAirtable = async (tableName: string, fieldToFilter: string, valueToFilter: string, baseName: string): Promise<string> => {
+export const findIdFromAirtable = async (
+  tableName: string,
+  fieldToFilter: string,
+  valueToFilter: string,
+  baseName: string
+): Promise<string> => {
   const _ = base(baseName).table(tableName)
   const filterByFormula = `{${fieldToFilter}} = "${valueToFilter}"`
   try {
@@ -14,7 +19,7 @@ export const findIdFromAirtable = async (tableName: string, fieldToFilter: strin
       return ''
     }
   } catch (err) {
-    void logRegister(err)
-    return ''
+    void logRegister(err, false)
+    throw new Error(`Falha ao buscar tabela ${tableName} no airTable`)
   }
 }

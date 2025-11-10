@@ -61,21 +61,22 @@ export const addOrder = async (data: any): Promise<any> => {
   }
 }
 
-export const updateOrder = async (data: any, id: string): Promise<void> => {
+export const updateOrder = async (data: any, id: string): Promise<boolean> => {
   try {
     await prisma.order.update({
       data,
-      where: {
-        id
-      }
+      where: { id }
     })
+    return true
   } catch (err: any) {
+    if (err.code === 'P2025') {
+      return false
+    }
+    console.error('Erro inesperado em updateOrder:', err)
     await logRegister(err)
-  } finally {
-    await prisma.$disconnect()
+    return false
   }
 }
-
 export const addDetailing = async (data: Detailing[]): Promise<any> => {
   try {
     const result = await prisma.detailing.createMany({

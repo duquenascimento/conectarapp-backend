@@ -1,8 +1,9 @@
 import { decode } from 'jsonwebtoken'
-import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findAuthorizedPremiumRestaurant } from '../repository/restaurantRepository'
+import { addClientCount, findAddressByRestaurantId, listByUserId, registerRestaurant, removeClientCount, updateAddress, updateAllowCloseSupplierAndMinimumOrderRepository, updateRegistrationReleasedNewAppRepository, updateFinanceBlockRepository, updateRestaurantRepository, updateAddressByExternalIdRepository, patchRestaurantRepository, updateComercialBlockRepository, findRestaurantByExternalId, findRestaurantByRestaurantIdAndSupplierId, findRestaurantById, findConectarPlusAccess, updateConectarPlusAccess } from '../repository/restaurantRepository'
 import { logRegister } from '../utils/logUtils'
 import { type address, type restaurant } from '@prisma/client'
 import { updateAddressRegisterAirtable, findRecordIdByClientId, updateUserAirtable } from '../repository/airtableRegisterService'
+import { logRecord } from '../utils/log-utility'
 
 export interface ICreateRestaurantRequest {
   name: string
@@ -39,19 +40,39 @@ export interface IRestaurant {
 }
 
 export const createRestaurant = async (req: IRestaurant): Promise<any> => {
+  await logRecord({
+    level: 'info',
+    message: 'Dados para criar Restaurante',
+    data: req,
+    location: 'restaurantService.createRestaurant'
+  })
   try {
     await registerRestaurant(req)
 
-    const airtableUserRecord = await updateUserAirtable({
+    const dataUserRecord = {
       ID_Usuário: req.user[0],
       'Restaurantes associados Novo': req.externalId
-    })
+    }
+
+    const airtableUserRecord = await updateUserAirtable(dataUserRecord)
 
     if (!airtableUserRecord || typeof airtableUserRecord !== 'object' || !('fields' in airtableUserRecord)) {
+      await logRecord({
+        level: 'error',
+        message: 'Falha ao cadastrar externalId no cadastro do Airtable ou estrutura do registro inválida',
+        data: dataUserRecord,
+        location: 'restaurantService.createRestaurant'
+      })
       throw new Error('Falha ao cadastrar externalId no cadastro do Airtable ou estrutura do registro inválida')
     }
 
     if (!airtableUserRecord.fields || typeof airtableUserRecord.fields !== 'object' || !('ID_Usuário' in airtableUserRecord.fields)) {
+      await logRecord({
+        level: 'error',
+        message: 'ID_Usuário não encontrado no registro do Airtable',
+        data: dataUserRecord,
+        location: 'restaurantService.createRestaurant'
+      })
       throw new Error('ID_Usuário não encontrado no registro do Airtable')
     }
 
@@ -256,6 +277,17 @@ export const findById = async (restaurantId: string) => {
   return await findRestaurantById(restaurantId)
 }
 
-export const checkPremiumAccess = async (externalId: string): Promise<any> => {
-  return await findAuthorizedPremiumRestaurant(externalId)
+export const findConectarPlus = async (externalId: string): Promise<{ authorized: boolean }> => {
+  return await findConectarPlusAccess(externalId)
+}
+
+export const setConectarPlus = async (externalId: string, conectarPlusAuthorization: boolean) => {
+  if (!externalId) {
+    throw new Error('externalId é obrigatório')
+  }
+  if (typeof conectarPlusAuthorization !== 'boolean') {
+    throw new Error('O valor de conectarPlus deve ser boolean')
+  }
+
+  return await updateConectarPlusAccess(externalId, conectarPlusAuthorization)
 }
