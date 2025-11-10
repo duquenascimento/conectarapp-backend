@@ -10,7 +10,7 @@ services:
     env_file:
       - .env.development # Passa as variáveis de ambiente do .env para o container
     #volumes:
-    #  - .:/app # Sincroniza o diretório atual com o container
+      - .:/app # Sincroniza o diretório atual com o container
     #  - /app/node_modules # Garante que node_modules do container não sobrescreva o host
  
     command: npm start # Usa o script "dev" do package.json para iniciar
