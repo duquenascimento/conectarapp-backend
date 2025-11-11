@@ -16,15 +16,16 @@ import {
 } from '../repository/confirmRepository';
 import { saveTransaction } from '../repository/financeRepository';
 import {
-  type agendamentoPedido,
-  type confirmOrderPlusRequest,
-  type confirmOrderPremiumRequest,
-  type confirmOrderRequest,
+  type AgendamentoPedido,
+  type ConfirmOrderPlusRequest,
+  type ConfirmOrderPremiumRequest,
+  type ConfirmOrderRequest,
 } from '../types/confirmTypes';
 import { getPaymentDate, getPaymentDescription } from '../utils/confirmUtils';
+import { ConfirmOrderTemplateData, sendConfirmOrderTemplate } from '../utils/documint.utils';
 import { generateOrderId } from '../utils/generateOrderId';
 import { logRegister } from '../utils/logUtils';
-import { airtableOrderErrorMessage, receiptErrorMessage } from '../utils/slackUtils';
+import { airtableOrderErrorMessage } from '../utils/slackUtils';
 import { isTestRestaurant } from '../utils/testRestaurantUtils';
 import { uploadPdfFileToS3 } from '../utils/uploadToS3Utils';
 import { airtableHandler } from './airtableConfirmService';
@@ -32,12 +33,10 @@ import { deleteCartByUser } from './cartService';
 import { suppliersCompletePrices, suppliersPrices } from './priceService';
 import { listProduct } from './productService';
 
-configure({
-  apiKey: process.env.AIRTABLE_TOKEN ?? '',
-});
+configure({ apiKey: process.env.AIRTABLE_TOKEN ?? '' });
 
 export const confirmOrder = async (
-  req: confirmOrderRequest,
+  req: ConfirmOrderRequest,
   deleteCart?: boolean,
 ): Promise<any> => {
   const shouldDeleteCart = deleteCart ?? true;
@@ -203,88 +202,80 @@ Entrega entre ${req.restaurant.restaurant.addressInfos[0].initialDeliveryTime.su
 
   const addressInfo = req.restaurant.restaurant.addressInfos[0];
 
-  const documintPromise = await fetch(
-    'https://api.documint.me/1/templates/66c89d6350bcff4eb423c34f/content?preview=true&active=true',
-    {
-      method: 'POST',
-      headers: {
-        'Content-type': 'application/json',
-        api_key: process.env.DOCUMINT_KEY ?? '',
-      },
-      body: JSON.stringify({
-        id_pedido: orderId,
-        restaurante: req.restaurant.restaurant.name,
-        nome: req.supplier.name,
-        razao_social: req.restaurant.restaurant.legalName,
+  const confirmOrderTemplateData: ConfirmOrderTemplateData = {
+    id_pedido: orderId,
+    restaurante: req.restaurant.restaurant.name,
+    nome: req.supplier.name,
+    razao_social: req.restaurant.restaurant.legalName,
+    cnpj: req.restaurant.restaurant.companyRegistrationNumber,
+    data_entrega: deliveryDate.toFormat('yyyy/MM/dd'),
+    horario_maximo: addressInfo.finalDeliveryTime.substring(11, 16),
+    horario_minimo: addressInfo.initialDeliveryTime.substring(11, 16),
+    total_conectar: req.supplier.discount.orderValueFinish.toString(),
+    total_em_descontos: '0',
+    total_sem_descontos: req.supplier.discount.orderValueFinish.toString(),
+    bairro: addressInfo.neighborhood,
+    cep: addressInfo.zipCode,
+    cidade: addressInfo.city,
+    informacao_de_entrega: addressInfo.deliveryInformation,
+    inscricao_estadual:
+      req.restaurant.restaurant.stateRegistrationNumber ??
+      req.restaurant.restaurant.cityRegistrationNumber,
+    complemento: `${addressInfo.localNumber} ${
+      addressInfo.complement == null ? ' - ' : ''
+    } ${addressInfo.complement}`,
+    resp_recebimento: addressInfo.responsibleReceivingName,
+    rua: `${addressInfo.localType} ${addressInfo.address}`,
+    tel_resp_recebimento: addressInfo.responsibleReceivingPhoneNumber,
+    id_cliente: [
+      {
         cnpj: req.restaurant.restaurant.companyRegistrationNumber,
-        data_entrega: deliveryDate.toFormat('yyyy/MM/dd'),
-        horario_maximo: addressInfo.finalDeliveryTime.substring(11, 16),
-        horario_minimo: addressInfo.initialDeliveryTime.substring(11, 16),
-        total_conectar: req.supplier.discount.orderValueFinish.toString(),
-        total_em_descontos: '0',
-        total_sem_descontos: req.supplier.discount.orderValueFinish.toString(),
-        bairro: addressInfo.neighborhood,
-        cep: addressInfo.zipCode,
-        cidade: addressInfo.city,
-        informacao_de_entrega: addressInfo.deliveryInformation,
-        inscricao_estadual:
-          req.restaurant.restaurant.stateRegistrationNumber ??
-          req.restaurant.restaurant.cityRegistrationNumber,
-        complemento: `${addressInfo.localNumber} ${
-          addressInfo.complement == null ? ' - ' : ''
-        } ${addressInfo.complement}`,
-        resp_recebimento: addressInfo.responsibleReceivingName,
-        rua: `${addressInfo.localType} ${addressInfo.address}`,
-        tel_resp_recebimento: addressInfo.responsibleReceivingPhoneNumber,
-        id_cliente: [
-          {
-            cnpj: req.restaurant.restaurant.companyRegistrationNumber,
-            razao_social: req.restaurant.restaurant.legalName,
-            nome: req.restaurant.restaurant.name,
-          },
-        ],
-        detalhamento_pedido: detailing.map((item) => {
-          return {
-            aux_obs: item.obs,
-            custo_unidade_conectar: item.conectarPricePerUnid.toString(),
-            exibir_para_cliente: item.conectarFinalPrice !== 0 ? '✔️' : '✖️',
-            preco_final_conectar: item.conectarFinalPrice.toString(),
-            qtd_final_cliente: item.supplierFinalAmount.toString(),
-            qtd_pedido: item.orderAmount.toString(),
-            unidade_cotacao: item.quotationUnit ?? '',
-            unidade_pedido: item.orderUnit ?? '',
-            produto_descricao: item.name ?? '',
-          };
-        }),
-        cnpj_fornecedor: '',
-        codigo_carteira: '109',
-        data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd'),
-        data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
-        data_vencimento: getPaymentDate(req.restaurant.restaurant.paymentWay as string)?.replaceAll(
-          '-',
-          '/',
-        ),
-        id_beneficiario: '6030000983545',
-        identificador_calculado: yourNumber,
-        nome_bairro: addressInfo.neighborhood,
-        nome_cidade: addressInfo.city,
-        nome_logradouro: `${addressInfo.localType} ${addressInfo.address}`,
-        numero_cep: addressInfo.zipCode,
-        numero_linha_digitavel: digitableBarCode ?? '',
-        numero_nosso_numero: ourNumber,
-        sigla_UF: 'RJ',
-        cliente_com_boleto:
-          getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário'
-            ? '1'
-            : '0',
-        nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
-        id_distribuidor: testRestaurantFlag ? 'F0' : req.supplier.externalId,
-      }),
-    },
-  ).catch(async (err) => {
-    await receiptErrorMessage(req.restaurant.restaurant.externalId as string);
-    logRegister(err);
-  });
+        razao_social: req.restaurant.restaurant.legalName,
+        nome: req.restaurant.restaurant.name,
+      },
+    ],
+    detalhamento_pedido: detailing.map((item) => {
+      return {
+        aux_obs: item.obs,
+        custo_unidade_conectar: item.conectarPricePerUnid.toString(),
+        exibir_para_cliente: item.conectarFinalPrice !== 0 ? '✔️' : '✖️',
+        preco_final_conectar: item.conectarFinalPrice.toString(),
+        qtd_final_cliente: item.supplierFinalAmount.toString(),
+        qtd_pedido: item.orderAmount.toString(),
+        unidade_cotacao: item.quotationUnit ?? '',
+        unidade_pedido: item.orderUnit ?? 'N/A',
+        produto_descricao: item.name ?? '',
+      };
+    }),
+    cnpj_fornecedor: '',
+    codigo_carteira: '109',
+    data_emissao: DateTime.now().setZone('America/Sao_Paulo').toFormat('yyyy/MM/dd'),
+    data_pedido: DateTime.now().toFormat('yyyy/MM/dd'),
+    data_vencimento: getPaymentDate(req.restaurant.restaurant.paymentWay as string)?.replaceAll(
+      '-',
+      '/',
+    ),
+    id_beneficiario: '6030000983545',
+    identificador_calculado: yourNumber,
+    nome_bairro: addressInfo.neighborhood,
+    nome_cidade: addressInfo.city,
+    nome_logradouro: `${addressInfo.localType} ${addressInfo.address}`,
+    numero_cep: addressInfo.zipCode,
+    numero_linha_digitavel: digitableBarCode ?? '',
+    numero_nosso_numero: ourNumber,
+    sigla_UF: 'RJ',
+    cliente_com_boleto:
+      getPaymentDescription(req.restaurant.restaurant.paymentWay as string) === 'Diário'
+        ? '1'
+        : '0',
+    nome_cliente: req.restaurant.restaurant.name?.replaceAll(' ', ''),
+    id_distribuidor: testRestaurantFlag ? 'F0' : req.supplier.externalId,
+  };
+
+  const documintPromise = await sendConfirmOrderTemplate(
+    req.restaurant.restaurant.externalId,
+    confirmOrderTemplateData,
+  );
 
   const documintResponse = await documintPromise?.json();
 
@@ -340,7 +331,7 @@ Valor Total: R$ ${req.supplier.discount.orderValueFinish.toFixed(2).replace('.',
   };
 };
 
-export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Promise<any> => {
+export const confirmOrderPremium = async (req: ConfirmOrderPremiumRequest): Promise<any> => {
   try {
     const id = uuidv4();
     const today = DateTime.now().setZone('America/Sao_Paulo');
@@ -357,14 +348,16 @@ export const confirmOrderPremium = async (req: confirmOrderPremiumRequest): Prom
 
 ${cart
   ?.map(
-    (cart) =>
-      `*${String(cart.amount).replace('.', ',')}x ${
-        items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId)
-          .name
+    (cartItem) =>
+      `*${String(cartItem.amount).replace('.', ',')}x ${
+        items.data.find(
+          (i: { id: string | undefined; name: string }) => i.id === cartItem.productId,
+        ).name
       }* cód. ${
-        items.data.find((i: { id: string | undefined; name: string }) => i.id === cart.productId)
-          .sku
-      }${cart.obs === '' ? '' : `\nObs.: ${cart.obs}`}`,
+        items.data.find(
+          (i: { id: string | undefined; name: string }) => i.id === cartItem.productId,
+        ).sku
+      }${cartItem.obs === '' ? '' : `\nObs.: ${cartItem.obs}`}`,
   )
   .join(', \n')}
 
@@ -423,7 +416,7 @@ Entrega entre ${req.selectedRestaurant.addressInfos[0].initialDeliveryTime.subst
   }
 };
 
-export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
+export const AgendamentoGuru = async (req: AgendamentoPedido): Promise<any> => {
   try {
     const decoded = decode(req.token) as { id: string };
     if (!decoded?.id) throw new Error('Token inválido ou ausente');
@@ -453,7 +446,7 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
     const [hours, minutes] = req.sendTime.split(':').map(Number);
     const sendDate = new Date(year, month - 1, day, hours, minutes);
 
-    if (isNaN(sendDate.getTime())) {
+    if (Number.isNaN(sendDate.getTime())) {
       throw new Error('Data ou horário inválido');
     }
 
@@ -474,22 +467,21 @@ export const AgendamentoGuru = async (req: agendamentoPedido): Promise<any> => {
   }
 };
 
-export const handleConfirmPlus = async (req: confirmOrderPlusRequest): Promise<any[]> => {
+export const handleConfirmPlus = async (req: ConfirmOrderPlusRequest): Promise<any[]> => {
   const { token, suppliers, restaurant } = req;
 
-  const ordersRequest: confirmOrderRequest[] = suppliers.map((supplier) => ({
+  const ordersRequest: ConfirmOrderRequest[] = suppliers.map((supplier) => ({
     token,
     supplier,
     restaurant,
   }));
 
-  const ordersResult = [];
-
-  for (const [index, order] of ordersRequest.entries()) {
-    const isLastOrderRequest = index === ordersRequest.length - 1;
-    const orderConfirmed = await confirmOrder(order, isLastOrderRequest);
-    ordersResult.push(orderConfirmed);
-  }
+  const ordersResult = await Promise.all(
+    ordersRequest.map(async (order, index) => {
+      const isLastOrderRequest = index === ordersRequest.length - 1;
+      return confirmOrder(order, isLastOrderRequest);
+    }),
+  );
 
   return ordersResult;
 };
