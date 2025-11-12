@@ -20,6 +20,7 @@ export interface FornecedorMotor {
   products: ProdutoFornecedor[];
   discounts: Discount[];
   minValue: number;
+  referral_restaurant_id?: string;
 }
 
 export interface FornecedorPriceList {
@@ -31,6 +32,7 @@ export interface FornecedorPriceList {
   star: string;
   hour: string;
   discount: DiscountPriceList;
+  referral_restaurant_id?: string;
 }
 
 export interface DiscountPriceList {
@@ -63,6 +65,7 @@ export interface PreferenciaProduto {
   productId: string;
   supplierId: string;
   unavailableIfFailed: boolean;
+  priority: number;
   preferenceType: string;
 }
 
@@ -70,6 +73,7 @@ export interface PreferenciaClasse {
   class: string;
   supplierId: string;
   unavailableIfFailed: boolean;
+  priority: number;
   preferenceType: string;
 }
 

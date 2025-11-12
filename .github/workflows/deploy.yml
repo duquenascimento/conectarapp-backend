@@ -20,7 +20,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
           target: "/home/ubuntu/app-dev"
-          rm: false
+          rm: true
 
       - name: 📤 Enviar arquivos para a EC2 (PROD)
         if: github.ref == 'refs/heads/main'
@@ -233,7 +233,8 @@ jobs:
             echo "🛑 Parando container DEV antigo..."
             docker-compose -f docker-compose.dev.yml down || true
             echo "🛠️ Construindo e subindo API DEV..."
-            docker-compose -f docker-compose.dev.yml up -d --build
+            docker-compose -f docker-compose.dev.yml build --no-cache
+            docker-compose -f docker-compose.dev.yml up -d --force-recreate
             echo "📋 Logs do container DEV:"
             docker logs api-dev
 
