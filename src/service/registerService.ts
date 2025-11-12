@@ -1,130 +1,140 @@
-import { logRegister } from '../utils/logUtils'
-import { findRestaurantByCompanyRegistrationNumber, registerAddress, updateUserWithRestaurant } from '../repository/restaurantRepository'
-import { createRestaurant } from './restaurantService'
-import { DateTime } from 'luxon'
-import { configure } from 'airtable'
-import { decode } from 'jsonwebtoken'
-import { fetchCNPJData } from './cnpjService'
-import { createRegisterAirtable } from '../repository/airtableRegisterService'
-import { mapCnpjData } from '../utils/mapCnpjData'
-import { validateDocument } from '../utils/validateDocument'
-import { v4 as uuidv4 } from 'uuid'
-import { findRegisterProgressByUser, upsertRegisterProgress } from '../repository/registerRepository'
-import { logRecord } from '../utils/log-utility'
+import { configure } from 'airtable';
+import { decode } from 'jsonwebtoken';
+import { DateTime } from 'luxon';
+import { v4 as uuidv4 } from 'uuid';
+import { createRegisterAirtable } from '../repository/airtableRegisterService';
+import {
+  findRegisterProgressByUser,
+  upsertRegisterProgress,
+} from '../repository/registerRepository';
+import {
+  findRestaurantByCompanyRegistrationNumber,
+  registerAddress,
+  updateUserWithRestaurant,
+} from '../repository/restaurantRepository';
+import { logRecord } from '../utils/log-utility';
+import { logRegister } from '../utils/logUtils';
+import { mapCnpjData } from '../utils/mapCnpjData';
+import { capitalizeWithExceptions } from '../utils/string.utils';
+import { validateDocument } from '../utils/validateDocument';
+import { fetchCNPJData } from './cnpjService';
+import { createRestaurant } from './restaurantService';
+
 export interface CheckCnpj {
-  cnpj: string
+  cnpj: string;
 }
 
 export const checkCnpj = async ({ cnpj }: CheckCnpj): Promise<any> => {
   try {
-    const cnpjFormated = cnpj.toLowerCase().trim()
-    const valida = validateDocument(cnpj)
-    if (!valida) throw Error('invalid cnpj', { cause: 'visibleError' })
+    const cnpjFormated = cnpj.toLowerCase().trim();
+    const valida = validateDocument(cnpj);
+    if (!valida) throw Error('invalid cnpj', { cause: 'visibleError' });
 
-    const cnpjExists = await findRestaurantByCompanyRegistrationNumber(cnpjFormated)
-    if (cnpjExists != null) throw Error('already exists', { cause: 'visibleError' })
-    const result = await fetchCNPJData(cnpjFormated)
-    const mappedResult = mapCnpjData(result)
+    const cnpjExists = await findRestaurantByCompanyRegistrationNumber(cnpjFormated);
+    if (cnpjExists != null) throw Error('already exists', { cause: 'visibleError' });
+    const result = await fetchCNPJData(cnpjFormated);
+    const mappedResult = mapCnpjData(result);
     if (mappedResult.status !== 200) {
-      console.error('Erro ao mapear os dados do CNPJ:', mappedResult)
-      return mappedResult
+      console.error('Erro ao mapear os dados do CNPJ:', mappedResult);
+      return mappedResult;
     }
 
-    return mappedResult.data
+    return mappedResult.data;
   } catch (err) {
-    if ((err as any).cause !== 'visibleError') await logRegister(err)
-    throw Error((err as Error).message)
+    if ((err as any).cause !== 'visibleError') await logRegister(err);
+    throw Error((err as Error).message);
   }
-}
+};
 
 export interface RestaurantFormData {
-  cnpj: string
-  stateNumberId: string
-  cityNumberId: string
-  restaurantName: string
-  legalRestaurantName: string
-  zipcode: string
-  neigh: string
-  street: string
-  localNumber: string
-  complement: string
-  phone: string
-  alternativePhone: string
-  email: string
-  alternativeEmail: string
-  step: number
-  loading: boolean
-  noStateNumberId: boolean
-  minHour: string
-  maxHour: string
-  closeDoor: boolean
-  deliveryObs: string
-  responsibleReceivingName: string
-  responsibleReceivingPhoneNumber: string
-  weeklyOrderAmount: string
-  orderValue: string
-  paymentWay: string
-  minhours: string[]
-  maxhours: string[]
-  localType: string
-  city: string
-  inviteCode?: string
-  emailBilling: string
-  financeResponsibleName: string
-  financeResponsiblePhoneNumber: string
+  cnpj: string;
+  stateNumberId: string;
+  cityNumberId: string;
+  restaurantName: string;
+  legalRestaurantName: string;
+  zipcode: string;
+  neigh: string;
+  street: string;
+  localNumber: string;
+  complement: string;
+  phone: string;
+  alternativePhone: string;
+  email: string;
+  alternativeEmail: string;
+  step: number;
+  loading: boolean;
+  noStateNumberId: boolean;
+  minHour: string;
+  maxHour: string;
+  closeDoor: boolean;
+  deliveryObs: string;
+  responsibleReceivingName: string;
+  responsibleReceivingPhoneNumber: string;
+  weeklyOrderAmount: string;
+  orderValue: string;
+  paymentWay: string;
+  minhours: string[];
+  maxhours: string[];
+  localType: string;
+  city: string;
+  inviteCode?: string;
+  emailBilling: string;
+  financeResponsibleName: string;
+  financeResponsiblePhoneNumber: string;
 }
 
-export interface addressFormData {
-  minHour: string
-  maxHour: string
-  deliveryObs: string
-  neigh: string
-  street: string
-  localNumber: string
-  zipcode: string
-  complement: string
-  restaurantId: string[]
-  id: string
-  active: boolean
-  responsibleReceivingName: string
-  responsibleReceivingPhoneNumber: string
-  updatedAt: Date
-  createdAt: Date
-  localType: string
-  city: string
-  closedDoorDelivery: boolean
+export interface AddressFormData {
+  minHour: string;
+  maxHour: string;
+  deliveryObs: string;
+  neigh: string;
+  street: string;
+  localNumber: string;
+  zipcode: string;
+  complement: string;
+  restaurantId: string[];
+  id: string;
+  active: boolean;
+  responsibleReceivingName: string;
+  responsibleReceivingPhoneNumber: string;
+  updatedAt: Date;
+  createdAt: Date;
+  localType: string;
+  city: string;
+  closedDoorDelivery: boolean;
 }
 
 interface Progress {
-  step: number
-  completed: boolean
-  userId: string
+  step: number;
+  completed: boolean;
+  userId: string;
 }
 
 interface ProgressResult {
-  success: boolean
-  data?: Progress
-  error?: string
+  success: boolean;
+  data?: Progress;
+  error?: string;
 }
 
 configure({
-  apiKey: process.env.AIRTABLE_TOKEN ?? ''
-})
+  apiKey: process.env.AIRTABLE_TOKEN ?? '',
+});
 
 export const fullRegister = async (req: RestaurantFormData & { token: string }): Promise<void> => {
   try {
-    const decoded = decode(req.token) as { id: string }
-    const addressId = uuidv4()
-    const restaurantId = uuidv4()
-    const maxHourF = DateTime.fromFormat(req.maxHour, 'HH:mm')
-    const maxHourFormated = maxHourF.toISOTime()
-    const minHourF = DateTime.fromFormat(req.minHour, 'HH:mm')
-    const minHourFormated = minHourF.toISOTime()
-    const isoFormattedTimeMax = `2024-01-01T${maxHourFormated?.substring(0, 12)}000Z`
-    const isoFormattedTimeMin = `2024-01-01T${minHourFormated?.substring(0, 12)}000Z`
+    const decoded = decode(req.token) as { id: string };
+    const addressId = uuidv4();
+    const restaurantId = uuidv4();
+    const maxHourF = DateTime.fromFormat(req.maxHour, 'HH:mm');
+    const maxHourFormated = maxHourF.toISOTime();
+    const minHourF = DateTime.fromFormat(req.minHour, 'HH:mm');
+    const minHourFormated = minHourF.toISOTime();
+    const isoFormattedTimeMax = `2024-01-01T${maxHourFormated?.substring(0, 12)}000Z`;
+    const isoFormattedTimeMin = `2024-01-01T${minHourFormated?.substring(0, 12)}000Z`;
 
     const dataForRegister = {
-      'A partir de que horas seu estabelecimento está disponível para recebimento de hortifrúti?': req.minHour,
+      'A partir de que horas seu estabelecimento está disponível para recebimento de hortifrúti?':
+        req.minHour,
       'ID pagamento': req.paymentWay,
       'Nome do estabelecimento': req.restaurantName,
       CNPJ: req.cnpj,
@@ -149,40 +159,44 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       'Cadastrado por': 'App',
       'Nome responsável financeiro': req.financeResponsibleName,
       'Telefone do responsável financeiro com DDD': req.financeResponsiblePhoneNumber,
-      'E-mail financeiro para envio de cobranças': req.emailBilling
-    }
+      'E-mail financeiro para envio de cobranças': req.emailBilling,
+    };
 
     await logRecord({
       level: 'info',
       message: 'Dados para registro no AirTable:',
       data: dataForRegister,
-      location: 'registerService.fullRegister'
-    })
+      location: 'registerService.fullRegister',
+    });
 
-    const airtableRecord = await createRegisterAirtable(dataForRegister)
+    const airtableRecord = await createRegisterAirtable(dataForRegister);
 
     if (!airtableRecord || typeof airtableRecord !== 'object' || !('fields' in airtableRecord)) {
       await logRecord({
         level: 'error',
         message: 'Falha ao criar registro no Airtable ou estrutura do registro inválida',
         data: dataForRegister,
-        location: 'registerService.fullRegister'
-      })
+        location: 'registerService.fullRegister',
+      });
 
-      throw new Error('Falha ao criar registro no Airtable ou estrutura do registro inválida')
+      throw new Error('Falha ao criar registro no Airtable ou estrutura do registro inválida');
     }
 
-    if (!airtableRecord.fields || typeof airtableRecord.fields !== 'object' || !('ID_Cliente' in airtableRecord.fields)) {
+    if (
+      !airtableRecord.fields ||
+      typeof airtableRecord.fields !== 'object' ||
+      !('ID_Cliente' in airtableRecord.fields)
+    ) {
       await logRecord({
         level: 'error',
         message: 'ID_Cliente não encontrado no registro do Airtable',
         data: dataForRegister,
-        location: 'registerService.fullRegister'
-      })
-      throw new Error('ID_Cliente não encontrado no registro do Airtable')
+        location: 'registerService.fullRegister',
+      });
+      throw new Error('ID_Cliente não encontrado no registro do Airtable');
     }
 
-    const externalId = airtableRecord.fields.ID_Cliente as string
+    const externalId = airtableRecord.fields.ID_Cliente as string;
 
     const addressData = {
       active: true,
@@ -202,8 +216,8 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       responsibleReceivingPhoneNumber: req.responsibleReceivingPhoneNumber,
       localType: req.localType,
       city: req.city,
-      closedDoorDelivery: req.closeDoor
-    }
+      closedDoorDelivery: req.closeDoor,
+    };
 
     const restData = {
       companyRegistrationNumber: req.cnpj,
@@ -232,62 +246,55 @@ export const fullRegister = async (req: RestaurantFormData & { token: string }):
       registrationReleasedNewApp: true,
       emailBilling: req.emailBilling,
       financeResponsibleName: req.financeResponsibleName,
-      financeResponsiblePhoneNumber: req.financeResponsiblePhoneNumber
-    }
+      financeResponsiblePhoneNumber: req.financeResponsiblePhoneNumber,
+    };
 
-    await createRestaurant(restData)
-    await registerAddress(addressData)
+    await createRestaurant(restData);
+    await registerAddress(addressData);
 
-    await updateUserWithRestaurant(decoded.id, restaurantId, DateTime.now().setZone('America/Sao_Paulo').toJSDate())
+    await updateUserWithRestaurant(
+      decoded.id,
+      restaurantId,
+      DateTime.now().setZone('America/Sao_Paulo').toJSDate(),
+    );
   } catch (err) {
     await logRecord({
       level: 'error',
       message: 'Erro ao registrar dados do restaurante',
       data: err,
-      location: 'registerService.fullRegister'
-    })
-    console.error(err)
+      location: 'registerService.fullRegister',
+    });
+    console.error(err);
   }
-}
+};
 
-function capitalizeWithExceptions (text: string): string {
-  const prepositions = ['da', 'do', 'de', 'das', 'dos', 'e', 'em', 'na', 'no', 'nas', 'nos', 'a', 'o']
+export const saveProgress = async (
+  token: string,
+  step: number,
+  values: Record<string, any>,
+): Promise<void> => {
+  const decoded = decode(token) as { id: string };
+  if (!decoded?.id) throw new Error('Token inválido');
 
-  return text
-    .toLowerCase()
-    .split(' ')
-    .map((word, index) => {
-      if (index > 0 && prepositions.includes(word)) {
-        return word
-      }
-      return word.charAt(0).toUpperCase() + word.slice(1)
-    })
-    .join(' ')
-}
-
-export const saveProgress = async (token: string, step: number, values: Record<string, any>): Promise<void> => {
-  const decoded = decode(token) as { id: string }
-  if (!decoded?.id) throw new Error('Token inválido')
-
-  await upsertRegisterProgress(decoded.id, step, values)
-}
+  await upsertRegisterProgress(decoded.id, step, values);
+};
 
 export const getProgress = async (token: string): Promise<ProgressResult> => {
-  const decoded = decode(token) as { id?: string }
+  const decoded = decode(token) as { id?: string };
   if (!decoded?.id) {
-    return { success: false, error: 'Token inválido' }
+    return { success: false, error: 'Token inválido' };
   }
 
-  const progress = await findRegisterProgressByUser(decoded.id)
+  const progress = await findRegisterProgressByUser(decoded.id);
   if (!progress) {
-    return { success: false, error: 'Nenhum progresso encontrado' }
+    return { success: false, error: 'Nenhum progresso encontrado' };
   }
 
   return {
     success: true,
     data: {
       ...progress,
-      userId: decoded.id
-    }
-  }
-}
+      userId: decoded.id,
+    },
+  };
+};

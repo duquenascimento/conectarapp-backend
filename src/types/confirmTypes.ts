@@ -49,12 +49,14 @@ export interface ConfirmOrderRequest {
   token: string;
   supplier: Supplier;
   restaurant: any;
+  deliveryDate: string;
 }
 
 export interface ConfirmOrderPremiumRequest {
   [x: string]: any;
   token: string;
   selectedRestaurant: any;
+  deliveryDate: string;
 }
 
 export interface Pedido {
@@ -119,6 +121,7 @@ export interface ConfirmOrderPlusRequest {
   token: string;
   suppliers: Supplier[];
   restaurant: any;
+  deliveryDate: string;
 }
 
 export type PaymentDescriptions = Record<string, string>;

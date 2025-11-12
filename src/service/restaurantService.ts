@@ -36,7 +36,11 @@ export interface ICreateRestaurantRequest {
   stateRegistrationNumber?: string | null | undefined;
 }
 
-export interface IRestaurant {
+export interface RestaurantDeliveryPolicy {
+  canCreateSundayOrders: boolean;
+}
+
+export interface ICreateRestaurant {
   id: string;
   externalId: string;
   name: string;
@@ -62,7 +66,7 @@ export interface IRestaurant {
   premium: boolean;
 }
 
-export const createRestaurant = async (req: IRestaurant): Promise<any> => {
+export const createRestaurant = async (req: ICreateRestaurant): Promise<any> => {
   await logRecord({
     level: 'info',
     message: 'Dados para criar Restaurante',

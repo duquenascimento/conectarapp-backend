@@ -2,17 +2,20 @@ import { type address, PrismaClient, type restaurant } from '@prisma/client';
 import 'dotenv/config';
 import { v4 as uuidv4 } from 'uuid';
 import { HttpException } from '../errors/httpException';
-import { type addressFormData } from '../service/registerService';
-import { type IRestaurant } from '../service/restaurantService';
+import { type AddressFormData } from '../service/registerService';
+import { type ICreateRestaurant } from '../service/restaurantService';
 import { logRecord } from '../utils/log-utility';
 import { logRegister } from '../utils/logUtils';
 
 const prisma = new PrismaClient();
 
-export const registerRestaurant = async (req: IRestaurant): Promise<any> => {
+export const registerRestaurant = async (req: ICreateRestaurant): Promise<any> => {
   try {
     await prisma.restaurant.create({
-      data: req,
+      data: {
+        ...req,
+        deliveryPolicy: { create: { canCreateSundayOrders: false } },
+      },
     });
   } catch (err: any) {
     await logRegister(err);
@@ -24,16 +27,13 @@ export const registerRestaurant = async (req: IRestaurant): Promise<any> => {
 export const checkClientCount = async (): Promise<{ externalId: number } | undefined | null> => {
   try {
     return await prisma.clientCount.findFirst({
-      select: {
-        externalId: true,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      select: { externalId: true },
+      orderBy: { createdAt: 'desc' },
       take: 1,
     });
   } catch (err: any) {
     await logRegister(err);
+    return null;
   } finally {
     await prisma.$disconnect();
   }
@@ -66,7 +66,7 @@ export const removeClientCount = async (): Promise<void> => {
   }
 };
 
-export const registerAddress = async (req: addressFormData): Promise<any> => {
+export const registerAddress = async (req: AddressFormData): Promise<any> => {
   try {
     const dataRegisterAddress = {
       data: {
@@ -116,9 +116,8 @@ export const findRestaurantByCompanyRegistrationNumber = async (
 ): Promise<any> => {
   try {
     const result = await prisma.restaurant.findFirst({
-      where: {
-        companyRegistrationNumber,
-      },
+      where: { companyRegistrationNumber },
+      include: { deliveryPolicy: true },
     });
     return result;
   } catch (err: any) {
@@ -134,9 +133,8 @@ export const findRestaurantByCompanyRegistrationNumberForBilling = async (
 ): Promise<any> => {
   try {
     const result = await prisma.restaurant.findFirst({
-      where: {
-        companyRegistrationNumberForBilling,
-      },
+      where: { companyRegistrationNumberForBilling },
+      include: { deliveryPolicy: true },
     });
     return result;
   } catch (err: any) {
@@ -161,9 +159,7 @@ export const updateUserWithRestaurant = async (
       location: 'restaurantRepository.updateUserWithRestaurant',
     });
     const result = await prisma.user.update({
-      where: {
-        id: userId,
-      },
+      where: { id: userId },
       data: {
         role: ['registered'],
         restaurant: [restaurantId],
@@ -189,9 +185,8 @@ export const updateUserWithRestaurant = async (
 export const listByUserId = async (userId: string): Promise<any> => {
   try {
     const result = await prisma.restaurant.findMany({
-      where: {
-        user: { has: userId },
-      },
+      where: { user: { has: userId } },
+      include: { deliveryPolicy: true },
     });
     return result;
   } catch (err: any) {
@@ -206,9 +201,7 @@ export const listByUserId = async (userId: string): Promise<any> => {
 export const findAddressByRestaurantId = async (restaurantId: string): Promise<any> => {
   try {
     const result = await prisma.address.findMany({
-      where: {
-        restaurant: { has: restaurantId },
-      },
+      where: { restaurant: { has: restaurantId } },
     });
     return result;
   } catch (err: any) {
@@ -223,9 +216,7 @@ export const findAddressByRestaurantId = async (restaurantId: string): Promise<a
 export const updateAddress = async (addressId: string, data: any): Promise<any> => {
   try {
     const result = await prisma.address.update({
-      where: {
-        id: addressId,
-      },
+      where: { id: addressId },
       data,
     });
     return result;
@@ -244,12 +235,8 @@ export const updateRegistrationReleasedNewAppRepository = async (
 ): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
-      where: {
-        externalId,
-      },
-      data: {
-        registrationReleasedNewApp,
-      },
+      where: { externalId },
+      data: { registrationReleasedNewApp },
     });
   } catch (err: any) {
     await prisma.$disconnect();
@@ -265,12 +252,8 @@ export const updateComercialBlockRepository = async (
 ): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
-      where: {
-        externalId: restId,
-      },
-      data: {
-        comercialBlock: value,
-      },
+      where: { externalId: restId },
+      data: { comercialBlock: value },
     });
   } catch (err: any) {
     await prisma.$disconnect();
@@ -286,12 +269,8 @@ export const updateFinanceBlockRepository = async (
 ): Promise<void> => {
   try {
     await prisma.restaurant.updateMany({
-      where: {
-        externalId: restId,
-      },
-      data: {
-        financeBlock: value,
-      },
+      where: { externalId: restId },
+      data: { financeBlock: value },
     });
   } catch (err: any) {
     await prisma.$disconnect();
@@ -307,9 +286,7 @@ export const updateAllowCloseSupplierAndMinimumOrderRepository = async (
   try {
     await prisma.restaurant.updateMany({
       data: req,
-      where: {
-        externalId: req.externalId,
-      },
+      where: { externalId: req.externalId },
     });
   } catch (err) {
     logRegister(err);
@@ -325,9 +302,7 @@ export const updateRestaurantRepository = async (
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,
-      where: {
-        externalId,
-      },
+      where: { externalId },
     });
   } catch (err) {
     logRegister(err);
@@ -342,11 +317,10 @@ export const updateAddressByExternalIdRepository = async (
 ): Promise<void> => {
   try {
     const restaurant = await prisma.restaurant.findFirst({
-      where: {
-        externalId,
-      },
+      where: { externalId },
       select: {
         address: true,
+        deliveryPolicy: true,
       },
     });
 
@@ -357,9 +331,7 @@ export const updateAddressByExternalIdRepository = async (
     const addressId = restaurant.address[0];
     await prisma.address.updateMany({
       data: addressData,
-      where: {
-        id: addressId,
-      },
+      where: { id: addressId },
     });
   } catch (err) {
     logRegister(err);
@@ -375,9 +347,7 @@ export const patchRestaurantRepository = async (
   try {
     await prisma.restaurant.updateMany({
       data: restaurantData,
-      where: {
-        externalId,
-      },
+      where: { externalId },
     });
   } catch (err) {
     logRegister(err);
@@ -392,9 +362,8 @@ export const getBlockingSuppliers = async (externalId: string): Promise<string[]
       throw new HttpException('externalId é obrigatório', 422);
     }
     const restaurant = await prisma.restaurant.findFirst({
-      where: {
-        externalId,
-      },
+      where: { externalId },
+      include: { deliveryPolicy: true },
     });
     if (restaurant && restaurant?.blockedBySuppliers.length > 0) {
       return restaurant.blockedBySuppliers;
@@ -412,6 +381,7 @@ export const findRestaurantByExternalId = async (externalId: string): Promise<an
   try {
     const restaurant = await prisma.restaurant.findFirst({
       where: { externalId },
+      include: { deliveryPolicy: true },
     });
 
     if (!restaurant) {
@@ -438,20 +408,17 @@ export const findRestaurantByRestaurantIdAndSupplierId = async (
 
     return await prisma.restaurant_supplier.findFirst({
       where: {
-        restaurant: {
-          externalId: restaurantExternalId,
-        },
-        supplier: {
-          externalId: supplierExternalId,
-        },
+        restaurant: { externalId: restaurantExternalId },
+        supplier: { externalId: supplierExternalId },
       },
       include: {
-        restaurant: true,
+        restaurant: { include: { deliveryPolicy: true } },
         supplier: true,
       },
     });
   } catch (err) {
     logRegister(err);
+    return null;
   }
 };
 
@@ -459,6 +426,7 @@ export const findRestaurantById = async (id: string): Promise<any> => {
   try {
     const restaurant = await prisma.restaurant.findFirst({
       where: { id },
+      include: { deliveryPolicy: true },
     });
 
     if (!restaurant) return null;
@@ -479,6 +447,7 @@ export const findRestaurantById = async (id: string): Promise<any> => {
     };
   } catch (err) {
     logRegister(err);
+    return null;
   } finally {
     await prisma.$disconnect();
   }
@@ -490,7 +459,7 @@ export const findConectarPlusAccess = async (
   try {
     const restaurant = await prisma.restaurant.findUnique({
       where: { externalId },
-      select: { conectarPlusAuthorization: true },
+      select: { conectarPlusAuthorization: true, deliveryPolicy: true },
     });
     return { authorized: restaurant?.conectarPlusAuthorization ?? false };
   } catch (err) {
@@ -507,7 +476,7 @@ export const updateConectarPlusAccess = async (
     const updated = await prisma.restaurant.update({
       where: { externalId },
       data: { conectarPlusAuthorization },
-      select: { externalId: true, conectarPlusAuthorization: true },
+      select: { externalId: true, conectarPlusAuthorization: true, deliveryPolicy: true },
     });
     return updated;
   } catch (err) {
