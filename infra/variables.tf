@@ -22,10 +22,17 @@ variable "key_name" {
   default     = "aws-teste"
 }
 
+
 variable "domain" {
-  description = "Domínio completo (subdomínio + domínio)"
+  description = "Domínio de produção"
   type        = string
-  default     = "teste.teste.com.br"
+  default     = "api-appconectar.conectarhortifruti.com.br" 
+}
+
+variable "domain_dev" {
+  description = "Domínio de desenvolvimento"
+  type        = string
+  default     = "dev-api-appconectar.conectarhortifruti.com.br"
 }
 
 variable "email" {

@@ -64,17 +64,17 @@ server {
 # Redireciona HTTP → HTTPS para DEV
 server {
     listen 80;
-    server_name dev.api-appconectar.conectarhortifruti.com.br;
+    server_name dev-api-appconectar.conectarhortifruti.com.br;
     return 301 https://$host$request_uri;
 }
 
 # Servidor DEV (HTTPS)
 server {
     listen 443 ssl;
-    server_name dev.api-appconectar.conectarhortifruti.com.br;
+    server_name dev-api-appconectar.conectarhortifruti.com.br;
 
-    ssl_certificate /etc/letsencrypt/live/dev.api-appconectar.conectarhortifruti.com.br/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/dev.api-appconectar.conectarhortifruti.com.br/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/dev-api-appconectar.conectarhortifruti.com.br/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dev-api-appconectar.conectarhortifruti.com.br/privkey.pem;
     include /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
