@@ -30,7 +30,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/home/ubuntu/app-prod"
+          target: "/home/ubuntu/app"
           rm: true
 
       - name: 🛠️ Criar .env na EC2 (DEV)
@@ -44,7 +44,7 @@ jobs:
             cd /home/ubuntu/app-dev
             cat > .env.development << EOF
             # Banco de dados
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}
             HOST=0.0.0.0
             PORT=3334
             LOG_PATH=../log.txt
@@ -52,46 +52,46 @@ jobs:
             INTERNAL_ERROR_MSG=internal error, try later.
 
             # Integrações
-            API_DB_CONECTAR=${{ secrets.API_DB_CONECTAR }}
-            API_MOTOR_COTACAO=${{ secrets.API_MOTOR_COTACAO }}
-            URL_API_ANTIGA=${{ secrets.URL_API_ANTIGA }}
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            EXTERNAL_ID=${{ secrets.EXTERNAL_ID }}
-            USERNAME=${{ secrets.USERNAME }}
-            SYSTEM_USER_PASS=${{ secrets.SYSTEM_USER_PASS }}
-            AUTH_TOKEN=${{ secrets.AUTH_TOKEN }}
+            API_DB_CONECTAR=${{ secrets.DEV_API_DB_CONECTAR }}
+            API_MOTOR_COTACAO=${{ secrets.DEV_API_MOTOR_COTACAO }}
+            URL_API_ANTIGA=${{ secrets.DEV_URL_API_ANTIGA }}
+            SECRET_KEY=${{ secrets.DEV_SECRET_KEY }}
+            EXTERNAL_ID=${{ secrets.DEV_EXTERNAL_ID }}
+            USERNAME=${{ secrets.DEV_USERNAME }}
+            SYSTEM_USER_PASS=${{ secrets.DEV_SYSTEM_USER_PASS }}
+            AUTH_TOKEN=${{ secrets.DEV_AUTH_TOKEN }}
 
             # ChatGuru
-            CG_API_KEY=${{ secrets.CG_API_KEY }}
-            CG_ACCOUNT_ID=${{ secrets.CG_ACCOUNT_ID }}
-            CG_PHONE_ID=${{ secrets.CG_PHONE_ID }}
+            CG_API_KEY=${{ secrets.DEV_CG_API_KEY }}
+            CG_ACCOUNT_ID=${{ secrets.DEV_CG_ACCOUNT_ID }}
+            CG_PHONE_ID=${{ secrets.DEV_CG_PHONE_ID }}
 
             # CPFCNPJ
-            API_TOKEN_CPFCNPJ=${{ secrets.API_TOKEN_CPFCNPJ }}
-            API_URL_CPFCNPJ=${{ secrets.API_URL_CPFCNPJ }}
+            API_TOKEN_CPFCNPJ=${{ secrets.DEV_API_TOKEN_CPFCNPJ }}
+            API_URL_CPFCNPJ=${{ secrets.DEV_API_URL_CPFCNPJ }}
 
             # JWT
-            JWT_SECRET=${{ secrets.JWT_SECRET }}
+            JWT_SECRET=${{ secrets.DEV_JWT_SECRET }}
 
             # Documentos
-            DOCUMINT_KEY=${{ secrets.DOCUMINT_KEY }}
+            DOCUMINT_KEY=${{ secrets.DEV_DOCUMINT_KEY }}
 
             # Email
-            SENDGRID_KEY=${{ secrets.SENDGRID_KEY }}
-            SENDGRID_TEMPLATE_PASSWORD_RECOVERY=${{ secrets.SENDGRID_TEMPLATE_PASSWORD_RECOVERY }}
+            SENDGRID_KEY=${{ secrets.DEV_SENDGRID_KEY }}
+            SENDGRID_TEMPLATE_PASSWORD_RECOVERY=${{ secrets.DEV_SENDGRID_TEMPLATE_PASSWORD_RECOVERY }}
 
             # OAuth
-            CLIENT_ID=${{ secrets.CLIENT_ID }}
-            CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}
-            GRANT_TYPE=${{ secrets.GRANT_TYPE }}
-            SCOPE=${{ secrets.SCOPE }}
-            ACCOUNT_NUMBER=${{ secrets.ACCOUNT_NUMBER }}
+            CLIENT_ID=${{ secrets.DEV_CLIENT_ID }}
+            CLIENT_SECRET=${{ secrets.DEV_CLIENT_SECRET }}
+            GRANT_TYPE=${{ secrets.DEV_GRANT_TYPE }}
+            SCOPE=${{ secrets.DEV_SCOPE }}
+            ACCOUNT_NUMBER=${{ secrets.DEV_ACCOUNT_NUMBER }}
 
             # AWS S3
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-            AWS_REGION=${{ secrets.AWS_REGION }}
-            BUCKET_NAME=${{ secrets.BUCKET_NAME }}
+            AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+            AWS_REGION=${{ secrets.DEV_AWS_REGION }}
+            BUCKET_NAME=${{ secrets.DEV_BUCKET_NAME }}
 
             # Airtable
             AIRTABLE_TOKEN=${{ secrets.AIRTABLE_TOKEN }}
@@ -114,12 +114,12 @@ jobs:
             AIRTABLE_TABLE_DB_USUARIOS_REST=${{ secrets.AIRTABLE_TABLE_DB_USUARIOS_REST }}
 
             # Slack
-            SLACK_TOKEN=${{ secrets.SLACK_TOKEN }}
-            SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.SLACK_BUGS_AND_ERROS_CHANNELID }}
+            SLACK_TOKEN=${{ secrets.DEV_SLACK_TOKEN }}
+            SLACK_BUGS_AND_ERROS_CHANNELID=${{ secrets.DEV_SLACK_BUGS_AND_ERROS_CHANNELID }}
 
             # Outros
-            MINUTES_TO_CANCEL_ORDER=${{ secrets.MINUTES_TO_CANCEL_ORDER }}
-            MASTER_PASSWORD_HASH=${{ secrets.MASTER_PASSWORD_HASH }}
+            MINUTES_TO_CANCEL_ORDER=${{ secrets.DEV_MINUTES_TO_CANCEL_ORDER }}
+            MASTER_PASSWORD_HASH=${{ secrets.DEV_MASTER_PASSWORD_HASH }}
 
             # Ambiente
             NODE_ENV=development
@@ -135,7 +135,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/app-prod
+            cd /home/ubuntu/app
             cat > .env << EOF
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL }}
@@ -246,7 +246,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/app-prod
+            cd /home/ubuntu/app
             echo "🛑 Parando container PROD antigo..."
             docker-compose -f docker-compose.prod.yml down || true
             echo "🛠️ Construindo e subindo API PROD..."

@@ -51,7 +51,7 @@ resource "aws_security_group" "web" {
   }
 
   tags = {
-    Name = "api-appconectar-security-group"
+    Name = "api-appconectar-v1-security-group"
   }
 
   lifecycle {
@@ -67,6 +67,13 @@ resource "aws_instance" "app" {
   vpc_security_group_ids = [aws_security_group.web.id]
   associate_public_ip_address = true
 
+  #aumentando o armazenamento do ec2 para 40 gb
+  root_block_device {
+    volume_size = 40         # Tamanho do disco (GB)
+    volume_type = "gp3"      # Tipo de volume (SSD padrão moderno)
+    delete_on_termination = true
+  }
+
   tags = {
     Name = var.instance_name
   }
@@ -74,7 +81,9 @@ resource "aws_instance" "app" {
   user_data = <<-EOF
               #!/bin/bash
               export DOMAIN="${var.domain}"
+              export DOMAIN_DEV="${var.domain_dev}"
               export API_PORT="${var.api_port}"
+              export API_PORT_DEV="${var.api_port_dev}"
               export EMAIL="${var.email}"
               export PUBLIC_SSH_KEY="${var.public_ssh_key}"
               export PERSONAL_SSH_KEY="${var.personal_ssh_key}"
