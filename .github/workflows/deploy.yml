@@ -30,7 +30,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: "."
-          target: "/home/ubuntu/app-prod"
+          target: "/home/ubuntu/app"
           rm: true
 
       - name: 🛠️ Criar .env na EC2 (DEV)
@@ -135,7 +135,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/app-prod
+            cd /home/ubuntu/app
             cat > .env << EOF
             # Banco de dados
             DATABASE_URL=${{ secrets.DATABASE_URL }}
@@ -246,7 +246,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/ubuntu/app-prod
+            cd /home/ubuntu/app
             echo "🛑 Parando container PROD antigo..."
             docker-compose -f docker-compose.prod.yml down || true
             echo "🛠️ Construindo e subindo API PROD..."
