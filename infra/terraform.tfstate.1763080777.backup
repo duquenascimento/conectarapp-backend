@@ -1,0 +1,343 @@
+{
+  "version": 4,
+  "terraform_version": "1.11.3",
+  "serial": 17,
+  "lineage": "775e13b6-292d-3dfa-356f-8f7768fef8b4",
+  "outputs": {
+    "app_url_dev": {
+      "value": "http://dev.api-appconectar.conectarhortifruti.com.br",
+      "type": "string"
+    },
+    "app_url_prod": {
+      "value": "http://api-appconectar.conectarhortifruti.com.br",
+      "type": "string"
+    },
+    "public_ip": {
+      "value": "98.81.120.110",
+      "type": "string"
+    },
+    "ssh_command": {
+      "value": "ssh -i ~/.ssh/aws-global.pem ubuntu@98.81.120.110",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "data",
+      "type": "aws_subnets",
+      "name": "public",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "filter": [
+              {
+                "name": "map-public-ip-on-launch",
+                "values": [
+                  "true"
+                ]
+              },
+              {
+                "name": "vpc-id",
+                "values": [
+                  "vpc-017ec567799d44802"
+                ]
+              }
+            ],
+            "id": "us-east-1",
+            "ids": [
+              "subnet-03e5f20ea195f6ee2",
+              "subnet-0cd42d872dfbf41f2",
+              "subnet-07d0b72a832bd37d0",
+              "subnet-0a357626ca5bdd052",
+              "subnet-018a7d8ebafd445ec",
+              "subnet-00fa0e8a719be62ff"
+            ],
+            "region": "us-east-1",
+            "tags": null,
+            "timeouts": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "data",
+      "type": "aws_vpc",
+      "name": "default",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "arn": "arn:aws:ec2:us-east-1:182636812139:vpc/vpc-017ec567799d44802",
+            "cidr_block": "172.31.0.0/16",
+            "cidr_block_associations": [
+              {
+                "association_id": "vpc-cidr-assoc-0e89c36e44588168e",
+                "cidr_block": "172.31.0.0/16",
+                "state": "associated"
+              }
+            ],
+            "default": true,
+            "dhcp_options_id": "dopt-0e71e71153a95c7c3",
+            "enable_dns_hostnames": true,
+            "enable_dns_support": true,
+            "enable_network_address_usage_metrics": false,
+            "filter": null,
+            "id": "vpc-017ec567799d44802",
+            "instance_tenancy": "default",
+            "ipv6_association_id": "",
+            "ipv6_cidr_block": "",
+            "main_route_table_id": "rtb-0a28c17f945d7f725",
+            "owner_id": "182636812139",
+            "region": "us-east-1",
+            "state": null,
+            "tags": {},
+            "timeouts": null
+          },
+          "sensitive_attributes": []
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_instance",
+      "name": "app",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 2,
+          "attributes": {
+            "ami": "ami-053b0d53c279acc90",
+            "arn": "arn:aws:ec2:us-east-1:182636812139:instance/i-0e20c55d43f6d72b7",
+            "associate_public_ip_address": true,
+            "availability_zone": "us-east-1d",
+            "capacity_reservation_specification": [
+              {
+                "capacity_reservation_preference": "open",
+                "capacity_reservation_target": []
+              }
+            ],
+            "cpu_options": [
+              {
+                "amd_sev_snp": "",
+                "core_count": 1,
+                "threads_per_core": 1
+              }
+            ],
+            "credit_specification": [
+              {
+                "cpu_credits": "standard"
+              }
+            ],
+            "disable_api_stop": false,
+            "disable_api_termination": false,
+            "ebs_block_device": [],
+            "ebs_optimized": false,
+            "enable_primary_ipv6": null,
+            "enclave_options": [
+              {
+                "enabled": false
+              }
+            ],
+            "ephemeral_block_device": [],
+            "force_destroy": false,
+            "get_password_data": false,
+            "hibernation": false,
+            "host_id": "",
+            "host_resource_group_arn": null,
+            "iam_instance_profile": "",
+            "id": "i-0e20c55d43f6d72b7",
+            "instance_initiated_shutdown_behavior": "stop",
+            "instance_lifecycle": "",
+            "instance_market_options": [],
+            "instance_state": "running",
+            "instance_type": "t2.micro",
+            "ipv6_address_count": 0,
+            "ipv6_addresses": [],
+            "key_name": "aws-global",
+            "launch_template": [],
+            "maintenance_options": [
+              {
+                "auto_recovery": "default"
+              }
+            ],
+            "metadata_options": [
+              {
+                "http_endpoint": "enabled",
+                "http_protocol_ipv6": "disabled",
+                "http_put_response_hop_limit": 1,
+                "http_tokens": "optional",
+                "instance_metadata_tags": "disabled"
+              }
+            ],
+            "monitoring": false,
+            "network_interface": [],
+            "outpost_arn": "",
+            "password_data": "",
+            "placement_group": "",
+            "placement_group_id": "",
+            "placement_partition_number": 0,
+            "primary_network_interface": [
+              {
+                "delete_on_termination": true,
+                "network_interface_id": "eni-004050cd1797bf0e5"
+              }
+            ],
+            "primary_network_interface_id": "eni-004050cd1797bf0e5",
+            "private_dns": "ip-172-31-3-7.ec2.internal",
+            "private_dns_name_options": [
+              {
+                "enable_resource_name_dns_a_record": false,
+                "enable_resource_name_dns_aaaa_record": false,
+                "hostname_type": "ip-name"
+              }
+            ],
+            "private_ip": "172.31.3.7",
+            "public_dns": "ec2-98-81-120-110.compute-1.amazonaws.com",
+            "public_ip": "98.81.120.110",
+            "region": "us-east-1",
+            "root_block_device": [
+              {
+                "delete_on_termination": true,
+                "device_name": "/dev/sda1",
+                "encrypted": false,
+                "iops": 3000,
+                "kms_key_id": "",
+                "tags": null,
+                "tags_all": {},
+                "throughput": 125,
+                "volume_id": "vol-085cfe43006bdf6a9",
+                "volume_size": 40,
+                "volume_type": "gp3"
+              }
+            ],
+            "secondary_private_ips": [],
+            "security_groups": [
+              "api-appconectar-v1-sg-20251113200922372300000001"
+            ],
+            "source_dest_check": true,
+            "spot_instance_request_id": "",
+            "subnet_id": "subnet-03e5f20ea195f6ee2",
+            "tags": {
+              "Name": "api-appconectar-v1"
+            },
+            "tags_all": {
+              "Name": "api-appconectar-v1"
+            },
+            "tenancy": "default",
+            "timeouts": null,
+            "user_data": "#!/bin/bash\nexport DOMAIN=\"api-appconectar.conectarhortifruti.com.br\"\nexport DOMAIN_DEV=\"dev-api-appconectar.conectarhortifruti.com.br\"\nexport API_PORT=\"3333\"\nexport API_PORT_DEV=\"3334\"\nexport EMAIL=\"dukedavi84@gmail.com\"\nexport PUBLIC_SSH_KEY=\"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCqFHqiMyawYqVUiFvATvClCiy6M+92H/gJBSbALvwGbrkrTh/Tri4Z0S4zuEH44EQORysOmU84YHw4zMwAU8HBHtEx8RmzgGZPF9XMNvQTDDODlzLre3DgHEdPV4ScdcRmY26QVen/sKm0O8LtunewVUI+JRg4EaNOLBtvpnAJG1MYqWA0/KhDHQCGyj8FyZByEcJn2k6qNgmWeAv5nZYnoU18TJTejVLMcfEywsx0edSpOnQMhHpmwJu2zhmsBje9CCRvt7SFKnHKvCyg626N3h8vVYSgL2lghXHeX02YWUcGTmgaq9eGY8bHIg8ZyaC98siGEKT2wCwLugGGP5Drq73wT2rkTpDmsLRP5KrwuiGAKdOwQ/TAnlTR7whbhxSZGvMnrqZetAQQoBtWX13hVbdS+ibcY/n8ozzjMxZlTnAOQCyMfGT3wz8KT5l11lZ96q88aPIdT5TULzVuNoMm9dhX4g5SckOlzknSnRYKDBl+oW+FyZ3obfT+Frv54SOZgYT5kLgIXgtnaLJObcDJMKLGorAI6VcaWg9zRn8jNjdNOX8+FM+0z9Cv9M91TsEk5g1rvaJI7etBvWd1oHUuzTmpoAECdN/oMDvNxVVjeRdj+5QNN1l0hUx0BZ2uLsNP86w67/tmIKHatufskPVyuaYG7jgaoJd9oMvaZkim5Q== github-actions@pagamentos\"\nexport PERSONAL_SSH_KEY=\"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCbuEILjwCiwqOb44+/wZIMZ91ZQ0gLVuANP7znTTj/qhYCkEfWwjRkpaMb7KDpFneFS5QVvqtn0KWtXvZpqhwwQfZ/fC3jjjm7I+wUBwITmwJHlpMMu0cPrM8+JhvdlbjMDfJrQSBMCUET71gbej8FfW/+fSyK5Moh8IC62ga92qzykDG89DpIFSon3a2+H1BtGYfvHZnxfMqLLIN6t3rpuQzsBSH5mbC3lfBL/RUrpZaUa86kdCqpfdiB1cCpU35VG8YUP4t9brMnJXq1G3/KOPpsRRzWqidrUGHYGmlduKEhmdil6NX7KUyfBpA1UnN4nxS8j23vd0UDjrFG62EXGFtRxgswYt1xVAoZJonkFpAQn4kGH94c+jOgbjRK+YpC9IVofWOaVq8JK6dHNii030HRsABbLNqyLDGLXAPcBO2w8RvlllNl6+vBde3gVCOAYm9AlwqCrkBvReKxghYkRnTDJRyw/jrmyXKGF2c3tEwf151Ei5NW5+OrMdlL4d9e73PPbyRKMHdK62b5e3ENX6Ly179LW8S0ktt5OksL7cIGZsXHdyG7N+oGOHzZwVy4MeWIxO50oiRbQD8UQT6E3NbQmG7K3QopUYXcP3hkt+9yrfGPLyV3a+MJBgaRgQc63PYfkRIyGPTW+LeigL3T4YqyZUf2/kLd5qwJNgQKZQ== aws-global\"\n#!/bin/bash\nexec \u003e \u003e(tee /tmp/setup.log | logger -t setup-script) 2\u003e\u00261\nset -x\n\necho \"🔧 Iniciando setup no Ubuntu 22.04...\"\n\n# Atualiza sistema\napt update -y \u0026\u0026 echo \"✅ apt update concluído\"\n\n# Instala Docker\napt install -y docker.io \u0026\u0026 echo \"✅ Docker instalado\"\nsystemctl start docker\nsystemctl enable docker\nusermod -aG docker ubuntu\n\n# Instala Docker Compose\napt install -y docker-compose \u0026\u0026 echo \"✅ Docker Compose instalado\"\n\n# Instala Node.js 22\ncurl -fsSL https://deb.nodesource.com/setup_22.x | bash -\napt install -y nodejs \u0026\u0026 echo \"✅ Node.js 22 instalado\"\n\n# Instala PM2\nnpm install -g pm2 \u0026\u0026 echo \"✅ PM2 instalado\"\n\n# Instala Nginx\napt install -y nginx \u0026\u0026 echo \"✅ Nginx instalado\"\nsystemctl enable nginx\n\n# Configura Nginx (HTTP apenas — SEM SSL por enquanto)\ncat \u003e /etc/nginx/sites-available/default \u003c\u003c EOF\n# --- PRODUÇÃO (HTTP) ---\nserver {\n    listen 80;\n    server_name api-appconectar.conectarhortifruti.com.br;\n\n    location / {\n        proxy_pass http://127.0.0.1:3333;\n        proxy_http_version 1.1;\n        proxy_set_header Host \\$host;\n        proxy_set_header X-Real-IP \\$remote_addr;\n        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto \\$scheme;\n        proxy_set_header Upgrade \\$http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_cache_bypass \\$http_upgrade;\n    }\n}\n\n# --- DESENVOLVIMENTO (HTTP) ---\nserver {\n    listen 80;\n    server_name dev-api-appconectar.conectarhortifruti.com.br;\n\n    location / {\n        proxy_pass http://127.0.0.1:3334;\n        proxy_http_version 1.1;\n        proxy_set_header Host \\$host;\n        proxy_set_header X-Real-IP \\$remote_addr;\n        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;\n        proxy_set_header X-Forwarded-Proto \\$scheme;\n        proxy_set_header Upgrade \\$http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_cache_bypass \\$http_upgrade;\n    }\n}\nEOF\n\n# Reinicia Nginx\nnginx -t \u0026\u0026 systemctl reload nginx \u0026\u0026 echo \"✅ Nginx configurado (HTTP)\"\n\n# Cria diretório .ssh\nmkdir -p /home/ubuntu/.ssh\nchmod 700 /home/ubuntu/.ssh\n\n# Adiciona chaves SSH\necho \"Adicionando chave do GitHub Actions...\"\necho \"${PUBLIC_SSH_KEY}\" \u003e\u003e /home/ubuntu/.ssh/authorized_keys\n\necho \"Adicionando chave pessoal...\"\necho \"${PERSONAL_SSH_KEY}\" \u003e\u003e /home/ubuntu/.ssh/authorized_keys\n\nchmod 600 /home/ubuntu/.ssh/authorized_keys\nchown -R ubuntu:ubuntu /home/ubuntu/.ssh \u0026\u0026 echo \"✅ Chaves SSH configuradas\"\n\n# Instala Certbot (mas NÃO executa ainda)\napt install -y certbot python3-certbot-nginx \u0026\u0026 echo \"✅ Certbot instalado\"\n\n# Cria diretório para app\nmkdir -p /home/ubuntu/app\nchown -R ubuntu:ubuntu /home/ubuntu/app\n\necho \"✅ Setup inicial concluído! Aguarde o DNS apontar para este IP antes de rodar o Certbot.\"\n",
+            "user_data_base64": null,
+            "user_data_replace_on_change": false,
+            "volume_tags": null,
+            "vpc_security_group_ids": [
+              "sg-06d4a8d4a4eb9c9a9"
+            ]
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6MTIwMDAwMDAwMDAwMCwicmVhZCI6OTAwMDAwMDAwMDAwLCJ1cGRhdGUiOjYwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "aws_security_group.web",
+            "data.aws_subnets.public",
+            "data.aws_vpc.default"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "aws_security_group",
+      "name": "web",
+      "provider": "provider[\"registry.terraform.io/hashicorp/aws\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "arn": "arn:aws:ec2:us-east-1:182636812139:security-group/sg-06d4a8d4a4eb9c9a9",
+            "description": "Permite SSH, HTTP e HTTPS",
+            "egress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 0,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "-1",
+                "security_groups": [],
+                "self": false,
+                "to_port": 0
+              }
+            ],
+            "id": "sg-06d4a8d4a4eb9c9a9",
+            "ingress": [
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 22,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 22
+              },
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 443,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 443
+              },
+              {
+                "cidr_blocks": [
+                  "0.0.0.0/0"
+                ],
+                "description": "",
+                "from_port": 80,
+                "ipv6_cidr_blocks": [],
+                "prefix_list_ids": [],
+                "protocol": "tcp",
+                "security_groups": [],
+                "self": false,
+                "to_port": 80
+              }
+            ],
+            "name": "api-appconectar-v1-sg-20251113200922372300000001",
+            "name_prefix": "api-appconectar-v1-sg-",
+            "owner_id": "182636812139",
+            "region": "us-east-1",
+            "revoke_rules_on_delete": false,
+            "tags": {
+              "Name": "api-appconectar-v1-security-group"
+            },
+            "tags_all": {
+              "Name": "api-appconectar-v1-security-group"
+            },
+            "timeouts": null,
+            "vpc_id": "vpc-017ec567799d44802"
+          },
+          "sensitive_attributes": [],
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo2MDAwMDAwMDAwMDAsImRlbGV0ZSI6OTAwMDAwMDAwMDAwfSwic2NoZW1hX3ZlcnNpb24iOiIxIn0=",
+          "dependencies": [
+            "data.aws_vpc.default"
+          ],
+          "create_before_destroy": true
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}
