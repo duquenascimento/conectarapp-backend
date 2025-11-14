@@ -60,11 +60,11 @@ model restaurant {
   financeResponsiblePhoneNumber       String?
   asaasCustomerId                     String?               @db.VarChar(50)
   conectarPlusAuthorization           Boolean               @default(false)
+  max_specific_suppliers              Int                   @default(2)
   appVersion                          appVersion?           @relation("RestaurantAppVersion")
   restaurant_supplier                 restaurant_supplier[]
-  transactions                        transactions[]
-  max_specific_suppliers              Int                   @default(2)
   suppliers_referred                  supplier[]
+  transactions                        transactions[]
 }
 
 model appVersion {
@@ -330,20 +330,20 @@ model file_log {
 }
 
 model supplier {
-  id                      String                @id @db.Uuid
-  externalId              String                @unique @db.VarChar(50)
-  name                    String                @db.VarChar(255)
-  email                   String                @db.VarChar(255)
-  phone                   String?               @db.VarChar(50)
-  asaasApiToken           String                @db.VarChar(255)
-  asaasWalletId           String                @db.VarChar(255)
-  createdAt               DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt               DateTime              @updatedAt @db.Timestamptz(3)
-  restaurant_supplier     restaurant_supplier[]
-  referral_restaurant_id  String?               @db.Uuid
-  referral_restaurant     restaurant?           @relation(fields: [referral_restaurant_id], references: [id])
-  status_id               Int                   @default(6) // PENDENTE
-  status                  status                @relation(fields: [status_id], references: [id])
+  id                     String                @id @db.Uuid
+  externalId             String                @unique @db.VarChar(50)
+  name                   String                @db.VarChar(255)
+  email                  String                @db.VarChar(255)
+  phone                  String?               @db.VarChar(50)
+  asaasApiToken          String                @db.VarChar(255)
+  asaasWalletId          String                @db.VarChar(255)
+  createdAt              DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt              DateTime              @updatedAt @db.Timestamptz(3)
+  referral_restaurant_id String?               @db.Uuid
+  status_id              Int                   @default(6)
+  restaurant_supplier    restaurant_supplier[]
+  referral_restaurant    restaurant?           @relation(fields: [referral_restaurant_id], references: [id])
+  status                 status                @relation(fields: [status_id], references: [id])
 }
 
 model restaurant_supplier {
